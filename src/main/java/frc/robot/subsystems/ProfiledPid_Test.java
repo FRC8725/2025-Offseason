@@ -38,7 +38,7 @@ public class ProfiledPid_Test extends SubsystemBase implements IDashboardProvide
 
     private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(500,
             250);
-    private final ProfiledPIDController pidController = new ProfiledPIDController(0.85, 0, 0.045, m_constraints);
+    private final ProfiledPIDController pidController = new ProfiledPIDController(0.85, 0, 0.0435, m_constraints);
     private final ArmFeedforward ArmFeedforward = new ArmFeedforward(0.11757, 0.0051374, 0.11375, 0.0011209);
 
     private final VoltageOut voltagRequire = new VoltageOut(0.0);
