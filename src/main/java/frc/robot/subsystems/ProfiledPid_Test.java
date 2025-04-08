@@ -31,14 +31,14 @@ public class ProfiledPid_Test extends SubsystemBase implements IDashboardProvide
     private double feedforwardVoltage;
 
     private double down = 10.0;// DOTO
-    private double up = 50.0;// DOTO
+    private double up = 100.0;// DOTO
 
     private static double max = 50.0;
     private static double min = 0.0;
 
-    private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(12,
-            12);
-    private final ProfiledPIDController pidController = new ProfiledPIDController(5, 0, 0, m_constraints);
+    private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(500,
+            250);
+    private final ProfiledPIDController pidController = new ProfiledPIDController(0.85, 0, 0.045, m_constraints);
     private final ArmFeedforward ArmFeedforward = new ArmFeedforward(0.11757, 0.0051374, 0.11375, 0.0011209);
 
     private final VoltageOut voltagRequire = new VoltageOut(0.0);
@@ -51,6 +51,7 @@ public class ProfiledPid_Test extends SubsystemBase implements IDashboardProvide
                     },
                     null,
                     this));
+
 
     public ProfiledPid_Test() {
         this.registerDashboard();
@@ -66,7 +67,6 @@ public class ProfiledPid_Test extends SubsystemBase implements IDashboardProvide
     public void setVoltage(double speed) {
         speed = MathUtil.clamp(speed, -12, 12);
         this.motor.setVoltage(speed);
-        SmartDashboard.putNumber("Total Voltage", speed);
     }
 
     public void stop() {
@@ -89,7 +89,7 @@ public class ProfiledPid_Test extends SubsystemBase implements IDashboardProvide
                 restandset(goalPositionSupplier),
                 goalto(goalPositionSupplier)
                         .until(() -> pidController.atGoal()))
-                .withTimeout(7);
+                .withTimeout(3);
     }
 
     public Command restandset(double goalPositionSupplier) {
@@ -154,6 +154,7 @@ public class ProfiledPid_Test extends SubsystemBase implements IDashboardProvide
         SmartDashboard.putBoolean("atGoal", pidController.atGoal());
         SmartDashboard.putNumber("Setpoint Position", pidController.getSetpoint().position);
         SmartDashboard.putNumber("Setpoint Velocity", pidController.getSetpoint().velocity);
+        SmartDashboard.putNumber("motor Velocity", this.motor.getVelocity().getValueAsDouble());
 
     }
 }
