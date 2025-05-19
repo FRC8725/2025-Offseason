@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.function.Supplier;
-
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -13,16 +11,38 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Arm extends SubsystemBase {
     private final TalonFX roller = new TalonFX(1);
-    private final StatusSignal<Current> getCurrent = this.roller.getStatorCurrent();
+    private final StatusSignal<Current> statorCurrent = this.roller.getStatorCurrent();
+    private boolean hasObject = false;
+
+    // ----------- Debouncer ----------- //
+    private final Debouncer coralCurrentDebouncer = new Debouncer(0.15, DebounceType.kBoth);
+    private final Debouncer algaeCurrentDebouncer = new Debouncer(0.35, DebounceType.kBoth);
+
+    // ----------- State ----------- //
+    RollerState rollerState = RollerState.off;
+    public enum RollerState {
+        off(0.0),
+        idle(-0.035),
+        algeaIdle(-0.225),
+        in(-1.0);
+
+        public final double value;
+
+        RollerState(double value) {
+            this.value = value;
+        }
+    }
 
     public Arm() {
         this.configRollerMotor(false);
-        this.getCurrent.setUpdateFrequency(100.0);
+        this.statorCurrent.setUpdateFrequency(100.0);
     }
 
+    // ----------- Config ----------- //
     public void configRollerMotor(boolean reverse) {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.MotorOutput
@@ -34,43 +54,24 @@ public class Arm extends SubsystemBase {
         this.roller.getConfigurator().apply(config);
     }
 
-    public enum RollerState {
-        off(0.0),
-        idle(-0.035),
-        in(-1.0);
-
-        public final double value;
-
-        RollerState(double value) {
-            this.value = value;
-        }
-    }
-
-    RollerState rollerState = RollerState.off;
-    Debouncer coralCurrentDebouncer = new Debouncer(0.15, DebounceType.kBoth);
-    Debouncer algaeCurrentDebouncer = new Debouncer(0.35, DebounceType.kBoth);
-    boolean hasObject = false;
-
-    double ALGEA_UNDEBUNCED = 15.0;
-    double CORAL_UNDEBUNCED = 10.0;
-
     @Override
     public void periodic() {
-        this.getCurrent.refresh();
-        boolean undebouncedHasObject = this.getCurrent.getValueAsDouble() > 15.0;
+        this.statorCurrent.refresh();
+        boolean undebouncedHasObject = this.statorCurrent.getValueAsDouble() >
+            (this.rollerState == RollerState.idle ?
+                Constants.Arm.IDEL_CURRENT_DRAW : Constants.Arm.CURRENT_DRAW);
 
-        boolean debouncedHasCoral = this.algaeCurrentDebouncer.calculate(undebouncedHasObject);
-        this.hasObject = debouncedHasCoral;
+        boolean debouncedHasCoral = this.coralCurrentDebouncer.calculate(undebouncedHasObject);
+        boolean debouncedHasAlgae = this.algaeCurrentDebouncer.calculate(undebouncedHasObject);
+
+        this.hasObject = (this.rollerState == RollerState.algeaIdle) ? debouncedHasAlgae : debouncedHasCoral;
         this.roller.set(rollerState.value);
-
-        if (this.hasObject) rollerState = RollerState.idle;
-        else rollerState = RollerState.in;
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addBooleanProperty("HasObject", () -> this.hasObject, null);
         builder.addStringProperty("RollerState", () -> this.rollerState.toString(), null);
-        builder.addDoubleProperty("RollerCurrent", () -> this.getCurrent.getValueAsDouble(), null);
+        builder.addDoubleProperty("RollerCurrent", () -> this.statorCurrent.getValueAsDouble(), null);
     }
 }
