@@ -9,8 +9,10 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -23,15 +25,20 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.lib.helpers.IDashboardProvider;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final TalonModule left = new TalonModule(15, false, true);
   private final TalonModule right = new TalonModule(16, false, true);
   private final Follower follower = new Follower(15, true);
 
-  private final PIDController pid = new PIDController(0, 0, 0); // TODO
+  private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(500,
+      250);
+  private final ProfiledPIDController pidController = new ProfiledPIDController(0.0, 0.0, 0.0, constraints);// TODO
   private final ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0.0, 0.0, 0.0);
 
   private final DoubleSubscriber kP = NetworkTableInstance.getDefault().getTable("SmartDashboard")
@@ -76,16 +83,18 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private final double MIN_ROTATIONS = 0.0;
   private final double MAX_ROTATIONS = 4.9445068359375;
-  private final double TOLERANCE = 0.08;
-  private final double feedfowardVoltage = 0.0;
-  private final double feedbackVoltage = 0.0;
+  private double down = 10;
+  private double up = 100;
+  private double TOLERANCE = 0.08;
+  private double feedforwardVoltage = 0.0;
+  private double feedbackVoltage = 0.0;
 
   public ElevatorSubsystem(MechanismLigament2d ligament) {
     super("Elevator");
     this.ligament = ligament;
-    pid.setTolerance(TOLERANCE);
-    right.clearStickyFaults();
+    pidController.setTolerance(TOLERANCE);
     left.clearStickyFaults();
+    right.clearStickyFaults();
     left.setPosition(0.0);
     right.setControl(follower);
     left.setNeutralMode(NeutralModeValue.Brake);
@@ -101,5 +110,51 @@ public class ElevatorSubsystem extends SubsystemBase {
         builder.addDoubleProperty("d", () -> kD.get(), null);
       }
     });
+  }
+
+  public double getPosition() {
+    return this.left.getPosition().getValueAsDouble();
+  }
+
+  public void setVoltage(double speed) {
+    speed = MathUtil.clamp(speed, -12, 12);
+    this.left.setVoltage(speed);
+    this.right.setVoltage(speed);
+  }
+
+  public Command restandset(double goalPositionSluppier) {
+    return runOnce(() -> {
+      pidController.reset(this.getPosition());
+      pidController.setGoal(goalPositionSluppier);
+    });
+  }
+
+  public Command goal(double goalPositionSluppier) {
+    return run(() -> {
+      feedbackVoltage = pidController.calculate(this.getPosition());
+      feedforwardVoltage = elevatorFeedforward.calculate(this.getPosition(), pidController.getSetpoint().velocity);
+      setVoltage(feedbackVoltage + feedforwardVoltage);
+      SmartDashboard.putNumber("GoalPositionSluppier", goalPositionSluppier);
+    });
+  }
+
+  public Command moveToPositionCommand(double goalPositionSluppier) {
+    return Commands.sequence(
+        restandset(goalPositionSluppier),
+        goal(goalPositionSluppier).until(() -> pidController.atGoal()).withTimeout(3));
+  }
+
+  public Command Down() {
+    return moveToPositionCommand(down)
+        .finallyDo(this::Stop);
+  }
+
+  public Command Up() {
+    return moveToPositionCommand(up)
+        .finallyDo(this::Stop);
+  }
+
+  public Command Stop() {
+    return Commands.runOnce(SignalLogger::stop);
   }
 }
