@@ -1,6 +1,6 @@
 package frc.robot;
 
-import frc.robot.commands.ElevatorCommand;
+import frc.robot.commands.ElevatorCmd;
 import frc.robot.subsystems.ElevatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -9,7 +9,7 @@ public class RobotContainer {
 
   private final Controller controller = new Controller();
 
-  private final ElevatorCommand elevatorCommand = new ElevatorCommand(elevatorSubsystem, controller);
+  private final ElevatorCmd elevatorCommand = new ElevatorCmd(elevatorSubsystem, controller);
 
   public RobotContainer() {
     this.elevatorSubsystem.setDefaultCommand(elevatorCommand);

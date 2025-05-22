@@ -5,11 +5,11 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class ElevatorCommand extends Command {
+public class ElevatorCmd extends Command {
   private final ElevatorSubsystem elevatorSubsystem;
   private final XboxController xboxController;
 
-  public ElevatorCommand(ElevatorSubsystem elevatorSubsystem, XboxController xboxController) {
+  public ElevatorCmd(ElevatorSubsystem elevatorSubsystem, XboxController xboxController) {
     this.elevatorSubsystem = elevatorSubsystem;
     this.xboxController = xboxController;
     this.addRequirements(this.elevatorSubsystem);
