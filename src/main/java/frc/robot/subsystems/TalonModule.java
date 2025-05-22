@@ -13,7 +13,6 @@ public class TalonModule extends TalonFX {
         this.clearStickyFaults();
         this.setInverted(reverse);
         this.setNeutralMode(isBrake ? NeutralModeValue.Brake : NeutralModeValue.Coast);
-        // this.resetSignalFrequencies();
 
         CurrentLimitsConfigs currentConfig = new CurrentLimitsConfigs()
                 .withStatorCurrentLimitEnable(true)
