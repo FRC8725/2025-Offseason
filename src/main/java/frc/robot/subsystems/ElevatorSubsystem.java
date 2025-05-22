@@ -11,15 +11,15 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
+// import edu.wpi.first.math.geometry.Pose3d;
+// import edu.wpi.first.math.system.plant.DCMotor;
+// import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructPublisher;
+// import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+// import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -45,8 +45,9 @@ public class ElevatorSubsystem extends SubsystemBase {
       .getDoubleTopic("Elevator/PID/i").subscribe(0.0);
   private final DoubleSubscriber kD = NetworkTableInstance.getDefault().getTable("SmartDashboard")
       .getDoubleTopic("Elevator/PID/d").subscribe(0.0);
-  private final DoubleSubscriber setpoint = NetworkTableInstance.getDefault().getTable("SmartDashboard")
-      .getDoubleTopic("Elevator/PID/setpoint").subscribe(0.0);
+  // private final DoubleSubscriber setpoint =
+  // NetworkTableInstance.getDefault().getTable("SmartDashboard")
+  // .getDoubleTopic("Elevator/PID/setpoint").subscribe(0.0);
 
   private final VoltageOut voltageRequire = new VoltageOut(0.0);
   private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
@@ -60,8 +61,9 @@ public class ElevatorSubsystem extends SubsystemBase {
           null,
           this));
 
-  private final double VELOCITY_CONVERSION = Units.inchesToMeters(0.938) * 2.0 * Math.PI / 8.0;
-  private final double POSITION_CONVERSION = 1.0 / 8.0;
+  // private final double VELOCITY_CONVERSION = Units.inchesToMeters(0.938) * 2.0
+  // * Math.PI / 8.0;
+  // private final double POSITION_CONVERSION = 1.0 / 8.0;
 
   // private final ElevatorSim elevatorSim = new ElevatorSim(// 模擬升降馬達與負載行為
   // DCMotor.getKrakenX60(2), // 使用兩顆馬達
