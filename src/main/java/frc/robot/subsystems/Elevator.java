@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -18,9 +19,11 @@ import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
     // ---------- Object ---------- //
-    private final TalonFX main = new TalonFX(0);
-    private final TalonFX follower = new TalonFX(0);
+    private final TalonFX main = new TalonFX(1);
+    private final TalonFX follower = new TalonFX(2);
+    private final Follower follower2 = new Follower(this.main.getDeviceID(), true);
     private final StatusSignal<Current> statorCurrent = this.main.getStatorCurrent();
+    private final MotionMagicVoltage request = new MotionMagicVoltage(0);
 
     private boolean isZeroed = false;
 
@@ -38,21 +41,22 @@ public class Elevator extends SubsystemBase {
 
     public Elevator() {
         this.configMotor();
-        this.follower.setControl(new Follower(this.main.getDeviceID(), true));
+        this.setZeroPositon();
+        // this.follower.setControl(new Follower(this.main.getDeviceID(), true));
     }
 
     // ---------- Config ----------
     public void configMotor() {
         MotorOutputConfigs outputConfig = new MotorOutputConfigs();
         outputConfig
-            .withInverted(InvertedValue.Clockwise_Positive)
+            .withInverted(InvertedValue.CounterClockwise_Positive)
             .withNeutralMode(NeutralModeValue.Brake);
 
         Slot0Configs slot0Config = new Slot0Configs();
         slot0Config.kS = 0.0;
         slot0Config.kV = 0.0;
         slot0Config.kA = 0.0;
-        slot0Config.kG = 0.37;
+        slot0Config.kG = 0.3;
         slot0Config.kP = 70.0;
 
         MotionMagicConfigs motionMagicConfig = new MotionMagicConfigs();
@@ -61,14 +65,15 @@ public class Elevator extends SubsystemBase {
             .withMotionMagicCruiseVelocity(3.0);
 
         FeedbackConfigs feedbackConfig = new FeedbackConfigs();
-        feedbackConfig.withSensorToMechanismRatio(Constants.Elevator.MECHANISM_RATIO);
+        feedbackConfig.SensorToMechanismRatio = Constants.Elevator.MECHANISM_RATIO;
 
         TalonFXConfiguration motorConfig = new TalonFXConfiguration()
             .withMotorOutput(outputConfig)
             .withMotionMagic(motionMagicConfig)
             .withSlot0(slot0Config)
             .withFeedback(feedbackConfig);
-        this.main.getConfigurator().refresh(motorConfig);        
+        this.main.getConfigurator().apply(motorConfig); 
+        this.follower.getConfigurator().apply(motorConfig);  
     }
 
     // ---------- Method ---------- //
@@ -76,6 +81,7 @@ public class Elevator extends SubsystemBase {
         this.main.setPosition(0.0);
         this.isZeroed = true;
     }
+    
     public void setZeroVoltage() {
         this.main.setVoltage(Constants.Elevator.ZERO_VOLTAGE);
     }
@@ -93,6 +99,8 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic() {
         if (!this.isZeroed) return;
+        this.main.setControl(this.request.withPosition(0.4));
+        this.follower.setControl(this.follower2);
     }
 
     // ---------- Function ---------- //

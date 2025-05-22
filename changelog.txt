@@ -1,3 +1,8 @@
 v0.1
 1. Change schema
 2. Cancel SysIdRoutine system
+
+v0.2
+1. Motion Magic PID test
+2. kG constants test
+3. adjust Constants.java
