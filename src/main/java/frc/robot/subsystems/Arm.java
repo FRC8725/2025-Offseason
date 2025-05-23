@@ -20,7 +20,7 @@ public class Arm extends SubsystemBase {
 
     // ----------- Debouncer ----------- //
     private final Debouncer coralCurrentDebouncer = new Debouncer(0.15, DebounceType.kBoth);
-    private final Debouncer algaeCurrentDebouncer = new Debouncer(0.35, DebounceType.kBoth);
+    private final Debouncer algaeCurrentDebouncer = new Debouncer(0.25, DebounceType.kBoth);
 
     // ----------- State ----------- //
     RollerState rollerState = RollerState.off;
@@ -40,6 +40,7 @@ public class Arm extends SubsystemBase {
     public Arm() {
         this.configRollerMotor(false);
         this.statorCurrent.setUpdateFrequency(100.0);
+        this.rollerState = RollerState.in;
     }
 
     // ----------- Config ----------- //
@@ -63,8 +64,9 @@ public class Arm extends SubsystemBase {
 
         boolean debouncedHasCoral = this.coralCurrentDebouncer.calculate(undebouncedHasObject);
         boolean debouncedHasAlgae = this.algaeCurrentDebouncer.calculate(undebouncedHasObject);
-
-        this.hasObject = (this.rollerState == RollerState.algeaIdle) ? debouncedHasAlgae : debouncedHasCoral;
+        this.hasObject = debouncedHasAlgae;
+        // this.hasObject = (this.rollerState == RollerState.algeaIdle) ? debouncedHasAlgae : debouncedHasCoral;
+        if (this.hasObject) this.rollerState = RollerState.idle;
         this.roller.set(rollerState.value);
     }
 
