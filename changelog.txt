@@ -7,3 +7,10 @@ v0.2
 1. Motion Magic PID test
 2. kG constants test
 3. adjust Constants.java
+
+---------- Arm ----------
+v0.1
+1. Optimize code readability
+
+v0.2
+1. Test new Debouncer value and constants current
