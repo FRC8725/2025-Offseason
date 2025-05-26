@@ -28,11 +28,12 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import frc.robot.Constants;
 
 public class ElevatorSubsystem extends SubsystemBase {
-  private final TalonModule left = new TalonModule(15, false, true);
-  private final TalonModule right = new TalonModule(16, false, true);
-  private final Follower follower = new Follower(15, true);
+  private final TalonModule left = new TalonModule(1, false, true);
+  private final TalonModule right = new TalonModule(2, false, true);
+  private final Follower follower = new Follower(0, true);
 
   private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(500,
       250);
@@ -85,16 +86,13 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private final double MIN_ROTATIONS = 0.0;
   private final double MAX_ROTATIONS = 4.9445068359375;
-  private double down = 10;
-  private double up = 100;
-  private double TOLERANCE = 0.08;
   private double feedforwardVoltage = 0.0;
   private double feedbackVoltage = 0.0;
 
   public ElevatorSubsystem() {
     super("Elevator");
     // this.ligament = ligament;
-    pidController.setTolerance(TOLERANCE);
+    pidController.setTolerance(Constants.OperatorConstants.TOLERANCE);
     left.clearStickyFaults();
     right.clearStickyFaults();
     left.setPosition(0.0);
@@ -140,19 +138,19 @@ public class ElevatorSubsystem extends SubsystemBase {
     });
   }
 
-  public Command moveToPositionCommand(double goalPositionSluppier) {
+  public Command moveToPositionCommand(double goalPosition) {
     return Commands.sequence(
-        restandset(goalPositionSluppier),
-        goal(goalPositionSluppier).until(() -> pidController.atGoal()).withTimeout(3));
+        restandset(goalPosition),
+        goal(goalPosition).until(() -> pidController.atGoal()).withTimeout(3));
   }
 
   public Command down() {
-    return moveToPositionCommand(down)
+    return moveToPositionCommand(MIN_ROTATIONS)
         .finallyDo(this::stop);
   }
 
   public Command up() {
-    return moveToPositionCommand(up)
+    return moveToPositionCommand(MAX_ROTATIONS)
         .finallyDo(this::stop);
   }
 
