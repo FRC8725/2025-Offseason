@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.swerve;
 
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
@@ -40,7 +40,7 @@ public class SwerveSubsystem extends SubsystemBase {
         true, true,
         "BackRight");
     private final AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
-
+    
     private final StructPublisher<Pose2d> swervePose = NetworkTableInstance.getDefault()
         .getStructTopic("AdvantageScope/SwervePose", Pose2d.struct).publish();
 
@@ -56,6 +56,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public SwerveSubsystem() {
         super("Swerve", false);
+        this.gyro.reset();
     }
 
     public void drive(double xSpeed, double ySpeed, double rSpeed, boolean fieldOriented) {
@@ -78,7 +79,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public double getHeading() {
-        return this.gyro.getAngle();
+        return -this.gyro.getAngle();
     }
 
     public Rotation2d getRotation2d() {
@@ -142,13 +143,12 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public void addVisionMeasurement(Pose2d visionMeasurement, double timestampSeconds) {
-        System.out.println("A");
-        this.poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds);
+        // this.poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds);
     }
 
     public void addVisionMeasurement(
             Pose2d visionMeasurement, double timestampSeconds, Matrix<N3, N1> stdDevs) {
-        this.poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds, stdDevs);
+        // this.poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds, stdDevs);
     }
 
     @Override

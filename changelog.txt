@@ -1,2 +1,6 @@
 v0.1
 - Add mini swerve base module
+
+v0.2
+- Adjust Robot period
+- VisionSubsystem finished

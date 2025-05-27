@@ -24,19 +24,20 @@ public class VisionSubsystem extends SubsystemBase {
         super("Vision", false);
         this.leftCamera = new PhotonHelper(
             "left-Cam",
-            new Translation3d(0.159862, 0.134743, 0.225177),
-            Units.degreesToRadians(-10.0), Units.degreesToRadians(-15.0));
+            new Translation3d(0.159958, -0.134178, 0.226195),
+            Units.degreesToRadians(10.0), Units.degreesToRadians(15.0));
         this.measurementProvider = measurementProvider;
         this.swervePose = swervePose;
     }
 
     @Override
     public void periodic() {
-        this.leftCamera.updateFieldPose(this.measurementProvider, this.swervePose.get());      
-        this.predictPose.accept(this.swervePose.get()); 
+        // this.leftCamera.updateFieldPose(this.measurementProvider, this.swervePose.get());      
+        this.predictPose.accept(this.leftCamera.getRobotToField().toPose2d()); 
     }
 
     @Override
     public void putDashboard() {
+        SmartDashboard.putString("Pose", this.leftCamera.getRobotToTagPose().toString());
     }
 }

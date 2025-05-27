@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.swerve;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -58,7 +58,7 @@ public class SwerveModule implements IDashboardProvider {
         }
         desiredState.optimize(this.getState().angle);
 
-        double driveVoltage = desiredState.speedMetersPerSecond / SwerveConstants.MAX_SPEED;
+        double driveVoltage = 12.0 * (desiredState.speedMetersPerSecond / SwerveConstants.MAX_SPEED);
         double turnVoltage = this.pid.calculate(this.encoder.getRotation().getRotations(), desiredState.angle.getRotations());
 
         SmartDashboard.putNumber(this.moduleName + "/desiredAngle", desiredState.angle.getRotations());

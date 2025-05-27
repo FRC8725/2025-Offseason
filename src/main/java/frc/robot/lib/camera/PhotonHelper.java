@@ -45,17 +45,34 @@ public class PhotonHelper {
         return this.estimator.update(result);
     }
 
-    public void updateFieldPose(MeasurementProvider measurementProvider, Pose2d swervePose) {
+    public Pose2d updateFieldPose(Pose2d swervePose) {
         Optional<EstimatedRobotPose> poseEstimate = this.getEstimatedGlobalPose(swervePose);
         if (poseEstimate.isPresent()) {
             SmartDashboard.putString("Camera/EstimatedPose", poseEstimate.get().estimatedPose.toPose2d().toString());
             Pose3d cameraPose = poseEstimate.get().estimatedPose;
             Transform3d caemraToRobot = this.cameraPose.inverse();
 
-            measurementProvider.addVisionMeasurement(cameraPose.transformBy(caemraToRobot).toPose2d(), poseEstimate.get().timestampSeconds);
+            return cameraPose.transformBy(caemraToRobot).toPose2d();
         }
+        return new Pose2d();
+    }
+
+    public Transform3d getRobotToTagPose() {
+        var result = this.camera.getLatestResult();
+        if (result == null) return new Transform3d();
+        Transform3d cameraToTag = result.getBestTarget().getBestCameraToTarget();
+        Transform3d robotToTag = this.cameraPose.plus(cameraToTag);
+        return robotToTag;
     }
     
+    public Pose3d getRobotToField() {
+        Transform3d robotToTag = this.getRobotToTagPose();
+        if (robotToTag == new Transform3d()) return new Pose3d();
+        var result = this.camera.getLatestResult();
+        if (result == null) return new Pose3d();
+        Pose3d fieldToTag = this.layout.getTagPose(result.getBestTarget().getFiducialId()).get();
+        return fieldToTag.transformBy(robotToTag.inverse());
+    }
     public interface MeasurementProvider {
         public void addVisionMeasurement(Pose2d visionMeasurement, double timestampSeconds);
     }

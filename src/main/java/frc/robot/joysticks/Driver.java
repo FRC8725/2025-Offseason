@@ -31,8 +31,8 @@ public class Driver extends XboxController {
     }
 
     public double getBrake() {
-        double speed = MathUtil.applyDeadband(this.getRightTriggerAxis(), SwerveConstants.DEAD_BAND);
-        return 1.0 - speed;
+        double speed = MathUtil.applyDeadband(this.getRightTriggerAxis(), SwerveConstants.DEAD_BAND) * 0.8;
+        return (1.0 - speed);
     }
 
     public Trigger resetGyro() {

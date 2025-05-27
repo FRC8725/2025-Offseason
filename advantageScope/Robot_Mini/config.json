@@ -1,13 +1,52 @@
 {
     "name": "Mini",
-    "rotations": [],
-    "position": [
-        0,
-        0,
-        0
+    "rotations": [
+        {"axis": "x", "degrees": 90},
+        {"axis": "y", "degrees": 0},
+        {"axis": "z", "degrees": 270}
     ],
-    "cameras": [],
-    "components": [
-       
-    ]
+    "position": [
+        -0.0935,
+        -0.086,
+        -0.055
+    ],
+    "cameras": [
+        {
+            "name": "left",
+            "rotations": [
+                0.0,
+                -10.0,
+                -15.0
+            ],
+            "position": [
+                0.159862,
+                0.134743,
+                0.225177
+            ],
+            "resolution": [
+                1080,
+                720
+            ],
+            "fov": 70
+        },
+        {
+            "name": "right",
+            "rotations": [
+                0.0,
+                -10.0,
+                15.0
+            ],
+            "position": [
+                0.159862,
+                -0.134743,
+                0.225177
+            ],
+            "resolution": [
+                1080,
+                720
+            ],
+            "fov": 70
+        }
+    ],
+    "components": []
 }
