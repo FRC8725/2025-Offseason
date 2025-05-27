@@ -16,8 +16,11 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.SwerveConstants;
 
 public class SwerveModule implements Sendable {
@@ -31,6 +34,7 @@ public class SwerveModule implements Sendable {
     // ---------- Value ---------- //
     private double driveVoltage = 0.0;
     private double goalDriveVelocity = 0.0;
+    private double goalTurnPosition = 0.0;
     private final double encoderOffset;
 
     public SwerveModule(
@@ -42,8 +46,8 @@ public class SwerveModule implements Sendable {
         this.turnMotor = new SparkMax(turnId, MotorType.kBrushless);
         this.encoder = new CANcoder(canCoderId);
 
-        this.turnPid = new PIDController(3, 0.0, 0.01);
-        this.feedforward = new SimpleMotorFeedforward(0.0, 0.0, 0.0);
+        this.turnPid = new PIDController(3.6, 0.1, 0.0);
+        this.feedforward = new SimpleMotorFeedforward(0.2187, 0.0019282, 0.00021717);
 
         this.encoderOffset = encoderOffset;
         this.turnPid.enableContinuousInput(-Math.PI, Math.PI);
@@ -68,8 +72,9 @@ public class SwerveModule implements Sendable {
   
         CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
         canCoderConfig.MagnetSensor
-            .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-            .withAbsoluteSensorDiscontinuityPoint(0.5);
+            .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
+            .withAbsoluteSensorDiscontinuityPoint(0.5)
+            .withMagnetOffset(this.encoderOffset);
         this.driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         this.turnMotor.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         this.encoder.getConfigurator().apply(canCoderConfig);
@@ -78,12 +83,18 @@ public class SwerveModule implements Sendable {
     public void resetMotor() {
         this.driveMotor.getEncoder().setPosition(0.0);
         this.turnMotor.getEncoder().setPosition(
-            this.encoder.getAbsolutePosition().getValueAsDouble() - this.encoderOffset);
+            this.encoder.getAbsolutePosition().getValueAsDouble());
     }
 
     // ---------- Function ---------- //
     public double getTurnPosition() {
-        return MathUtil.angleModulus(this.turnMotor.getEncoder().getPosition() * 2.0 * Math.PI);
+        double position = this.encoder.getAbsolutePosition().getValueAsDouble();
+        position %= 1.0;
+        return Units.rotationsToRadians(position > 0.5 ? position - 1.0 : position);
+    }
+
+    public double getInputVolt() {
+        return this.driveMotor.getAppliedOutput() * this.driveMotor.getBusVoltage();
     }
 
     public SwerveModulePosition getPosition() {
@@ -98,18 +109,34 @@ public class SwerveModule implements Sendable {
             new Rotation2d(this.getTurnPosition()));
     }
 
+    public double getDriveVolocity() {
+        return this.driveMotor.getEncoder().getVelocity();
+    }
+
+    public double gerDrivePosition() {
+        return this.driveMotor.getEncoder().getPosition();
+    }
+
     // ---------- Method ---------- //
     public void setDesiredState(SwerveModuleState state) {
-        state.optimize(new Rotation2d(this.getTurnPosition()));
+        if (state.speedMetersPerSecond < 0.001) {
+            this.stop();
+            return;
+        }
+        state.optimize(Rotation2d.fromRadians(this.getTurnPosition()));
 
-        double goalTurnPosition = state.angle.getRadians();
-        this.goalDriveVelocity = state.speedMetersPerSecond * Math.cos(this.getTurnPosition() - goalTurnPosition);
-
-        this.driveVoltage = this.feedforward.calculateWithVelocities(this.driveMotor.getEncoder().getVelocity() / 60.0, this.goalDriveVelocity);
+        this.goalTurnPosition = state.angle.getRadians();
+        
+        this.goalDriveVelocity = state.speedMetersPerSecond * Math.cos(this.getTurnPosition() - this.goalTurnPosition);
+        this.driveVoltage = state.speedMetersPerSecond / 3.0;
         double turnVoltage = this.turnPid.calculate(this.getTurnPosition(), goalTurnPosition);
 
         this.driveMotor.setVoltage(this.driveVoltage);
         this.turnMotor.setVoltage(turnVoltage);
+    }
+
+    public void setDriveVoltage(double voltage) {
+        this.driveMotor.setVoltage(voltage);
     }
 
     public void stop() {
@@ -125,5 +152,6 @@ public class SwerveModule implements Sendable {
         builder.addDoubleProperty("/Drive Stator Voltage", () -> this.driveMotor.getAppliedOutput(), null);
         builder.addDoubleProperty("/Goal Drive Velocity", () -> this.goalDriveVelocity, null);
         builder.addDoubleProperty("/Goal Drive Voltage", () -> this.driveVoltage, null);
+        builder.addDoubleProperty("Goal Turn Position", () -> this.goalTurnPosition, null);
     }
 }

@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SwerveCmd;
 import frc.robot.subsystems.Swerve;
 
@@ -11,6 +12,7 @@ public class RobotContainer {
 	public RobotContainer() {
 		this.swerveSubsystem.setDefaultCommand(
 			new SwerveCmd(this.swerveSubsystem, this.driver::getSpeeds));
+		new Trigger(this.driver::getAButton).whileTrue(this.swerveSubsystem.sysIdTest());
 	}
 	
 	public Command getAutonomousCommand() {
