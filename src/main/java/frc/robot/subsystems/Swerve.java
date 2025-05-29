@@ -25,8 +25,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.constants.SwerveConstants;
 
 public class Swerve extends SubsystemBase {
     // ---------- Object ---------- //
@@ -48,7 +48,7 @@ public class Swerve extends SubsystemBase {
         -0.276611328125);
     private final AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
-        SwerveConstants.KINEMATICS,
+        Constants.Swerve.KINEMATICS,
         new Rotation2d(this.getGyroAngle()),
         this.getModulePositions(),
         new Pose2d(0.0, 0.0, new Rotation2d(this.getGyroAngle())),
@@ -101,7 +101,7 @@ public class Swerve extends SubsystemBase {
     // ---------- Method ---------- //
     public void driveRobotRelative(ChassisSpeeds speeds) {
         ChassisSpeeds discretizeSpeeds = ChassisSpeeds.discretize(speeds, Robot.kDefaultPeriod);
-        SwerveModuleState[] states = SwerveConstants.KINEMATICS.toSwerveModuleStates(discretizeSpeeds);
+        SwerveModuleState[] states = Constants.Swerve.KINEMATICS.toSwerveModuleStates(discretizeSpeeds);
         this.setDesiredState(states);
 
         // this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions()) // TODO: TEST

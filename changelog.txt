@@ -29,3 +29,7 @@ Test drive SimpleFeedForward (Use SysIdRoutine)
 ---------- Main ----------
 v0.1
 1. Add driver and controller joysticks function
+
+v0.2
+1. Tidy constants file
+2. Merge main/Vision and adjust lib code

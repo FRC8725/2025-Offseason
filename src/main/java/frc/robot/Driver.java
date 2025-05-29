@@ -2,7 +2,6 @@ package frc.robot;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.constants.SwerveConstants;
 
 public class Driver extends XboxController {
     public Driver() {
@@ -21,9 +20,9 @@ public class Driver extends XboxController {
         r = r * r;
         rotation = rotation * rotation * Math.signum(rotation);
 
-        double outputX = r * Math.sin(theta) * SwerveConstants.MAX_VELOCITY;
-        double outputY = r * Math.cos(theta) * SwerveConstants.MAX_VELOCITY;
-        double outputR = rotation * SwerveConstants.MAX_ANGULAR_VELOCITY;
+        double outputX = r * Math.sin(theta) * Constants.Swerve.MAX_VELOCITY;
+        double outputY = r * Math.cos(theta) * Constants.Swerve.MAX_VELOCITY;
+        double outputR = rotation * Constants.Swerve.MAX_ANGULAR_VELOCITY;
 
         return new ChassisSpeeds(outputX, outputY, outputR);
     }
