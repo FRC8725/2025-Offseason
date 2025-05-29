@@ -1,83 +1,157 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.SwerveConstants;
-import frc.robot.lib.encoder.SwerveEncoder;
-import frc.robot.lib.helpers.IDashboardProvider;
-import frc.robot.lib.motors.SwerveSpark;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.constants.SwerveConstants;
 
-public class SwerveModule {
-    private final Talon drive;
-    private final SwerveSpark turn;
-    private final SwerveEncoder encoder;
-    private final PIDController pid;
-    private final String moduleName;
+public class SwerveModule implements Sendable {
+    // ---------- Object ---------- //
+    private final SparkMax driveMotor;
+    private final SparkMax turnMotor;
+    private final CANcoder encoder;
+    private final PIDController turnPid;
+    private final SimpleMotorFeedforward feedforward;
+
+    // ---------- Value ---------- //
+    private double driveVoltage = 0.0;
+    private double goalDriveVelocity = 0.0;
+    private double goalTurnPosition = 0.0;
+    private final double encoderOffset;
 
     public SwerveModule(
-        int driveId, int turnId, int encoderId,
+        int driveId, int turnId, int canCoderId,
         boolean driveReverse, boolean turnReverse,
-        String moduleName
+        double encoderOffset
     ) {
-        this.registerDashboard();
-        this.drive = new SwerveSpark(driveId, driveReverse, true, SwerveConstants.DRIVE_GEAR_RATIO);
-        this.turn = new SwerveSpark(turnId, turnReverse, false, SwerveConstants.TURN_GEAR_RATIO);
-        this.encoder = new SwerveEncoder(encoderId);
-        this.pid = new PIDController(40.0, 0.1, 0.1);
-        this.moduleName = moduleName;
+        this.driveMotor = new SparkMax(driveId, MotorType.kBrushless);
+        this.turnMotor = new SparkMax(turnId, MotorType.kBrushless);
+        this.encoder = new CANcoder(canCoderId);
 
-        this.pid.enableContinuousInput(-0.5, 0.5);
-        this.resetEncoder();
+        this.turnPid = new PIDController(3.6, 0.1, 0.0);
+        this.feedforward = new SimpleMotorFeedforward(0.2187, 0.0019282, 0.00021717);
+
+        this.encoderOffset = encoderOffset;
+        this.turnPid.enableContinuousInput(-Math.PI, Math.PI);
+
+        this.configMotors(driveReverse, turnReverse);
+        this.resetMotor();
     }
 
-    public void resetEncoder() {
-        this.drive.getEncoder().setPosition(0.0);
-        this.turn.getEncoder().setPosition(this.encoder.getAbsolutePosition().getValueAsDouble());
+    // ---------- Config ---------- //
+    public void configMotors(boolean driveReverse, boolean turnReverse) {
+        SparkMaxConfig driveConfig = new SparkMaxConfig();
+        driveConfig.encoder.positionConversionFactor(SwerveConstants.DRIVE_GEAR_RATIO);
+        driveConfig.idleMode(IdleMode.kBrake);
+        driveConfig.smartCurrentLimit(45);
+        driveConfig.inverted(driveReverse);
+
+        SparkMaxConfig turnConfig = new SparkMaxConfig();
+        turnConfig.encoder.positionConversionFactor(1.0 / SwerveConstants.TURN_GEAR_RATIO);
+        turnConfig.idleMode(IdleMode.kCoast);
+        turnConfig.inverted(turnReverse);
+        turnConfig.smartCurrentLimit(45);
+  
+        CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
+        canCoderConfig.MagnetSensor
+            .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
+            .withAbsoluteSensorDiscontinuityPoint(0.5)
+            .withMagnetOffset(this.encoderOffset);
+        this.driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        this.turnMotor.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        this.encoder.getConfigurator().apply(canCoderConfig);
     }
 
-    public SwerveModuleState getState() {
-        return new SwerveModuleState(
-            this.drive.getVelocity(),
-            this.encoder.getRotation()
-        );
+    public void resetMotor() {
+        this.driveMotor.getEncoder().setPosition(0.0);
+        this.turnMotor.getEncoder().setPosition(
+            this.encoder.getAbsolutePosition().getValueAsDouble());
+    }
+
+    // ---------- Function ---------- //
+    public double getTurnPosition() {
+        double position = this.encoder.getAbsolutePosition().getValueAsDouble();
+        position %= 1.0;
+        return Units.rotationsToRadians(position > 0.5 ? position - 1.0 : position);
+    }
+
+    public double getInputVolt() {
+        return this.driveMotor.getAppliedOutput() * this.driveMotor.getBusVoltage();
     }
 
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-            this.drive.getPosition(),
-            this.encoder.getRotation()
-        );
+            this.driveMotor.getEncoder().getPosition() * 2.0 * SwerveConstants.WHEEL_RADIUS * Math.PI,
+            new Rotation2d(this.getTurnPosition()));
     }
 
-    public void setDesiredState(SwerveModuleState desiredState) {
-        if (Math.abs(desiredState.speedMetersPerSecond) < 0.001) {
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(
+            this.driveMotor.getEncoder().getVelocity() / 60.0 * 2.0 * SwerveConstants.WHEEL_RADIUS * Math.PI,
+            new Rotation2d(this.getTurnPosition()));
+    }
+
+    public double getDriveVolocity() {
+        return this.driveMotor.getEncoder().getVelocity();
+    }
+
+    public double gerDrivePosition() {
+        return this.driveMotor.getEncoder().getPosition();
+    }
+
+    // ---------- Method ---------- //
+    public void setDesiredState(SwerveModuleState state) {
+        if (state.speedMetersPerSecond < 0.001) {
             this.stop();
             return;
         }
-        desiredState.optimize(this.getState().angle);
+        state.optimize(Rotation2d.fromRadians(this.getTurnPosition()));
 
-        double driveVoltage = 12.0 * (desiredState.speedMetersPerSecond / SwerveConstants.MAX_SPEED);
-        double turnVoltage = this.pid.calculate(this.encoder.getRotation().getRotations(), desiredState.angle.getRotations());
+        this.goalTurnPosition = state.angle.getRadians();
+        
+        this.goalDriveVelocity = state.speedMetersPerSecond * Math.cos(this.getTurnPosition() - this.goalTurnPosition);
+        this.driveVoltage = state.speedMetersPerSecond / 3.0;
+        double turnVoltage = this.turnPid.calculate(this.getTurnPosition(), goalTurnPosition);
 
-        SmartDashboard.putNumber(this.moduleName + "/desiredAngle", desiredState.angle.getRotations());
-        SmartDashboard.putNumber(this.moduleName + "/turnVoltage", turnVoltage);
+        this.driveMotor.setVoltage(this.driveVoltage);
+        this.turnMotor.setVoltage(turnVoltage);
+    }
 
-        this.drive.setVoltage(driveVoltage);
-        this.turn.setVoltage(turnVoltage);
+    public void setDriveVoltage(double voltage) {
+        this.driveMotor.setVoltage(voltage);
     }
 
     public void stop() {
-        this.drive.stopMotor();
-        this.turn.stopMotor();
+        this.driveMotor.stopMotor();
+        this.turnMotor.stopMotor();
     }
 
     @Override
-    public void putDashboard() {
-        SmartDashboard.putNumber(this.moduleName + "/Drive Velocity", this.drive.getVelocity());
-        SmartDashboard.putNumber(this.moduleName + "/Drive Position", this.drive.getPosition());
-        SmartDashboard.putNumber(this.moduleName + "/Turn Position", this.encoder.getRotation().getRotations());
+    public void initSendable(SendableBuilder builder) {
+        builder.addDoubleProperty("/Turn Raw Position (Rot)", () -> this.encoder.getAbsolutePosition().getValueAsDouble(), null);
+        builder.addDoubleProperty("/Turn Position (Rad)", () -> this.getTurnPosition(), null);
+        builder.addDoubleProperty("/Drive Velocity (Rps)", () -> this.driveMotor.getEncoder().getVelocity(), null);
+        builder.addDoubleProperty("/Drive Stator Voltage", () -> this.driveMotor.getAppliedOutput(), null);
+        builder.addDoubleProperty("/Goal Drive Velocity", () -> this.goalDriveVelocity, null);
+        builder.addDoubleProperty("/Goal Drive Voltage", () -> this.driveVoltage, null);
+        builder.addDoubleProperty("Goal Turn Position", () -> this.goalTurnPosition, null);
     }
 }
