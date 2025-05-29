@@ -14,3 +14,7 @@ v0.1
 
 v0.2
 1. Test new Debouncer value and constants current
+
+---------- Main ----------
+v0.1
+1. Add driver and controller joysticks function
