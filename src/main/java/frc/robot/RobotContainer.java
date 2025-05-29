@@ -4,8 +4,12 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 
 public class RobotContainer {
+	private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
+	private final VisionSubsystem visionSubsystem = new VisionSubsystem(null, null);
 	private final Elevator elevator = new Elevator();
 	private final Arm arm = new Arm();
 	

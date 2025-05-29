@@ -15,6 +15,13 @@ v0.1
 v0.2
 1. Test new Debouncer value and constants current
 
+---------- Vision ----------
+v0.1
+- Add mini swerve base module
+
+v0.2
+- Adjust Robot period
+
 ---------- Main ----------
 v0.1
 1. Add driver and controller joysticks function
