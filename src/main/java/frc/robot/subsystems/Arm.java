@@ -17,13 +17,14 @@ public class Arm extends SubsystemBase {
     private final TalonFX roller = new TalonFX(1);
     private final StatusSignal<Current> statorCurrent = this.roller.getStatorCurrent();
     private boolean hasObject = false;
+    private static boolean isZeroed = false;
 
     // ----------- Debouncer ----------- //
     private final Debouncer coralCurrentDebouncer = new Debouncer(0.15, DebounceType.kBoth);
     private final Debouncer algaeCurrentDebouncer = new Debouncer(0.25, DebounceType.kBoth);
 
     // ----------- State ----------- //
-    RollerState rollerState = RollerState.off;
+    private static RollerState rollerState = RollerState.off;
     public enum RollerState {
         off(0.0),
         idle(-0.035),
@@ -37,10 +38,22 @@ public class Arm extends SubsystemBase {
         }
     }
 
+    private static LifterState lifterState = LifterState.Down;
+    public enum LifterState {
+        Down(0.0), 
+        Up(0.0);
+
+        public final double value;
+
+        LifterState(double value) {
+            this.value = value;
+        }
+    }
+
     public Arm() {
         this.configRollerMotor(false);
         this.statorCurrent.setUpdateFrequency(100.0);
-        this.rollerState = RollerState.in;
+        rollerState = RollerState.in;
     }
 
     // ----------- Config ----------- //
@@ -55,25 +68,38 @@ public class Arm extends SubsystemBase {
         this.roller.getConfigurator().apply(config);
     }
 
+    public void resetRelativeFromAbsolute() {
+        isZeroed = true;
+    }
+
+    public static void setState(LifterState lifter, RollerState roller) {
+        lifterState = lifter;
+        rollerState = roller;
+    }
+
+    public static boolean isZeroed() {
+        return isZeroed;
+    }
+
     @Override
     public void periodic() {
         this.statorCurrent.refresh();
         boolean undebouncedHasObject = this.statorCurrent.getValueAsDouble() >
-            (this.rollerState == RollerState.idle ?
+            (rollerState == RollerState.idle ?
                 Constants.Arm.IDEL_CURRENT_DRAW : Constants.Arm.CURRENT_DRAW);
 
         boolean debouncedHasCoral = this.coralCurrentDebouncer.calculate(undebouncedHasObject);
         boolean debouncedHasAlgae = this.algaeCurrentDebouncer.calculate(undebouncedHasObject);
         this.hasObject = debouncedHasAlgae;
         // this.hasObject = (this.rollerState == RollerState.algeaIdle) ? debouncedHasAlgae : debouncedHasCoral;
-        if (this.hasObject) this.rollerState = RollerState.idle;
+        if (this.hasObject) rollerState = RollerState.idle;
         this.roller.set(rollerState.value);
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addBooleanProperty("HasObject", () -> this.hasObject, null);
-        builder.addStringProperty("RollerState", () -> this.rollerState.toString(), null);
+        builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
         builder.addDoubleProperty("RollerCurrent", () -> this.statorCurrent.getValueAsDouble(), null);
     }
 }

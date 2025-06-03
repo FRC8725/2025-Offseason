@@ -25,10 +25,10 @@ public class Elevator extends SubsystemBase {
     private final StatusSignal<Current> statorCurrent = this.main.getStatorCurrent();
     private final MotionMagicVoltage request = new MotionMagicVoltage(0);
 
-    private boolean isZeroed = false;
+    private static boolean isZeroed = false;
 
     // ---------- State ---------- //
-    private State state = State.Down;
+    public static State state = State.Down;
     public enum State {
         Down(0.0);
 
@@ -79,7 +79,7 @@ public class Elevator extends SubsystemBase {
     // ---------- Method ---------- //
     public void setZeroPositon() {
         this.main.setPosition(0.0);
-        this.isZeroed = true;
+        isZeroed = true;
     }
     
     public void setZeroVoltage() {
@@ -98,14 +98,18 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (!this.isZeroed) return;
+        if (!isZeroed) return;
         this.main.setControl(this.request.withPosition(0.4));
         this.follower.setControl(this.follower2);
     }
 
     // ---------- Function ---------- //
+    public static boolean isZeroed() {
+        return isZeroed;
+    }
+    
     public boolean atSetpoint() {
-        return Math.abs(this.main.getPosition().getValueAsDouble() - this.state.value) < Constants.Elevator.TOLERANCE;
+        return Math.abs(this.main.getPosition().getValueAsDouble() - state.value) < Constants.Elevator.TOLERANCE;
     }
 
     public double getHeight() {
@@ -124,6 +128,6 @@ public class Elevator extends SubsystemBase {
         builder.addDoubleProperty("Height", () -> this.getHeight(), null);
         builder.addDoubleProperty("MotionMagic Setpoint", () -> this.main.getClosedLoopReference().getValueAsDouble(), null);
         builder.addBooleanProperty("atSetpoint", () -> this.atSetpoint(), null);
-        builder.addBooleanProperty("isZeroed", () -> this.isZeroed, null);
+        builder.addBooleanProperty("isZeroed", () -> isZeroed, null);
     }
 }

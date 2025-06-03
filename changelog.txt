@@ -33,3 +33,9 @@ v0.1
 v0.2
 1. Tidy constants file
 2. Merge main/Vision and adjust lib code
+
+v0.3
+1. Add Arm.Lifter state
+2. Add Elevator.isZeroed fun and static it
+3. Add SuperStructure.State to represent robot state
+4. Add Transition class to Translate state
