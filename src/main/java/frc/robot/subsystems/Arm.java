@@ -41,7 +41,9 @@ public class Arm extends SubsystemBase {
     private static LifterState lifterState = LifterState.Down;
     public enum LifterState {
         Down(0.0), 
-        Up(0.0);
+        Up(0.0),
+        PrePopciclePickup(0.0),
+        PopciclePickup(0.0);
 
         public final double value;
 

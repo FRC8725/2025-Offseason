@@ -30,7 +30,19 @@ public class Elevator extends SubsystemBase {
     // ---------- State ---------- //
     public static State state = State.Down;
     public enum State {
-        Down(0.0);
+        Down(0.0),
+        PreHandoff(0.0),
+        Handoff(0.0),
+        PopcicleHandoff(0.0),
+        PreScore(0.0),
+        Through(0.0),
+        L2(0.0),
+        L3(0.0),
+        L4(0.0),
+        Barge(0.0),
+        ScoreL2(0.0),
+        ScoreL3(0.0),
+        ScoreL4(0.0);
 
         private final double value;
 
