@@ -5,15 +5,14 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.SuperStructure.StructureInput;
 
 public class SuperStructure extends SubsystemBase {
-    private StructureInput input;
+    private Supplier<StructureInput> input;
 
-    public SuperStructure(SuperStructure.StructureInput input) {
+    public SuperStructure(Supplier<StructureInput> input) {
         this.input = input;
     }
-    
+
     // ---------- State ---------- //
     private State state = State.Start;
     public enum State {
@@ -38,6 +37,59 @@ public class SuperStructure extends SubsystemBase {
         PreScore(
             Elevator.State.PreScore,
             Arm.LifterState.Up, Arm.RollerState.idle),
+        ReverseHandOff(
+            Elevator.State.PreHandoff,
+            Arm.LifterState.Down, Arm.RollerState.out),
+        PreThrough(
+            Elevator.State.Through,
+            Arm.LifterState.Down, Arm.RollerState.idle),
+        Through(
+            Elevator.State.Through,
+            Arm.LifterState.Down, Arm.RollerState.idle),
+        
+        // L2 Score state
+        PrepareL2(
+            Elevator.State.L2,
+            Arm.LifterState.AboveScoreCoral, Arm.RollerState.idle),
+        StartL2(
+            Elevator.State.L2,
+            Arm.LifterState.ScoreCoral, Arm.RollerState.idle),
+        PlaceL2(
+            Elevator.State.ScoreL2,
+            Arm.LifterState.FinishScoreCoral, Arm.RollerState.slowout),
+        AfterL2(
+            Elevator.State.PostL2,
+            Arm.LifterState.Up, Arm.RollerState.out),
+        
+        // L3 Score state
+        PrepareL3(
+            Elevator.State.L3,
+            Arm.LifterState.AboveScoreCoral, Arm.RollerState.idle),
+        StartL3(
+            Elevator.State.L3,
+            Arm.LifterState.ScoreCoral, Arm.RollerState.idle),
+        PlaceL3(
+            Elevator.State.ScoreL2,
+            Arm.LifterState.FinishScoreCoral, Arm.RollerState.slowout),
+        AfterL3(
+            Elevator.State.PostL3,
+            Arm.LifterState.Up, Arm.RollerState.slowout),
+        
+        // L4 Score state
+        PrepareL4(
+            Elevator.State.L4,
+            Arm.LifterState.AboveScoreCoral, Arm.RollerState.idle),
+        StartL4(
+            Elevator.State.L4,
+            Arm.LifterState.ScoreL4Coral, Arm.RollerState.idle),
+        PlaceL4(
+            Elevator.State.ScoreL4,
+            Arm.LifterState.FinishScoreL4Coral, Arm.RollerState.off),
+        AfterL4(
+            Elevator.State.PreHandoff,
+            Arm.LifterState.Down, Arm.RollerState.slowout)
+            
+
         ;
 
         public final Elevator.State elevator;
@@ -58,35 +110,26 @@ public class SuperStructure extends SubsystemBase {
         L4;
     }
 
-    // ---------- Input ---------- /
-
-// 不可變資料類
-public record SuperstructureInputs(
-    boolean wantExtend,
-    boolean wantGroundIntake,
-    boolean wantArmSourceIntake,
-    boolean wantSourceIntake,
-    boolean wantScore,
-    ScoreLevel wantedScoringLevel,
-    boolean wantGetAlgae,
-    boolean wantDescoreAlgae,
-    boolean wantResetSuperstructure,
-    boolean wantScoreProcessor,
-    boolean wantAlgaeGroundIntake
-) {
-    public static SuperstructureInputs empty() {
-        return new SuperstructureInputs(
-            false, false, false, false, false,
-            ScoreLevel.L4, false, false, false,
-            false, false
-        );
+    // ---------- Input ---------- //
+    public static class StructureInput {
+        public boolean wantExtend = false;
+        public boolean wantGroundIntake = false;
+        public boolean wantArmSourceIntake = false;
+        public boolean wantSourceIntake = false;
+        public boolean wantScore = false;
+        public ScoreLevel wantedScoringLevel = ScoreLevel.L4;
+        public boolean wantGetAlgae = false;
+        public boolean wantDescoreAlgae = false;
+        public boolean wantVerticalPickup = false;
+        public boolean wantResetSuperstructure = false;
+        public boolean wantScoreProcessor = false;
+        public boolean wantAlgaeGroundIntake = false;
+        public boolean wantPopsiclePickup = false;
     }
-}
 
     // ---------- Transition ---------- //
     private final List<Transition> transitions = List.of(
-        new Transition(State.Start, State.PreHandoff, () -> this.input.wantScore),
-        new Transition(State.PreHandoff, State.Handoff, () -> this.input.wantScore)
+        new Transition(State.Start, State.Start, () -> this.input.get().wantExtend)
     );
     public class Transition {
         public State currentState;
@@ -114,21 +157,22 @@ public record SuperstructureInputs(
 
     @Override
     public void periodic() {
-        // if (!Elevator.isZeroed() || !Arm.isZeroed()) return;
-        System.out.println(input.wantExtend);
-        // for (Transition translate : this.transitions) {
-        //     if (translate.currentState == state && translate.booleanSupplier.get()) {
-        //         state = translate.nextState;
-        //         translate.enterFunction.run();
-        //     }
-        // }
+        if (!Elevator.isZeroed() || !Arm.isZeroed()) return;
+
+        for (Transition translate : this.transitions) {
+            if (translate.currentState == state && translate.booleanSupplier.get()) {
+                state = translate.nextState;
+                translate.enterFunction.run();
+                return;
+            }
+        }
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addStringProperty("State", () -> state.toString(), null);
-        builder.addBooleanProperty("WantExtend", () -> this.input.wantExtend, null);
-        builder.addBooleanProperty("WantScore", () -> this.input.wantScore, null);
-        builder.addStringProperty("ScoreLevel", () -> this.input.wantedScoringLevel.toString(), null);
+        builder.addBooleanProperty("WantExtend", () -> this.input.get().wantExtend, null);
+        builder.addBooleanProperty("WantScore", () -> this.input.get().wantScore, null);
+        builder.addStringProperty("ScoreLevel", () -> this.input.get().wantedScoringLevel.toString(), null);
     }
 }

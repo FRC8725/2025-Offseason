@@ -12,9 +12,9 @@ public class Joysticks {
     private final PS5Controller controller = new PS5Controller(1);
 
     // ---------- Suppliers ---------- //
-    private final Supplier<Boolean> wantCoralAutoAlign = () -> this.superStructureInput().wantExtend;
-    private final Supplier<Boolean> wantAlgaeAutoAlign = () -> this.superStructureInput().wantGetAlgae;
-    private final Supplier<Boolean> wantBargeAlign = () -> this.superStructureInput().wantExtend;
+    private final Supplier<Boolean> wantCoralAutoAlign = () -> this.getInput().wantExtend;
+    private final Supplier<Boolean> wantAlgaeAutoAlign = () -> this.getInput().wantGetAlgae;
+    private final Supplier<Boolean> wantBargeAlign = () -> this.getInput().wantExtend;
     private final Supplier<Boolean> wantOffsetArmPositive = () -> this.controller.getLeftX() > 0.9 && this.controller.getL3Button();
     private final Supplier<Boolean> wantOffsetArmNegative = () -> this.controller.getLeftX() < -0.9 && this.controller.getL3Button();
 
@@ -43,18 +43,18 @@ public class Joysticks {
         
         if (this.wantBargeAlign.get()) input.alignMode = AlignMode.BargeAlign;
         else if (this.wantCoralAutoAlign.get() &&
-            this.superStructureInput().wantedScoringLevel != ScoreLevel.Through) input.alignMode = AlignMode.Reef;
+            this.getInput().wantedScoringLevel != ScoreLevel.Through) input.alignMode = AlignMode.Reef;
         else if (this.wantCoralAutoAlign.get() && 
-            this.superStructureInput().wantedScoringLevel == ScoreLevel.Through) input.alignMode = AlignMode.ThroughAlign;
+            this.getInput().wantedScoringLevel == ScoreLevel.Through) input.alignMode = AlignMode.ThroughAlign;
         else if (this.wantAlgaeAutoAlign.get() &&
-            this.superStructureInput().wantGetAlgae) input.alignMode = AlignMode.AlgaeAlign;
+            this.getInput().wantGetAlgae) input.alignMode = AlignMode.AlgaeAlign;
         else input.alignMode = AlignMode.None;
         
         return input;
     }
 
     private ScoreLevel lastScoreLevel = ScoreLevel.Through;
-    public SuperStructure.SuperstructureInputs getInput() {
+    public SuperStructure.StructureInput getInput() {
         ScoreLevel level;
         int pov = controller.getPOV();
 
@@ -66,32 +66,20 @@ public class Joysticks {
             default -> level = this.lastScoreLevel;
         }
         this.lastScoreLevel = level;
-        
-        return new SuperStructure.SuperstructureInputs(
-            this.controller.getL2Button(),
-            this.driver.getRawAxis(4) > 0.5 || this.controller.getR3Button(),
-            this.controller.getR2Button(),
-            this.controller.getCrossButton(),
-            level,
-            this.controller.getR1Button(),
-            this.controller.getTriangleButton(),
-            this.controller.getOptionsButton(),
-            this.controller.getSquareButton(),
-            this.controller.getCircleButton(),
-            this.controller.getL1Button());
 
-        // input.wantExtend = this.controller.getL2Button();
-        // input.wantScore = this.driver.getRawAxis(4) > 0.5 || this.controller.getR3Button();
-        // System.out.println(input.wantScore);
-        // input.wantGroundIntake = this.controller.getR2Button();
-        // input.wantArmSourceIntake = this.controller.getCrossButton();
-        // input.wantedScoringLevel = level;
-        // input.wantGetAlgae = this.controller.getR1Button();
-        // input.wantDescoreAlgae = this.controller.getTriangleButton();
-        // input.wantResetSuperstructure = this.controller.getOptionsButton();
-        // input.wantSourceIntake = this.controller.getSquareButton();
-        // input.wantScoreProcessor = this.controller.getCircleButton();
-        // input.wantAlgaeGroundIntake = this.controller.getL1Button();
-        // return input;
+        SuperStructure.StructureInput input = new SuperStructure.StructureInput();
+        input.wantExtend = this.controller.getL2Button();
+        input.wantScore = this.driver.getRawAxis(4) > 0.5 || this.controller.getR3Button();
+        System.out.println(input.wantScore);
+        input.wantGroundIntake = this.controller.getR2Button();
+        input.wantArmSourceIntake = this.controller.getCrossButton();
+        input.wantedScoringLevel = level;
+        input.wantGetAlgae = this.controller.getR1Button();
+        input.wantDescoreAlgae = this.controller.getTriangleButton();
+        input.wantResetSuperstructure = this.controller.getOptionsButton();
+        input.wantSourceIntake = this.controller.getSquareButton();
+        input.wantScoreProcessor = this.controller.getCircleButton();
+        input.wantAlgaeGroundIntake = this.controller.getL1Button();
+        return input;
     }
 }

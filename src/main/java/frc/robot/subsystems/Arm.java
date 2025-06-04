@@ -29,7 +29,9 @@ public class Arm extends SubsystemBase {
         off(0.0),
         idle(-0.035),
         algeaIdle(-0.225),
-        in(-1.0);
+        in(-1.0),
+        out(1.0),
+        slowout(0.075);
 
         public final double value;
 
@@ -43,7 +45,12 @@ public class Arm extends SubsystemBase {
         Down(0.0), 
         Up(0.0),
         PrePopciclePickup(0.0),
-        PopciclePickup(0.0);
+        PopciclePickup(0.0),
+        AboveScoreCoral(0.0),
+        ScoreCoral(0.0),
+        ScoreL4Coral(0.0),
+        FinishScoreL4Coral(0.0),
+        FinishScoreCoral(0.0);
 
         public final double value;
 

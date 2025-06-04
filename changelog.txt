@@ -39,3 +39,7 @@ v0.3
 2. Add Elevator.isZeroed fun and static it
 3. Add SuperStructure.State to represent robot state
 4. Add Transition class to Translate state
+
+v0.4
+1. Fix SuperStructure structure and code bug
+2. Add more state about elevator and arm

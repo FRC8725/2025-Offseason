@@ -42,7 +42,11 @@ public class Elevator extends SubsystemBase {
         Barge(0.0),
         ScoreL2(0.0),
         ScoreL3(0.0),
-        ScoreL4(0.0);
+        ScoreL4(0.0),
+        PostL2(0.0),
+        PostL3(0.0),
+        HighAglae(0.0),
+        LowAglae(0.0);
 
         private final double value;
 
