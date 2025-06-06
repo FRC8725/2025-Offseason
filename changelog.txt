@@ -43,3 +43,8 @@ v0.3
 v0.4
 1. Fix SuperStructure structure and code bug
 2. Add more state about elevator and arm
+
+v0.5
+1. Add joysticks.DriveInput isNonZero() and getRedFlipped() fun
+2. Add DriveCmd to control swerve
+3. Add more transition

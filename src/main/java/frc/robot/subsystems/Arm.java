@@ -16,8 +16,8 @@ import frc.robot.Constants;
 public class Arm extends SubsystemBase {
     private final TalonFX roller = new TalonFX(1);
     private final StatusSignal<Current> statorCurrent = this.roller.getStatorCurrent();
-    private boolean hasObject = false;
-    private static boolean isZeroed = false;
+    public static boolean hasObject = false;
+    public static boolean isZeroed = false;
 
     // ----------- Debouncer ----------- //
     private final Debouncer coralCurrentDebouncer = new Debouncer(0.15, DebounceType.kBoth);
@@ -86,10 +86,6 @@ public class Arm extends SubsystemBase {
         rollerState = roller;
     }
 
-    public static boolean isZeroed() {
-        return isZeroed;
-    }
-
     @Override
     public void periodic() {
         this.statorCurrent.refresh();
@@ -99,15 +95,15 @@ public class Arm extends SubsystemBase {
 
         boolean debouncedHasCoral = this.coralCurrentDebouncer.calculate(undebouncedHasObject);
         boolean debouncedHasAlgae = this.algaeCurrentDebouncer.calculate(undebouncedHasObject);
-        this.hasObject = debouncedHasAlgae;
+        hasObject = debouncedHasAlgae;
         // this.hasObject = (this.rollerState == RollerState.algeaIdle) ? debouncedHasAlgae : debouncedHasCoral;
-        if (this.hasObject) rollerState = RollerState.idle;
+        if (hasObject) rollerState = RollerState.idle;
         this.roller.set(rollerState.value);
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addBooleanProperty("HasObject", () -> this.hasObject, null);
+        builder.addBooleanProperty("HasObject", () -> hasObject, null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
         builder.addDoubleProperty("RollerCurrent", () -> this.statorCurrent.getValueAsDouble(), null);
     }

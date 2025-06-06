@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 
 public class SuperStructure extends SubsystemBase {
     private Supplier<StructureInput> input;
@@ -28,6 +30,12 @@ public class SuperStructure extends SubsystemBase {
         PopciclePickup(
             Elevator.State.PopcicleHandoff,
             Arm.LifterState.PopciclePickup, Arm.RollerState.in),
+        ArmSourceIntake(
+            Elevator.State.Down,
+            Arm.LifterState.Up, Arm.RollerState.in),
+        SourceIntake(
+            Elevator.State.SourceIntake,
+            Arm.LifterState.Down, Arm.RollerState.idle),
         PreHandoff(
             Elevator.State.PreHandoff,
             Arm.LifterState.Down, Arm.RollerState.in),
@@ -129,8 +137,26 @@ public class SuperStructure extends SubsystemBase {
 
     // ---------- Transition ---------- //
     private final List<Transition> transitions = List.of(
-        new Transition(State.Start, State.Start, () -> this.input.get().wantExtend)
+        new Transition(State.Start, State.Rest, () -> this.input.get().wantGroundIntake || this.input.get().wantArmSourceIntake),
+        new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
+
+        new Transition(State.Rest, State.ArmSourceIntake, () -> this.input.get().wantArmSourceIntake),
+        new Transition(State.ArmSourceIntake, State.Rest, () -> !this.input.get().wantArmSourceIntake || Arm.hasObject),
+
+        new Transition(State.Rest, State.SourceIntake, () -> this.input.get().wantSourceIntake),
+        new Transition(State.SourceIntake, State.Rest, () -> !this.input.get().wantSourceIntake),
+
+        new Transition(State.PreScore, State.Rest, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through || !Arm.hasObject),
+        new Transition(State.Rest, State.ReverseHandOff, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through && Arm.hasObject),
+
+        new Transition(State.ReverseHandOff, State.Rest, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through || !Arm.hasObject),
+
+        new Transition(State.Rest, State.PreThrough, () ->  this.input.get().wantExtend && this.input.get().wantedScoringLevel == ScoreLevel.Through),
+        new Transition(State.PreThrough, State.Through, () -> this.input.get().wantScore),
+        new Transition(State.PreThrough, State.Rest, () -> !this.input.get().wantExtend),
+        new Transition(State.Through, State.Rest, () -> !this.input.get().wantScore)
     );
+
     public class Transition {
         public State currentState;
         public State nextState;
@@ -157,7 +183,7 @@ public class SuperStructure extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (!Elevator.isZeroed() || !Arm.isZeroed()) return;
+        // if (!Elevator.isZeroed() || !Arm.isZeroed) return;
 
         for (Transition translate : this.transitions) {
             if (translate.currentState == state && translate.booleanSupplier.get()) {

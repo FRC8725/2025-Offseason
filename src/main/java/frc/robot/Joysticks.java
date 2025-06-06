@@ -26,12 +26,28 @@ public class Joysticks {
         BargeAlign
     }
 
-    public class DriveInputs {
+    public static class DriveInputs {
         public double leftY;
         public double leftX;
         public double rightX;
         public double deadZone;
         public AlignMode alignMode;
+
+        public boolean isNonZero() {
+            return Math.abs(leftX) > deadZone ||
+                Math.abs(leftY) > deadZone ||
+                Math.abs(rightX) > deadZone;
+        }
+
+        public DriveInputs getRedFlipped() {
+            DriveInputs flipped = new DriveInputs();
+            flipped.leftX = -this.leftX;
+            flipped.leftY = -this.leftY;
+            flipped.rightX = -this.rightX;
+            flipped.deadZone = deadZone;
+            flipped.alignMode = alignMode;
+            return flipped;
+        }
     }
 
     public DriveInputs getDriveInput() {
@@ -70,7 +86,6 @@ public class Joysticks {
         SuperStructure.StructureInput input = new SuperStructure.StructureInput();
         input.wantExtend = this.controller.getL2Button();
         input.wantScore = this.driver.getRawAxis(4) > 0.5 || this.controller.getR3Button();
-        System.out.println(input.wantScore);
         input.wantGroundIntake = this.controller.getR2Button();
         input.wantArmSourceIntake = this.controller.getCrossButton();
         input.wantedScoringLevel = level;

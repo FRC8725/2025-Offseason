@@ -46,7 +46,8 @@ public class Elevator extends SubsystemBase {
         PostL2(0.0),
         PostL3(0.0),
         HighAglae(0.0),
-        LowAglae(0.0);
+        LowAglae(0.0),
+        SourceIntake(0.0);
 
         private final double value;
 
