@@ -16,14 +16,14 @@ import frc.robot.Constants;
 public class Intake extends SubsystemBase {
     // ---------- Object ---------- //
     private final TalonFX lifter = new TalonFX(0);
-    private final TalonFX roller = new TalonFX(0);
-    private final TalonFX center = new TalonFX(0);
+    private final TalonFX roller = new TalonFX(20);
+    private final TalonFX center = new TalonFX(21);
 
     private boolean isZeroed = false;
 
     // ---------- State ---------- //
     private LifterState lifterState = LifterState.Up;
-    private RollerState rollerState = RollerState.Off;
+    private RollerState rollerState = RollerState.In;
     public enum LifterState {
         Down(0.0),
         Through(0.0),
@@ -39,10 +39,9 @@ public class Intake extends SubsystemBase {
     public enum RollerState {
         In(-6.0, -8.0),
         TroughOut(3.25, 0.0),
-        Out(8.0, 0.0),
+        Out(8.0, -4.0),
         Off(0.0, 0.0),
-        AlgaeModeIdle(0.0, 0.0),
-        OperatorControl(0.0, 0.0);
+        AlgaeModeIdle(0.0, 0.0);
 
         public final double rollerVolt;
         public final double centerVolt;
@@ -55,6 +54,7 @@ public class Intake extends SubsystemBase {
 
     public Intake() {
         this.configMotor();
+        this.setZeroPosition();
     }
 
     // ---------- Config ---------- //
@@ -108,7 +108,7 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         if (!this.isZeroed) return;
-        this.lifter.setControl(new MotionMagicVoltage(0.0));
+        // this.lifter.setControl(new MotionMagicVoltage(0.0));
         this.roller.setVoltage(this.rollerState.rollerVolt);
         this.center.setVoltage(this.rollerState.centerVolt);
     }
