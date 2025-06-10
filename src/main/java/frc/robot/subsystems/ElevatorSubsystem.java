@@ -28,8 +28,8 @@ import frc.robot.lib.helpers.IDashboardProvider;
 
 public class ElevatorSubsystem extends SubsystemBase implements IDashboardProvider {
 	private final TalonModule left = new TalonModule(1, false, true);
-	private final TalonModule right = new TalonModule(2, false, true);
-	private final Follower follower = new Follower(0, true);
+	private final TalonModule right = new TalonModule(2, true, true);
+	private final Follower follower = new Follower(left.getDeviceID(), true);
 
 	private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(500,
 			250);
@@ -53,7 +53,7 @@ public class ElevatorSubsystem extends SubsystemBase implements IDashboardProvid
 			new SysIdRoutine.Mechanism(
 					(volts) -> {
 						this.left.setControl(voltageRequire.withOutput(volts.in(Volts)));
-						this.right.setControl(voltageRequire.withOutput(-volts.in(Volts)));
+						this.right.setControl(voltageRequire.withOutput(volts.in(Volts)));
 					},
 					null,
 					this));
@@ -81,7 +81,7 @@ public class ElevatorSubsystem extends SubsystemBase implements IDashboardProvid
 	// private double simVelocity = 0.0;
 
 	private final double MIN_ROTATIONS = 0.0;
-	private final double MAX_ROTATIONS = 4.9445068359375;
+	private final double MAX_ROTATIONS = 1.01615185546875;
 	private double feedforwardVoltage = 0.0;
 	private double feedbackVoltage = 0.0;
 
@@ -90,8 +90,6 @@ public class ElevatorSubsystem extends SubsystemBase implements IDashboardProvid
 		registerDashboard();
 		// this.ligament = ligament;
 		pidController.setTolerance(Constants.ElevatorConstants.TOLERANCE);
-		left.setNeutralMode(NeutralModeValue.Brake);
-		right.setNeutralMode(NeutralModeValue.Brake);
 
 		SmartDashboard.putData("Elevator/PID", new Sendable() {
 
@@ -112,7 +110,7 @@ public class ElevatorSubsystem extends SubsystemBase implements IDashboardProvid
 	public void setVoltage(double speed) {
 		speed = MathUtil.clamp(speed, -12, 12);
 		this.left.setVoltage(speed);
-		this.right.setVoltage(speed);
+		this.right.setControl(follower);
 	}
 
 	public Command restandset(double goalPositionSupplier) {
@@ -167,20 +165,20 @@ public class ElevatorSubsystem extends SubsystemBase implements IDashboardProvid
 	public Command sysIDElevator() {
 		return Commands.sequence(
 				this.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
-						.raceWith(new WaitUntilCommand(() -> this.getPosition() > this.MAX_ROTATIONS - 0.15)),
-				new WaitCommand(2),
+						.raceWith(new WaitUntilCommand(() -> this.getPosition() > this.MAX_ROTATIONS - 0.01)),
+				new WaitCommand(1),
 
 				this.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
-						.raceWith(new WaitUntilCommand(() -> this.getPosition() < this.MIN_ROTATIONS + 0.15)),
-				new WaitCommand(2),
+						.raceWith(new WaitUntilCommand(() -> this.getPosition() < this.MIN_ROTATIONS + 0.05)),
+				new WaitCommand(1),
 
 				this.sysIdDynamic(SysIdRoutine.Direction.kForward)
-						.raceWith(new WaitUntilCommand(() -> this.getPosition() > this.MAX_ROTATIONS - 0.15)),
-				new WaitCommand(2),
+						.raceWith(new WaitUntilCommand(() -> this.getPosition() > this.MAX_ROTATIONS - 0.01)),
+				new WaitCommand(1),
 
 				this.sysIdDynamic(SysIdRoutine.Direction.kReverse)
-						.raceWith(new WaitUntilCommand(() -> this.getPosition() < this.MIN_ROTATIONS + 0.15)),
-				new WaitCommand(2));
+						.raceWith(new WaitUntilCommand(() -> this.getPosition() < this.MIN_ROTATIONS + 0.05)),
+				new WaitCommand(1));
 	}
 
 	@Override

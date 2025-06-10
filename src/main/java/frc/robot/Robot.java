@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.lib.helpers.DashboardHelper;
 
 public class Robot extends TimedRobot {
 	private Command m_autonomousCommand;
@@ -10,12 +11,15 @@ public class Robot extends TimedRobot {
 	private final RobotContainer m_robotContainer;
 
 	public Robot() {
+		DashboardHelper.enableRegistration();
 		m_robotContainer = new RobotContainer();
+		DashboardHelper.disableRegistration();
 	}
 
 	@Override
 	public void robotPeriodic() {
 		CommandScheduler.getInstance().run();
+		DashboardHelper.putAllRegistries();
 	}
 
 	@Override

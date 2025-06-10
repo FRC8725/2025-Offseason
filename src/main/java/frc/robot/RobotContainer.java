@@ -2,7 +2,11 @@ package frc.robot;
 
 import frc.robot.commands.ElevatorCmd;
 import frc.robot.subsystems.ElevatorSubsystem;
+
+import com.ctre.phoenix6.SignalLogger;
+
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public class RobotContainer {
 	private final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
@@ -12,26 +16,25 @@ public class RobotContainer {
 	private final ElevatorCmd elevatorCommand = new ElevatorCmd(elevatorSubsystem, controller);
 
 	public RobotContainer() {
-		this.elevatorSubsystem.setDefaultCommand(elevatorCommand);
+		//this.elevatorSubsystem.setDefaultCommand(elevatorCommand);
 		this.configureBindings();
 	}
 
 	private void configureBindings() {
 		this.controller.Up()
-				.whileTrue(elevatorSubsystem.up());
+				.onTrue(elevatorSubsystem.up());
 
 		this.controller.Down()
-				.whileTrue(elevatorSubsystem.down());
+				.onTrue(elevatorSubsystem.down());
 
 		this.controller.Start()
-				.whileTrue(elevatorSubsystem.start());
+				.onTrue(Commands.runOnce(SignalLogger::start));
 
 		this.controller.Stop()
-				.whileTrue(elevatorSubsystem.stop());
+				.onTrue(Commands.runOnce(SignalLogger::stop));
 
 		this.controller.Test()
-				.whileTrue(elevatorSubsystem.sysIDElevator()
-						.alongWith(elevatorSubsystem.start()));
+				.whileTrue(elevatorSubsystem.sysIDElevator());
 	}
 
 	public Command getAutonomousCommand() {

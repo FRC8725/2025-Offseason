@@ -21,7 +21,7 @@ public class ElevatorCmd extends Command {
 
 	@Override
 	public void execute() {
-		double speed = -MathUtil.applyDeadband(this.xboxController.getLeftY(), 0.05) * 8;
+		double speed = MathUtil.applyDeadband(this.xboxController.getLeftY(), 0.05) * 1;
 		this.elevatorSubsystem.setVoltage(speed);
 	}
 
