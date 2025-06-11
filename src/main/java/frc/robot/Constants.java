@@ -50,4 +50,9 @@ public final class Constants {
             new Translation2d(-TRACK_LENGTH / 2.0, TRACK_WIDTH / 2.0),
             new Translation2d(-TRACK_LENGTH / 2.0, -TRACK_LENGTH / 2.0));
     }
+
+    public final class Intake {
+        public static final double GEAR_RATIO = 1.0;
+        public static final double ZERO_VOLTAGE = 0.0;
+    }
 }

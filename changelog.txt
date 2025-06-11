@@ -26,6 +26,10 @@ v0.2
 v0.1
 Test drive SimpleFeedForward (Use SysIdRoutine)
 
+---------- Intake ----------
+v0.1
+1. test intake in and out volt
+
 ---------- Main ----------
 v0.1
 1. Add driver and controller joysticks function
