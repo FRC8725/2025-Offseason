@@ -52,3 +52,6 @@ v0.5
 1. Add joysticks.DriveInput isNonZero() and getRedFlipped() fun
 2. Add DriveCmd to control swerve
 3. Add more transition
+
+v0.6
+1. Add SuperStructure more transition

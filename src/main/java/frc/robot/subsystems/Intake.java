@@ -19,6 +19,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX roller = new TalonFX(20);
     private final TalonFX center = new TalonFX(21);
 
+    public static boolean hasCoral = false;
     private boolean isZeroed = false;
 
     // ---------- State ---------- //
@@ -27,7 +28,8 @@ public class Intake extends SubsystemBase {
     public enum LifterState {
         Down(0.0),
         Through(0.0),
-        Up(0.0);
+        Up(0.0),
+        OperatorControl(0.0);
 
         public final double value;
 
@@ -41,7 +43,8 @@ public class Intake extends SubsystemBase {
         TroughOut(3.25, 0.0),
         Out(8.0, -4.0),
         Off(0.0, 0.0),
-        AlgaeModeIdle(0.0, 0.0);
+        AlgaeModeIdle(0.0, 0.0),
+        OperatorControl(0.0, 0.0);
 
         public final double rollerVolt;
         public final double centerVolt;

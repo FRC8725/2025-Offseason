@@ -19,40 +19,50 @@ public class SuperStructure extends SubsystemBase {
     public enum State {
         Start(
             Elevator.State.Down,
-            Arm.LifterState.Up, Arm.RollerState.idle),
+            Arm.LifterState.Up, Arm.RollerState.idle,
+            Intake.LifterState.Up, Intake.RollerState.Off),
         Rest(
             Elevator.State.PreHandoff,
             Arm.LifterState.Down, Arm.RollerState.idle),
         PrePopciclePickup(
             Elevator.State.PreHandoff,
-            Arm.LifterState.PrePopciclePickup, Arm.RollerState.in),
+            Arm.LifterState.PrePopciclePickup, Arm.RollerState.in,
+            Intake.LifterState.Down, Intake.RollerState.Off),
         PopciclePickup(
             Elevator.State.PopcicleHandoff,
-            Arm.LifterState.PopciclePickup, Arm.RollerState.in),
+            Arm.LifterState.PopciclePickup, Arm.RollerState.in,
+            Intake.LifterState.Up, Intake.RollerState.Off),
         ArmSourceIntake(
             Elevator.State.Down,
             Arm.LifterState.Up, Arm.RollerState.in),
         SourceIntake(
             Elevator.State.SourceIntake,
-            Arm.LifterState.Down, Arm.RollerState.idle),
+            Arm.LifterState.Down, Arm.RollerState.idle,
+            Intake.LifterState.Up, Intake.RollerState.In),
         PreHandoff(
             Elevator.State.PreHandoff,
-            Arm.LifterState.Down, Arm.RollerState.in),
+            Arm.LifterState.Down, Arm.RollerState.in,
+            Intake.LifterState.Up, Intake.RollerState.Off),
         Handoff(
             Elevator.State.Handoff,
-            Arm.LifterState.Down, Arm.RollerState.in),
+            Arm.LifterState.Down, Arm.RollerState.in,
+            Intake.LifterState.Up, Intake.RollerState.Out),
         PreScore(
             Elevator.State.PreScore,
-            Arm.LifterState.Up, Arm.RollerState.idle),
+            Arm.LifterState.Up, Arm.RollerState.idle,
+            Intake.LifterState.Up, Intake.RollerState.Off),
         ReverseHandOff(
             Elevator.State.PreHandoff,
-            Arm.LifterState.Down, Arm.RollerState.out),
+            Arm.LifterState.Down, Arm.RollerState.out,
+            Intake.LifterState.Up, Intake.RollerState.In),
         PreThrough(
             Elevator.State.Through,
-            Arm.LifterState.Down, Arm.RollerState.idle),
+            Arm.LifterState.Down, Arm.RollerState.idle,
+            Intake.LifterState.Through, Intake.RollerState.Off),
         Through(
             Elevator.State.Through,
-            Arm.LifterState.Down, Arm.RollerState.idle),
+            Arm.LifterState.Down, Arm.RollerState.idle,
+            Intake.LifterState.Through, Intake.RollerState.TroughOut),
         
         // L2 Score state
         PrepareL2(
@@ -102,11 +112,30 @@ public class SuperStructure extends SubsystemBase {
         public final Elevator.State elevator;
         public final Arm.LifterState armLifter;
         public final Arm.RollerState armRoller;
+        public final Intake.LifterState intakeLifter;
+        public final Intake.RollerState intakeRoller;
 
-        State(Elevator.State elevator, Arm.LifterState armLifter, Arm.RollerState armRoller) {
+        State(
+            Elevator.State elevator,
+            Arm.LifterState armLifter, Arm.RollerState armRoller
+        ) {
             this.elevator = elevator;
             this.armLifter = armLifter;
             this.armRoller = armRoller;
+            this.intakeLifter = Intake.LifterState.OperatorControl;
+            this.intakeRoller = Intake.RollerState.OperatorControl;
+        }
+
+        State(
+            Elevator.State elevator,
+            Arm.LifterState armLifter, Arm.RollerState armRoller,
+            Intake.LifterState intakeLifter, Intake.RollerState intakeRoller
+        ) {
+            this.elevator = elevator;
+            this.armLifter = armLifter;
+            this.armRoller = armRoller;
+            this.intakeLifter = intakeLifter;
+            this.intakeRoller = intakeRoller;
         }
     }
 
@@ -143,10 +172,10 @@ public class SuperStructure extends SubsystemBase {
         new Transition(State.ArmSourceIntake, State.Rest, () -> !this.input.get().wantArmSourceIntake || Arm.hasObject),
 
         new Transition(State.Rest, State.SourceIntake, () -> this.input.get().wantSourceIntake),
-        new Transition(State.SourceIntake, State.Rest, () -> !this.input.get().wantSourceIntake),
+        new Transition(State.SourceIntake, State.Rest, () -> !this.input.get().wantSourceIntake || Intake.hasCoral),
 
         new Transition(State.PreScore, State.Rest, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through || !Arm.hasObject),
-        new Transition(State.Rest, State.ReverseHandOff, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through && Arm.hasObject),
+        new Transition(State.Rest, State.ReverseHandOff, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through && Arm.hasObject && !Intake.hasCoral),
 
         new Transition(State.ReverseHandOff, State.Rest, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through || !Arm.hasObject),
 
