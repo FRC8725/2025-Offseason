@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -8,8 +10,14 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -107,7 +115,6 @@ public class Intake extends SubsystemBase {
         this.center.setVoltage(0.0);
     }
 
-    // ---------- Function ---------- //
     @Override
     public void periodic() {
         if (!this.isZeroed) return;
@@ -116,9 +123,41 @@ public class Intake extends SubsystemBase {
         this.center.setVoltage(this.rollerState.centerVolt);
     }
 
+    // ---------- Function ---------- //
+    public double getPosition() {
+        return this.lifter.getPosition().getValueAsDouble();
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("Angle", () -> Units.rotationsToDegrees(this.lifter.getPosition().getValueAsDouble()), null);
         builder.addBooleanProperty("IsZeroed", () -> this.isZeroed, null);
+    }
+
+    // --------- Simulation ---------- //
+    private final StructPublisher<Pose3d> intakeComponent = NetworkTableInstance.getDefault()
+        .getStructTopic("Component/Intake",  Pose3d.struct).publish();
+    private final SingleJointedArmSim intakeSim = new SingleJointedArmSim(
+        DCMotor.getFalcon500(1),
+        160.0 / 3.0,
+        4.0,
+        0.35,
+        0.0,
+        Units.degreesToRadians(220.0),
+        false,
+        0.0);
+
+    public Pose3d getIntakeComponentPose() {
+        return new Pose3d(0.0, 0.0, 0.0,
+            new Rotation3d(this.getPosition(), 0.0, 0.0));
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        this.intakeSim.setInput(this.lifter.getDeviceID());
+        this.intakeSim.update(0.020);
+        this.lifter.setPosition(Units.radiansToRotations(this.intakeSim.getAngleRads()));
+
+        this.intakeComponent.accept(this.getIntakeComponentPose());
     }
 }

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -8,13 +10,22 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Arm extends SubsystemBase {
     private final TalonFX roller = new TalonFX(1);
+    private final TalonFX lifter = new TalonFX(0);
     private final StatusSignal<Current> statorCurrent = this.roller.getStatorCurrent();
     public static boolean hasObject = false;
     public static boolean isZeroed = false;
@@ -59,10 +70,12 @@ public class Arm extends SubsystemBase {
         }
     }
 
-    public Arm() {
+    public Arm(Supplier<Pose3d> carriagePose) {
         this.configRollerMotor(false);
         this.statorCurrent.setUpdateFrequency(100.0);
         rollerState = RollerState.in;
+
+        this.carriagePose = carriagePose;
     }
 
     // ----------- Config ----------- //
@@ -77,6 +90,7 @@ public class Arm extends SubsystemBase {
         this.roller.getConfigurator().apply(config);
     }
 
+    // ---------- Method ---------- //
     public void resetRelativeFromAbsolute() {
         isZeroed = true;
     }
@@ -101,10 +115,44 @@ public class Arm extends SubsystemBase {
         this.roller.set(rollerState.value);
     }
 
+    // ---------- Function ---------- //
+    public double getPosition() {
+        return Units.rotationsToRadians(this.lifter.getPosition().getValueAsDouble());
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addBooleanProperty("HasObject", () -> hasObject, null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
         builder.addDoubleProperty("RollerCurrent", () -> this.statorCurrent.getValueAsDouble(), null);
+    }
+
+    // ---------- Simulation ---------- //
+    private final StructPublisher<Pose3d> armComponent = NetworkTableInstance.getDefault()
+        .getStructTopic("Component/Arm",  Pose3d.struct).publish();
+    private final Supplier<Pose3d> carriagePose;
+    private final SingleJointedArmSim armSim = new SingleJointedArmSim(
+        DCMotor.getFalcon500(1),
+        224.0 / 3.0,
+        7.0,
+        0.65,
+        -Math.PI,
+        Math.PI,
+        false,
+        0.0);
+    
+    public Pose3d getArmComponentPose() {
+        return this.carriagePose.get()
+            .plus(new Transform3d(0.0, 0.0, 0.0,
+                new Rotation3d(0.0, this.getPosition(), 0.0)));
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        this.armSim.setInput(this.lifter.get());
+        this.armSim.update(0.020);
+        this.lifter.setPosition(Units.radiansToRotations(this.armSim.getAngleRads()));
+
+        this.armComponent.accept(this.getArmComponentPose());
     }
 }

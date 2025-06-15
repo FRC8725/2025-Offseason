@@ -18,6 +18,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -54,6 +56,8 @@ public class Swerve extends SubsystemBase {
         new Pose2d(0.0, 0.0, new Rotation2d(this.getGyroAngle())),
         VecBuilder.fill(0.1, 0.1, 0.1), // Odometry
         VecBuilder.fill(0.9, 0.9, 2.0)); // Vision
+    private final StructPublisher<Pose2d> pose = NetworkTableInstance.getDefault()
+        .getStructTopic("Component/SwervePose", Pose2d.struct).publish();
 
     private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
         new SysIdRoutine.Config(),
@@ -165,6 +169,7 @@ public class Swerve extends SubsystemBase {
     public void periodic() {
         // Add vision measurement...
         this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions());
+        this.pose.accept(new Pose2d());
 
         // SmartDashboard.putData("Quasistatic Forward", this.getQuasistaticForward());
         // SmartDashboard.putData("Dynamic Forward", this.getDynamicForward());

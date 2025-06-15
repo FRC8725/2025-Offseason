@@ -55,3 +55,6 @@ v0.5
 
 v0.6
 1. Add SuperStructure more transition
+
+v0.7
+1. Add all mechnical model to advantage scope simulation
