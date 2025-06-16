@@ -171,18 +171,6 @@ public class Elevator extends SubsystemBase {
         true,
         0.0);
 
-    @Override
-    public void simulationPeriodic() {
-        if (!isZeroed) return;
-        double appliedVoltage = this.main.get() * 12.0;
-        this.elevatorSim.setInputVoltage(appliedVoltage);
-        this.elevatorSim.update(0.020);
-        this.main.setPosition(this.elevatorSim.getPositionMeters());
-
-        this.stageComponent.accept(this.getStageComponentPose());
-        this.carriageComponent.accept(this.getCarriageComponentPose());
-    }
-
     public Pose3d getStageComponentPose() {
         Transform3d transform3d = new Transform3d();
         if (this.getHeight() > Units.inchesToMeters(23.25))
@@ -193,5 +181,16 @@ public class Elevator extends SubsystemBase {
 
     public Pose3d getCarriageComponentPose() {
         return new Pose3d(0.0, 0.0, 0.0 + this.getHeight(), new Rotation3d());
+    }
+
+    public void simulationUpdate() {
+        if (!isZeroed) return;
+        double appliedVoltage = this.main.get() * 12.0;
+        this.elevatorSim.setInputVoltage(appliedVoltage);
+        this.elevatorSim.update(0.020);
+        this.main.setPosition(this.elevatorSim.getPositionMeters());
+
+        this.stageComponent.accept(this.getStageComponentPose());
+        this.carriageComponent.accept(this.getCarriageComponentPose());
     }
 }

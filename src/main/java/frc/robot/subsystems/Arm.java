@@ -143,14 +143,14 @@ public class Arm extends SubsystemBase {
     
     public Pose3d getArmComponentPose() {
         return this.carriagePose.get()
-            .plus(new Transform3d(0.0, 0.0, 0.0,
-                new Rotation3d(0.0, this.getPosition(), 0.0)));
+            .plus(new Transform3d(0.0, 0.0, 0.300355,
+                new Rotation3d(this.getPosition(), 0.0, 0.0)));
     }
 
-    @Override
-    public void simulationPeriodic() {
+    public void simulationUpdate() {
         this.armSim.setInput(this.lifter.get());
         this.armSim.update(0.020);
+        // this.lifter.setPosition(0.0);
         this.lifter.setPosition(Units.radiansToRotations(this.armSim.getAngleRads()));
 
         this.armComponent.accept(this.getArmComponentPose());

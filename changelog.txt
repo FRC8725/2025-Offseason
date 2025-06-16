@@ -58,3 +58,6 @@ v0.6
 
 v0.7
 1. Add all mechnical model to advantage scope simulation
+
+v0.7.1
+1. Fix intake pose and arm pose mistake

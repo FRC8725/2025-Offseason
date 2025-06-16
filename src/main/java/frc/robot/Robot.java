@@ -60,6 +60,6 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void simulationPeriodic() {
-		this.robotContainer.updateComponentsPose();
+		this.robotContainer.updateSimulation();
 	}
 }

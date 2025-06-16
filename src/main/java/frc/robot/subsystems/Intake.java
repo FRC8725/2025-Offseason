@@ -125,7 +125,7 @@ public class Intake extends SubsystemBase {
 
     // ---------- Function ---------- //
     public double getPosition() {
-        return this.lifter.getPosition().getValueAsDouble();
+        return Units.rotationsToRadians(this.lifter.getPosition().getValueAsDouble());
     }
 
     @Override
@@ -148,15 +148,15 @@ public class Intake extends SubsystemBase {
         0.0);
 
     public Pose3d getIntakeComponentPose() {
-        return new Pose3d(0.0, 0.0, 0.0,
-            new Rotation3d(this.getPosition(), 0.0, 0.0));
+        return new Pose3d(Units.inchesToMeters(11.25), 0.0, Units.inchesToMeters(7.5),
+            new Rotation3d(0.0, this.getPosition(), 0.0));
     }
 
-    @Override
-    public void simulationPeriodic() {
-        this.intakeSim.setInput(this.lifter.getDeviceID());
+    public void simulationUpdate() {
+        this.intakeSim.setInput(this.lifter.get());
         this.intakeSim.update(0.020);
-        this.lifter.setPosition(Units.radiansToRotations(this.intakeSim.getAngleRads()));
+        // this.lifter.setPosition(0.1);
+        this.lifter.setPosition(Units.radiansToRotations(Math.PI / 2.0));
 
         this.intakeComponent.accept(this.getIntakeComponentPose());
     }
