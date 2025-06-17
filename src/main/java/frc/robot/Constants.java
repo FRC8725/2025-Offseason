@@ -35,7 +35,7 @@ public final class Constants {
         public static final double TRACK_WIDTH = Units.inchesToMeters(12.75);
         public static final double TRACK_LENGTH = Units.inchesToMeters(12.75);
         public static final double WHEEL_RADIUS = Units.inchesToMeters(3.95 / 2.0);
-        public static final double DRIVE_GEAR_RATIO = 300.0 / 49.0;
+        public static final double DRIVE_GEAR_RATIO = 57.0 / 7.0;
         public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
         public static final double MAX_MOTOR_RPM = 5500.0;
@@ -54,5 +54,6 @@ public final class Constants {
     public final class Intake {
         public static final double GEAR_RATIO = 1.0;
         public static final double ZERO_VOLTAGE = 0.0;
+        public static final double TOLERANCE = 0.01;
     }
 }

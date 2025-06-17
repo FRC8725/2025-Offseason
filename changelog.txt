@@ -61,3 +61,8 @@ v0.7
 
 v0.7.1
 1. Fix intake pose and arm pose mistake
+
+v0.7.2
+1. Add some test path
+2. Add autoChooser to test path on advantage scope
+3. Test Intake, Elevator, Arm single simulation

@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.function.Supplier;
-
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -17,13 +15,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Intake extends SubsystemBase {
     // ---------- Object ---------- //
-    private final TalonFX lifter = new TalonFX(0);
+    private final TalonFX lifter = new TalonFX(17);
     private final TalonFX roller = new TalonFX(20);
     private final TalonFX center = new TalonFX(21);
 
@@ -124,6 +123,10 @@ public class Intake extends SubsystemBase {
     }
 
     // ---------- Function ---------- //
+    public boolean atSetpoint() {
+        return Math.abs(this.lifter.getPosition().getValueAsDouble() - this.lifterState.value) < Constants.Intake.TOLERANCE;
+    }
+    
     public double getPosition() {
         return Units.rotationsToRadians(this.lifter.getPosition().getValueAsDouble());
     }
@@ -132,6 +135,8 @@ public class Intake extends SubsystemBase {
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("Angle", () -> Units.rotationsToDegrees(this.lifter.getPosition().getValueAsDouble()), null);
         builder.addBooleanProperty("IsZeroed", () -> this.isZeroed, null);
+        builder.addStringProperty("RollerState", () -> this.rollerState.toString(), null);
+        builder.addStringProperty("LifterState", () -> this.lifterState.toString(), null);
     }
 
     // --------- Simulation ---------- //
@@ -143,7 +148,7 @@ public class Intake extends SubsystemBase {
         4.0,
         0.35,
         0.0,
-        Units.degreesToRadians(220.0),
+        Units.degreesToRadians(140.0),
         false,
         0.0);
 
@@ -155,8 +160,8 @@ public class Intake extends SubsystemBase {
     public void simulationUpdate() {
         this.intakeSim.setInput(this.lifter.get());
         this.intakeSim.update(0.020);
-        // this.lifter.setPosition(0.1);
-        this.lifter.setPosition(Units.radiansToRotations(Math.PI / 2.0));
+        // this.lifter.setPosition(Units.degreesToRotations(0.5 * 140.0 * (1.0 + Math.sin(2.0 * Math.PI / 5.0 * Timer.getTimestamp()))));
+        this.lifter.setPosition(Units.radiansToRotations(this.intakeSim.getAngleRads()));
 
         this.intakeComponent.accept(this.getIntakeComponentPose());
     }

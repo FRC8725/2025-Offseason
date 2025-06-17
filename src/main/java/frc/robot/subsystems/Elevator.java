@@ -21,14 +21,15 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
     // ---------- Object ---------- //
-    private final TalonFX main = new TalonFX(1);
-    private final TalonFX follower = new TalonFX(2);
+    private final TalonFX main = new TalonFX(13);
+    private final TalonFX follower = new TalonFX(14);
     private final Follower follower2 = new Follower(this.main.getDeviceID(), true);
     private final StatusSignal<Current> statorCurrent = this.main.getStatorCurrent();
     private final MotionMagicVoltage request = new MotionMagicVoltage(0);
@@ -124,7 +125,7 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic() {
         if (!isZeroed) return;
-        this.main.setControl(this.request.withPosition(0.4));
+        this.main.setControl(this.request.withPosition(1.2));
         this.follower.setControl(this.follower2);
     }
 
@@ -154,6 +155,7 @@ public class Elevator extends SubsystemBase {
         builder.addDoubleProperty("MotionMagic Setpoint", () -> this.main.getClosedLoopReference().getValueAsDouble(), null);
         builder.addBooleanProperty("atSetpoint", () -> this.atSetpoint(), null);
         builder.addBooleanProperty("isZeroed", () -> isZeroed, null);
+        builder.addStringProperty("State", () -> state.toString(), null);
     }
 
     // ---------- Simulation ---------- //
@@ -164,10 +166,10 @@ public class Elevator extends SubsystemBase {
     private final ElevatorSim elevatorSim = new ElevatorSim(
         DCMotor.getKrakenX60(2),
         4.0,
-        10.0,
+        8.0,
         Units.inchesToMeters(0.75),
         0.0,
-        1.8, 
+        Units.inchesToMeters(55.0), 
         true,
         0.0);
 
@@ -180,15 +182,15 @@ public class Elevator extends SubsystemBase {
     }
 
     public Pose3d getCarriageComponentPose() {
-        return new Pose3d(0.0, 0.0, 0.0 + this.getHeight(), new Rotation3d());
+        return new Pose3d(0.0, 0.0, this.getHeight(), new Rotation3d());
     }
 
     public void simulationUpdate() {
         if (!isZeroed) return;
-        double appliedVoltage = this.main.get() * 12.0;
-        this.elevatorSim.setInputVoltage(appliedVoltage);
+        this.elevatorSim.setInputVoltage(this.main.get() * 12.0);
         this.elevatorSim.update(0.020);
         this.main.setPosition(this.elevatorSim.getPositionMeters());
+        // this.main.setPosition(0.5 * Units.inchesToMeters(50) * (1 + Math.sin(2.0 * Math.PI / 5.0 * Timer.getTimestamp())));
 
         this.stageComponent.accept(this.getStageComponentPose());
         this.carriageComponent.accept(this.getCarriageComponentPose());

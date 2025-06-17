@@ -21,15 +21,15 @@ public class RobotContainer {
 	private final Elevator elevator = new Elevator();
 	private final Arm arm = new Arm(this.elevator::getCarriageComponentPose);
 	private final Intake intake = new Intake();
-	// private final Joysticks joysticks = new Joysticks();
-	// private final SuperStructure superStructure = new SuperStructure(this.joysticks::getInput);
+	private final Joysticks joysticks = new Joysticks();
+	private final SuperStructure superStructure = new SuperStructure(this.joysticks::getInput);
 	
 	public RobotContainer() {
 		// Shuffleboard.getTab("Vision").add(this.vision);
 		Shuffleboard.getTab("Elevator").add(this.elevator);
 		Shuffleboard.getTab("Arm").add(this.arm);
 		Shuffleboard.getTab("Intake").add(this.intake);
-		// Shuffleboard.getTab("SuperStructure").add(this.superStructure);
+		Shuffleboard.getTab("SuperStructure").add(this.superStructure);
 	}
 
 	public Command getAutonomousCommand() {

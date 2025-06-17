@@ -153,12 +153,12 @@ public class SwerveModule implements Sendable {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("/Turn Raw Position (Rot)", () -> this.encoder.getAbsolutePosition().getValueAsDouble(), null);
-        builder.addDoubleProperty("/Turn Position (Rad)", () -> this.getTurnPosition(), null);
-        builder.addDoubleProperty("/Drive Velocity (Rps)", () -> this.getDriveVolocity(), null);
-        builder.addDoubleProperty("/Drive Stator Voltage", () -> this.getInputVolt(), null);
-        builder.addDoubleProperty("/Goal Drive Velocity", () -> this.goalDriveVelocity, null);
-        builder.addDoubleProperty("/Goal Drive Voltage", () -> this.driveVoltage, null);
+        builder.addDoubleProperty("Turn Raw Position (Rot)", () -> this.encoder.getAbsolutePosition().getValueAsDouble(), null);
+        builder.addDoubleProperty("Turn Position (Rad)", () -> this.getTurnPosition(), null);
+        builder.addDoubleProperty("Drive Velocity (Rps)", () -> this.getDriveVolocity(), null);
+        builder.addDoubleProperty("Drive Stator Voltage", () -> this.getInputVolt(), null);
+        builder.addDoubleProperty("Goal Drive Velocity", () -> this.goalDriveVelocity, null);
+        builder.addDoubleProperty("Goal Drive Voltage", () -> this.driveVoltage, null);
         builder.addDoubleProperty("Goal Turn Position", () -> this.goalTurnPosition, null);
     }
 }

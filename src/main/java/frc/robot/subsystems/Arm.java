@@ -19,13 +19,14 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Arm extends SubsystemBase {
-    private final TalonFX roller = new TalonFX(1);
-    private final TalonFX lifter = new TalonFX(0);
+    private final TalonFX roller = new TalonFX(15);
+    private final TalonFX lifter = new TalonFX(16);
     private final StatusSignal<Current> statorCurrent = this.roller.getStatorCurrent();
     public static boolean hasObject = false;
     public static boolean isZeroed = false;
@@ -150,7 +151,7 @@ public class Arm extends SubsystemBase {
     public void simulationUpdate() {
         this.armSim.setInput(this.lifter.get());
         this.armSim.update(0.020);
-        // this.lifter.setPosition(0.0);
+        // this.lifter.setPosition(Math.IEEEremainder(2.0 * Math.PI / 4.0 * Timer.getTimestamp(), 2.0 * Math.PI));
         this.lifter.setPosition(Units.radiansToRotations(this.armSim.getAngleRads()));
 
         this.armComponent.accept(this.getArmComponentPose());
