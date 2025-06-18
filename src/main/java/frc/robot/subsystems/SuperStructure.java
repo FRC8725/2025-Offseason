@@ -165,7 +165,7 @@ public class SuperStructure extends SubsystemBase {
 
     // ---------- Transition ---------- //
     private final List<Transition> transitions = List.of(
-        new Transition(State.Start, State.Rest, () -> this.input.get().wantGroundIntake || this.input.get().wantArmSourceIntake),
+        new Transition(State.Start, State.PreHandoff, () -> this.input.get().wantGroundIntake || this.input.get().wantArmSourceIntake),
         new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
 
         new Transition(State.Rest, State.ArmSourceIntake, () -> this.input.get().wantArmSourceIntake),
@@ -204,7 +204,7 @@ public class SuperStructure extends SubsystemBase {
     }
 
     // ---------- Method ---------- //
-    public void setState() {
+    public void setStates() {
         Arm.setState(state.armLifter, state.armRoller);
         Elevator.state = state.elevator;
     }
@@ -217,6 +217,7 @@ public class SuperStructure extends SubsystemBase {
             if (translate.currentState == state && translate.booleanSupplier.get()) {
                 state = translate.nextState;
                 translate.enterFunction.run();
+                this.setStates();
                 return;
             }
         }

@@ -3,7 +3,9 @@ package frc.robot.subsystems;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -36,7 +38,7 @@ public class Arm extends SubsystemBase {
     private final Debouncer algaeCurrentDebouncer = new Debouncer(0.25, DebounceType.kBoth);
 
     // ----------- State ----------- //
-    private static RollerState rollerState = RollerState.off;
+    public static RollerState rollerState = RollerState.off;
     public enum RollerState {
         off(0.0),
         idle(-0.035),
@@ -52,10 +54,10 @@ public class Arm extends SubsystemBase {
         }
     }
 
-    private static LifterState lifterState = LifterState.Down;
+    public static LifterState lifterState = LifterState.Up;
     public enum LifterState {
         Down(0.0), 
-        Up(0.0),
+        Up(Math.PI),
         PrePopciclePickup(0.0),
         PopciclePickup(0.0),
         AboveScoreCoral(0.0),
@@ -81,18 +83,45 @@ public class Arm extends SubsystemBase {
 
     // ----------- Config ----------- //
     public void configRollerMotor(boolean reverse) {
-        TalonFXConfiguration config = new TalonFXConfiguration();
-        config.MotorOutput
+        TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
+        rollerConfig.MotorOutput
             .withNeutralMode(NeutralModeValue.Brake)
             .withInverted(reverse ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive);
-        config.CurrentLimits
+        rollerConfig.CurrentLimits
             .withStatorCurrentLimitEnable(true)
             .withStatorCurrentLimit(80.0);
-        this.roller.getConfigurator().apply(config);
+
+        TalonFXConfiguration lifterConfig = new TalonFXConfiguration();
+        Slot0Configs slot0 = new Slot0Configs();
+        slot0.kS = 0.0;
+        slot0.kV = 0.1;
+        slot0.kA = 0.0;
+        slot0.kG = 0.0;
+        slot0.kP = 80.0;
+
+        lifterConfig.MotorOutput
+            .withNeutralMode(NeutralModeValue.Brake)
+            .withInverted(InvertedValue.Clockwise_Positive);
+        lifterConfig.Feedback
+            .withSensorToMechanismRatio(1.0);
+        lifterConfig.MotionMagic
+            .withMotionMagicJerk(9999.0)
+            .withMotionMagicAcceleration(4.5)
+            .withMotionMagicCruiseVelocity(2.0); // RPS
+        lifterConfig.CurrentLimits
+            .withStatorCurrentLimitEnable(true)
+            .withStatorCurrentLimit(70.0)
+            .withSupplyCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(50.0);
+        lifterConfig.Slot0 = slot0;
+        
+        this.roller.getConfigurator().apply(rollerConfig);
+        this.lifter.getConfigurator().apply(lifterConfig);
     }
 
     // ---------- Method ---------- //
     public void resetRelativeFromAbsolute() {
+        this.lifter.setPosition(0.0);
         isZeroed = true;
     }
 
@@ -114,6 +143,7 @@ public class Arm extends SubsystemBase {
         // this.hasObject = (this.rollerState == RollerState.algeaIdle) ? debouncedHasAlgae : debouncedHasCoral;
         if (hasObject) rollerState = RollerState.idle;
         this.roller.set(rollerState.value);
+        this.lifter.setControl(new MotionMagicVoltage(lifterState.value));
     }
 
     // ---------- Function ---------- //
@@ -125,7 +155,9 @@ public class Arm extends SubsystemBase {
     public void initSendable(SendableBuilder builder) {
         builder.addBooleanProperty("HasObject", () -> hasObject, null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
+        builder.addStringProperty("ArmState", () -> lifterState.toString(), null);
         builder.addDoubleProperty("RollerCurrent", () -> this.statorCurrent.getValueAsDouble(), null);
+        builder.addDoubleProperty("Angle", () -> this.getPosition(), null);
     }
 
     // ---------- Simulation ---------- //
@@ -145,14 +177,14 @@ public class Arm extends SubsystemBase {
     public Pose3d getArmComponentPose() {
         return this.carriagePose.get()
             .plus(new Transform3d(0.0, 0.0, 0.300355,
-                new Rotation3d(this.getPosition(), 0.0, 0.0)));
+                new Rotation3d(this.getPosition() + Math.PI, 0.0, 0.0)));
     }
 
     public void simulationUpdate() {
         this.armSim.setInput(this.lifter.get());
         this.armSim.update(0.020);
         // this.lifter.setPosition(Math.IEEEremainder(2.0 * Math.PI / 4.0 * Timer.getTimestamp(), 2.0 * Math.PI));
-        this.lifter.setPosition(Units.radiansToRotations(this.armSim.getAngleRads()));
+        this.lifter.setPosition(Units.radiansToRotations(this.armSim.getAngleRads() + Math.PI));
 
         this.armComponent.accept(this.getArmComponentPose());
     }

@@ -40,7 +40,7 @@ public class Elevator extends SubsystemBase {
     public static State state = State.Down;
     public enum State {
         Down(0.0),
-        PreHandoff(0.0),
+        PreHandoff(Units.inchesToMeters(36.0)),
         Handoff(0.0),
         PopcicleHandoff(0.0),
         PreScore(0.0),
@@ -125,7 +125,7 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic() {
         if (!isZeroed) return;
-        this.main.setControl(this.request.withPosition(1.2));
+        this.main.setControl(this.request.withPosition(state.value));
         this.follower.setControl(this.follower2);
     }
 
