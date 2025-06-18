@@ -82,7 +82,7 @@ public class Elevator extends SubsystemBase {
         slot0Config.kS = 0.0;
         slot0Config.kV = 0.0;
         slot0Config.kA = 0.0;
-        slot0Config.kG = 0.3;
+        slot0Config.kG = 0.29;
         slot0Config.kP = 70.0;
 
         MotionMagicConfigs motionMagicConfig = new MotionMagicConfigs();
@@ -110,6 +110,11 @@ public class Elevator extends SubsystemBase {
     
     public void setZeroVoltage() {
         this.main.setVoltage(Constants.Elevator.ZERO_VOLTAGE);
+    }
+
+    public void setVoltage(double voltage) {
+        this.main.setVoltage(voltage);
+        this.follower.setControl(this.follower2);
     }
 
     public void setCoastMode(boolean isCoast) {

@@ -8,6 +8,10 @@ v0.2
 2. kG constants test
 3. adjust Constants.java
 
+v0.3
+1. Test Real elevator constants
+2. Test kg
+
 ---------- Arm ----------
 v0.1
 1. Optimize code readability
