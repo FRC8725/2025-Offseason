@@ -6,3 +6,7 @@ v0.2
 1. Motion Magic PID test
 2. kG constants test
 3. adjust Constants.java
+
+v0.3
+1. Test Real elevator constants
+2. Test kg
