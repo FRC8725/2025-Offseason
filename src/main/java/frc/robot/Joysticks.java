@@ -15,8 +15,8 @@ public class Joysticks {
     private final Supplier<Boolean> wantCoralAutoAlign = () -> this.getInput().wantExtend;
     private final Supplier<Boolean> wantAlgaeAutoAlign = () -> this.getInput().wantGetAlgae;
     private final Supplier<Boolean> wantBargeAlign = () -> this.getInput().wantExtend;
-    private final Supplier<Boolean> wantOffsetArmPositive = () -> this.controller.getLeftX() > 0.9 && this.controller.getL3Button();
-    private final Supplier<Boolean> wantOffsetArmNegative = () -> this.controller.getLeftX() < -0.9 && this.controller.getL3Button();
+    public final Supplier<Boolean> wantOffsetArmPositive = () -> this.controller.getLeftX() > 0.9 && this.controller.getL3Button();
+    public final Supplier<Boolean> wantOffsetArmNegative = () -> this.controller.getLeftX() < -0.9 && this.controller.getL3Button();
 
     public enum AlignMode {
         None,

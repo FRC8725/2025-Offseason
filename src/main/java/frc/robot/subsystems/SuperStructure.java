@@ -165,7 +165,8 @@ public class SuperStructure extends SubsystemBase {
 
     // ---------- Transition ---------- //
     private final List<Transition> transitions = List.of(
-        new Transition(State.Start, State.PreHandoff, () -> this.input.get().wantGroundIntake || this.input.get().wantArmSourceIntake),
+        // new Transition(State.Start, State.PreHandoff, () -> this.input.get().wantGroundIntake || this.input.get().wantArmSourceIntake),
+        new Transition(State.Start, State.PreHandoff, () -> true),
         new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
 
         new Transition(State.Rest, State.ArmSourceIntake, () -> this.input.get().wantArmSourceIntake),

@@ -34,7 +34,7 @@ public class Elevator extends SubsystemBase {
     private final StatusSignal<Current> statorCurrent = this.main.getStatorCurrent();
     private final MotionMagicVoltage request = new MotionMagicVoltage(0);
 
-    private static boolean isZeroed = false;
+    public static boolean isZeroed = false;
 
     // ---------- State ---------- //
     public static State state = State.Down;
@@ -135,10 +135,6 @@ public class Elevator extends SubsystemBase {
     }
 
     // ---------- Function ---------- //
-    public static boolean isZeroed() {
-        return isZeroed;
-    }
-    
     public boolean atSetpoint() {
         return Math.abs(this.main.getPosition().getValueAsDouble() - state.value) < Constants.Elevator.TOLERANCE;
     }

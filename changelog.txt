@@ -70,3 +70,9 @@ v0.7.2
 1. Add some test path
 2. Add autoChooser to test path on advantage scope
 3. Test Intake, Elevator, Arm single simulation
+
+v0.8
+1. Test final elevator constants
+2. Test final arm constants
+3. Add arm process function
+4. Simulation Rest state

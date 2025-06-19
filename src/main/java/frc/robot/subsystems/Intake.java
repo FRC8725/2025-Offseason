@@ -30,8 +30,8 @@ public class Intake extends SubsystemBase {
     private boolean isZeroed = false;
 
     // ---------- State ---------- //
-    private LifterState lifterState = LifterState.Up;
-    private RollerState rollerState = RollerState.In;
+    public static LifterState lifterState = LifterState.Up;
+    public static RollerState rollerState = RollerState.In;
     public enum LifterState {
         Down(0.0),
         Through(0.0),
@@ -118,13 +118,13 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         if (!this.isZeroed) return;
         // this.lifter.setControl(new MotionMagicVoltage(0.0));
-        this.roller.setVoltage(this.rollerState.rollerVolt);
-        this.center.setVoltage(this.rollerState.centerVolt);
+        this.roller.setVoltage(rollerState.rollerVolt);
+        this.center.setVoltage(rollerState.centerVolt);
     }
 
     // ---------- Function ---------- //
     public boolean atSetpoint() {
-        return Math.abs(this.lifter.getPosition().getValueAsDouble() - this.lifterState.value) < Constants.Intake.TOLERANCE;
+        return Math.abs(this.lifter.getPosition().getValueAsDouble() - lifterState.value) < Constants.Intake.TOLERANCE;
     }
     
     public double getPosition() {
@@ -135,8 +135,8 @@ public class Intake extends SubsystemBase {
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("Angle", () -> Units.rotationsToDegrees(this.lifter.getPosition().getValueAsDouble()), null);
         builder.addBooleanProperty("IsZeroed", () -> this.isZeroed, null);
-        builder.addStringProperty("RollerState", () -> this.rollerState.toString(), null);
-        builder.addStringProperty("LifterState", () -> this.lifterState.toString(), null);
+        builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
+        builder.addStringProperty("LifterState", () -> lifterState.toString(), null);
     }
 
     // --------- Simulation ---------- //
