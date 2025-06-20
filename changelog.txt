@@ -34,45 +34,7 @@ Test drive SimpleFeedForward (Use SysIdRoutine)
 v0.1
 1. test intake in and out volt
 
----------- Main ----------
-v0.1
-1. Add driver and controller joysticks function
-
 v0.2
-1. Tidy constants file
-2. Merge main/Vision and adjust lib code
-
-v0.3
-1. Add Arm.Lifter state
-2. Add Elevator.isZeroed fun and static it
-3. Add SuperStructure.State to represent robot state
-4. Add Transition class to Translate state
-
-v0.4
-1. Fix SuperStructure structure and code bug
-2. Add more state about elevator and arm
-
-v0.5
-1. Add joysticks.DriveInput isNonZero() and getRedFlipped() fun
-2. Add DriveCmd to control swerve
-3. Add more transition
-
-v0.6
-1. Add SuperStructure more transition
-
-v0.7
-1. Add all mechnical model to advantage scope simulation
-
-v0.7.1
-1. Fix intake pose and arm pose mistake
-
-v0.7.2
-1. Add some test path
-2. Add autoChooser to test path on advantage scope
-3. Test Intake, Elevator, Arm single simulation
-
-v0.8
-1. Test final elevator constants
-2. Test final arm constants
-3. Add arm process function
-4. Simulation Rest state
+1. Add lifter proccess code
+2. Add LaserCan to detect hasCoral
+3. Can test real intake

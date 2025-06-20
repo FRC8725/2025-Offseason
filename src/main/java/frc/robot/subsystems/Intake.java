@@ -8,6 +8,12 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import au.grapplerobotics.ConfigurationFailedException;
+import au.grapplerobotics.LaserCan;
+import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
+import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
+import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
+import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -25,16 +31,17 @@ public class Intake extends SubsystemBase {
     private final TalonFX lifter = new TalonFX(17);
     private final TalonFX roller = new TalonFX(20);
     private final TalonFX center = new TalonFX(21);
+    private final LaserCan laserCan = new LaserCan(0);
 
     public static boolean hasCoral = false;
     private boolean isZeroed = false;
 
     // ---------- State ---------- //
     public static LifterState lifterState = LifterState.Up;
-    public static RollerState rollerState = RollerState.In;
+    public static RollerState rollerState = RollerState.Off;
     public enum LifterState {
-        Down(0.0),
-        Through(0.0),
+        Down(Units.degreesToRadians(126.0)),
+        Through(Units.degreesToRadians(25.639507)),
         Up(0.0),
         OperatorControl(0.0);
 
@@ -76,12 +83,12 @@ public class Intake extends SubsystemBase {
         slot0.kV = 0.0;
         slot0.kA = 0.0;
         slot0.kG = 0.0;
-        slot0.kP = 0.0;
+        slot0.kP = 160.0;
 
-        MotionMagicConfigs motionMagic = new MotionMagicConfigs();
-        motionMagic.MotionMagicJerk = 2000.0;
-        motionMagic.MotionMagicAcceleration = 2000.0;
-        motionMagic.MotionMagicCruiseVelocity = 2.0;
+        lifterConfig.MotionMagic
+            .withMotionMagicJerk(2000.0)
+            .withMotionMagicAcceleration(200.0)
+            .withMotionMagicCruiseVelocity(2.0);
 
         lifterConfig.MotorOutput
             .withInverted(InvertedValue.Clockwise_Positive)
@@ -92,10 +99,21 @@ public class Intake extends SubsystemBase {
         TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
         rollerConfig.MotorOutput
             .withInverted(InvertedValue.Clockwise_Positive);
+        lifterConfig.Slot0 = slot0;
 
         this.lifter.getConfigurator().apply(lifterConfig);
         this.roller.getConfigurator().apply(rollerConfig);
         this.center.getConfigurator().apply(rollerConfig);
+    }
+
+    public void setLaserCanConfig() {
+        try {
+            this.laserCan.setRangingMode(RangingMode.SHORT);
+            this.laserCan.setRegionOfInterest(new RegionOfInterest(8, 8, 16, 16));
+            this.laserCan.setTimingBudget(TimingBudget.TIMING_BUDGET_33MS);
+        } catch (ConfigurationFailedException e) {
+            e.printStackTrace();
+        }
     }
 
     // ---------- Method ---------- //
@@ -117,9 +135,9 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         if (!this.isZeroed) return;
-        // this.lifter.setControl(new MotionMagicVoltage(0.0));
-        this.roller.setVoltage(rollerState.rollerVolt);
-        this.center.setVoltage(rollerState.centerVolt);
+        this.lifter.setControl(new MotionMagicVoltage(Units.radiansToRotations(this.getEffectiveLifterState().value)));
+        this.roller.setVoltage(this.getEffectiveRollerState().rollerVolt);
+        this.center.setVoltage(this.getEffectiveRollerState().centerVolt);
     }
 
     // ---------- Function ---------- //
@@ -129,6 +147,28 @@ public class Intake extends SubsystemBase {
     
     public double getPosition() {
         return Units.rotationsToRadians(this.lifter.getPosition().getValueAsDouble());
+    }
+
+    public boolean hasCoral() {
+        Measurement measurement = this.laserCan.getMeasurement();
+        if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+            if (measurement.distance_mm < Constants.Intake.LASER_DISTANCE) return true;
+        }
+        return false;
+    }
+
+    public LifterState getEffectiveLifterState() {
+        if (lifterState != LifterState.OperatorControl) return lifterState;
+        else if (this.hasCoral()) return LifterState.Up;
+        else if (this.wantGroundIntake.get()) return LifterState.Down;
+        else return LifterState.Up;
+    }
+
+    public RollerState getEffectiveRollerState() {
+        if (rollerState != RollerState.OperatorControl) return rollerState;
+        else if (this.wantGroundIntake.get()) return RollerState.In;
+        else if (this.hasCoral()) return RollerState.SlowIn;
+        else return RollerState.Off;
     }
 
     @Override
