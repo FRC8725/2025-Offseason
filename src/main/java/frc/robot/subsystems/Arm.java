@@ -156,8 +156,8 @@ public class Arm extends SubsystemBase {
     }
 
     // ----------- Form ----------- //
-    private final InterpolatingDoubleTreeMap elevatorToArm = new InterpolatingDoubleTreeMap();
-    private final InterpolatingDoubleTreeMap elevatorToArmWhenIntakeDown = new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap elevatorToArm = new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap elevatorToArmWhenIntakeDown = new InterpolatingDoubleTreeMap();
 
     public Arm(Supplier<Pose3d> carriagePose, Supplier<Pose2d> estimatedPose, Supplier<Double> elevatorHeight, Supplier<Boolean> intakeAtSetpoint, Supplier<Boolean> wantOffsetArmPositive, Supplier<Boolean> wantOffsetArmNegative) {
         this.configRollerMotor();
@@ -166,10 +166,10 @@ public class Arm extends SubsystemBase {
         rollerState = RollerState.in;
 
         for (Pair<Double, Double> pair : Constants.armElevatorPairs) {
-            this.elevatorToArm.put(pair.getSecond(), pair.getFirst());
+            elevatorToArm.put(pair.getSecond(), pair.getFirst());
         }
         for (Pair<Double, Double> pair : Constants.armInterpolationIntakeDown) {
-            this.elevatorToArmWhenIntakeDown.put(pair.getSecond(), pair.getFirst());
+            elevatorToArmWhenIntakeDown.put(pair.getSecond(), pair.getFirst());
         }
 
         this.estimatedPose = estimatedPose;

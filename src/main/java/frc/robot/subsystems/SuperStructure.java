@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class SuperStructure extends SubsystemBase {
-    private Supplier<StructureInput> input;
+    public Supplier<StructureInput> input;
 
     public SuperStructure(Supplier<StructureInput> input) {
         this.input = input;

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -14,6 +16,7 @@ import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
 import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
 import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
 import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -32,6 +35,9 @@ public class Intake extends SubsystemBase {
     private final TalonFX roller = new TalonFX(20);
     private final TalonFX center = new TalonFX(21);
     private final LaserCan laserCan = new LaserCan(0);
+    private final Supplier<SuperStructure.StructureInput> input;
+    private final Supplier<Double> armPosition;
+    private final Supplier<Double> elevatorHeight;
 
     public static boolean hasCoral = false;
     private boolean isZeroed = false;
@@ -54,6 +60,7 @@ public class Intake extends SubsystemBase {
 
     public enum RollerState {
         In(-6.0, -8.0),
+        SlowIn(-2.0, -3.0),
         TroughOut(3.25, 0.0),
         Out(8.0, -4.0),
         Off(0.0, 0.0),
@@ -69,9 +76,12 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public Intake() {
+    public Intake(Supplier<SuperStructure.StructureInput> input, Supplier<Double> armPosition, Supplier<Double> elevatorHeight) {
         this.configMotor();
         this.setZeroPosition();
+        this.input = input;
+        this.armPosition = armPosition;
+        this.elevatorHeight = elevatorHeight;
     }
 
     // ---------- Config ---------- //
@@ -149,6 +159,10 @@ public class Intake extends SubsystemBase {
         return Units.rotationsToRadians(this.lifter.getPosition().getValueAsDouble());
     }
 
+    public boolean isUnsafeToGoUp() {
+        return Math.abs(MathUtil.angleModulus(this.armPosition.get())) < Math.PI - Arm.elevatorToArm.get(this.elevatorHeight.get());
+    }
+
     public boolean hasCoral() {
         Measurement measurement = this.laserCan.getMeasurement();
         if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
@@ -159,14 +173,15 @@ public class Intake extends SubsystemBase {
 
     public LifterState getEffectiveLifterState() {
         if (lifterState != LifterState.OperatorControl) return lifterState;
+        else if (this.isUnsafeToGoUp()) return LifterState.Down;
         else if (this.hasCoral()) return LifterState.Up;
-        else if (this.wantGroundIntake.get()) return LifterState.Down;
+        else if (this.input.get().wantGroundIntake) return LifterState.Down;
         else return LifterState.Up;
     }
 
     public RollerState getEffectiveRollerState() {
         if (rollerState != RollerState.OperatorControl) return rollerState;
-        else if (this.wantGroundIntake.get()) return RollerState.In;
+        else if (this.input.get().wantGroundIntake) return RollerState.In;
         else if (this.hasCoral()) return RollerState.SlowIn;
         else return RollerState.Off;
     }
