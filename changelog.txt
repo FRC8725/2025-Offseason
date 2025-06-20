@@ -1,2 +1,7 @@
 v0.1
 1. test intake in and out volt
+
+v0.2
+1. Add lifter proccess code
+2. Add LaserCan to detect hasCoral
+3. Can test real intake
