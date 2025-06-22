@@ -35,6 +35,7 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
@@ -46,6 +47,7 @@ import frc.robot.lib.math.MathUtils;
 public class Arm extends SubsystemBase {
     private final TalonFX roller = new TalonFX(15);
     private final TalonFX lifter = new TalonFX(16);
+    private final DutyCycleEncoder encoder = new DutyCycleEncoder(0);
     private final StatusSignal<Current> statorCurrent = this.roller.getStatorCurrent();
     private final Supplier<Pose2d> estimatedPose;
     private final Supplier<Double> elevatorHeight;
@@ -206,7 +208,7 @@ public class Arm extends SubsystemBase {
         lifterConfig.MotionMagic
             .withMotionMagicJerk(9999.0)
             .withMotionMagicAcceleration(4.5)
-            .withMotionMagicCruiseVelocity(2.0); // RPS
+            .withMotionMagicCruiseVelocity(2.0 / 4.0); // RPS
         lifterConfig.CurrentLimits
             .withStatorCurrentLimitEnable(true)
             .withStatorCurrentLimit(70.0)
@@ -220,7 +222,7 @@ public class Arm extends SubsystemBase {
 
     // ---------- Method ---------- //
     public void resetRelativeFromAbsolute() {
-        this.lifter.setPosition(Math.PI);
+        this.lifter.setPosition(0.5);
         isZeroed = true;
     }
 
@@ -251,7 +253,7 @@ public class Arm extends SubsystemBase {
 
         this.roller.set(atStartOfAuto ? RollerState.fastIdle.value : rollerState.value);
         this.lifter.setControl(
-            new MotionMagicVoltage(Units.radiansToRotations(this.getDesiredPosition() - this.offsetRad))
+            new MotionMagicVoltage(Units.radiansToRotations(this.getDesiredPosition() - this.offsetRad)).withSlot(0)
                 .withFeedForward(gravityFeedforward));
     }
 
@@ -381,8 +383,8 @@ public class Arm extends SubsystemBase {
         double actualElevatorHeight = this.elevatorHeight.get();
 
         double limit = Intake.lifterState == Intake.LifterState.Down && this.intakeAtSetpoint.get() ?
-            this.elevatorToArmWhenIntakeDown.get(actualElevatorHeight) :
-            this.elevatorToArm.get(actualElevatorHeight);
+            elevatorToArmWhenIntakeDown.get(actualElevatorHeight) :
+            elevatorToArm.get(actualElevatorHeight);
         
         if (MathUtil.isNear(Math.PI, limit, 0.0001)) return p;
         else if (actualArmPosition < 0.0) return Math.max(-Math.PI - limit, Math.min(-Math.PI + limit, p));
@@ -410,6 +412,19 @@ public class Arm extends SubsystemBase {
         return value;
     }
 
+    public double getCloseClampedPosition() {
+        double value = this.encoder.get() - Constants.Arm.ENCODER_OFFSET_ROTATION;
+
+        while (value < -0.5) value += 1.0;
+        while (value > 0.5) value -= 1.0;
+
+        double allowedOffsetArmRotations = 12.0 / 360.0;
+
+        if (Math.abs(value - 0.5) < allowedOffsetArmRotations) return 0.5;
+        else if (Math.abs(value + 0.5) < allowedOffsetArmRotations) return -0.5;
+        else return value;
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addBooleanProperty("HasObject", () -> hasObject, null);
@@ -427,7 +442,7 @@ public class Arm extends SubsystemBase {
     private final Supplier<Pose3d> carriagePose;
     private final SingleJointedArmSim armSim = new SingleJointedArmSim(
         DCMotor.getFalcon500(1),
-        1.0,
+        (224.0 / 3.0),
         SingleJointedArmSim.estimateMOI(0.6, 2.5),
         0.6,
         -Math.PI,
@@ -442,7 +457,7 @@ public class Arm extends SubsystemBase {
     }
 
     public void simulationUpdate() {
-        this.armSim.setInputVoltage(this.lifter.getMotorVoltage().getValueAsDouble());
+        this.armSim.setInputVoltage(this.lifter.getMotorVoltage().getValueAsDouble() * 15.0);
         this.armSim.update(0.020);
         // this.lifter.setPosition(Math.IEEEremainder(2.0 * Math.PI / 4.0 * Timer.getTimestamp(), 2.0 * Math.PI));
         this.lifter.setPosition(Units.radiansToRotations(this.armSim.getAngleRads() + Math.PI));

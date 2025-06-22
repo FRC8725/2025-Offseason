@@ -21,18 +21,17 @@ public class RobotContainer {
 	private final Elevator elevator = new Elevator();
 	private final Joysticks joysticks = new Joysticks();
 	private final SuperStructure superStructure = new SuperStructure(this.joysticks::getInput);
-	private final Intake intake = new Intake(
-		this.superStructure.input,
-		this.arm::getPosition,
-		this.elevator::getHeight);
 	private final Arm arm = new Arm(
 		this.elevator::getCarriageComponentPose,
 		this.swerve::getPose,
 		this.elevator::getHeight,
-		this.intake::atSetpoint,
+		() -> false,
 		this.joysticks.wantOffsetArmPositive,
 		this.joysticks.wantOffsetArmNegative);
-	
+	private final Intake intake = new Intake(
+		this.superStructure.input,
+		this.arm::getPosition,
+		this.elevator::getHeight);
 	
 	public RobotContainer() {
 		// Shuffleboard.getTab("Vision").add(this.vision);

@@ -15,7 +15,7 @@ public class SuperStructure extends SubsystemBase {
     }
 
     // ---------- State ---------- //
-    private State state = State.Start;
+    public State state = State.Start;
     public enum State {
         Start(
             Elevator.State.Down,
@@ -208,6 +208,7 @@ public class SuperStructure extends SubsystemBase {
     public void setStates() {
         Arm.setState(state.armLifter, state.armRoller);
         Elevator.state = state.elevator;
+        Intake.setState(state.intakeLifter, state.intakeRoller);
     }
 
     @Override

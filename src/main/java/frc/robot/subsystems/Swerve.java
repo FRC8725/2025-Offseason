@@ -130,6 +130,10 @@ public class Swerve extends SubsystemBase {
         this.backRight.setDesiredState(states[3]);
     }
 
+    public void resetPose(Pose2d pose) {
+        this.poseEstimator.resetPose(pose);
+    }
+
     public void stopModules() {
         this.driveRobotRelative(new ChassisSpeeds()); // TODO: test
     }

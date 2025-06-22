@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.hal.PowerJNI;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -22,7 +23,9 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -68,7 +71,6 @@ public class Elevator extends SubsystemBase {
     public Elevator() {
         this.configMotor();
         this.setZeroPositon();
-        // this.follower.setControl(new Follower(this.main.getDeviceID(), true));
     }
 
     // ---------- Config ----------
@@ -167,7 +169,7 @@ public class Elevator extends SubsystemBase {
     private final ElevatorSim elevatorSim = new ElevatorSim(
         DCMotor.getKrakenX60(2),
         4.0,
-        8.0,
+        5.0,
         Units.inchesToMeters(0.75),
         0.0,
         Units.inchesToMeters(55.0), 
@@ -188,8 +190,8 @@ public class Elevator extends SubsystemBase {
 
     public void simulationUpdate() {
         if (!isZeroed) return;
-        this.elevatorSim.setInputVoltage(this.main.get() * 12.0);
-        this.elevatorSim.update(0.020);
+        this.elevatorSim.setInputVoltage(this.main.getMotorVoltage().getValueAsDouble() * 2.0);
+        this.elevatorSim.update(0.02);
         this.main.setPosition(this.elevatorSim.getPositionMeters());
         // this.main.setPosition(0.5 * Units.inchesToMeters(50) * (1 + Math.sin(2.0 * Math.PI / 5.0 * Timer.getTimestamp())));
 

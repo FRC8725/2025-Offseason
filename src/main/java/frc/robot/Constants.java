@@ -28,11 +28,22 @@ public final class Constants {
         public static final double DEADZONE_ANGLE = Units.degreesToRadians(20.0); // TODO
         public static final double SAFE_DISTANCE_FROM_REEF_CENTER = Units.inchesToMeters(70.0);
         public static final double POSITION_DEPENDENT_KG = 0.29;
+        public static final double ENCODER_OFFSET_ROTATION = 0.0;
     }
 
     public final class Vision {
         public static final Transform3d FRONT_LEFT = new Transform3d(
-            0.0, 0.0, 0.0, new Rotation3d());
+            -0.010313, 0.301234, 0.1922698,
+            new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(70.0)));
+        public static final Transform3d BACK_LEFT = new Transform3d(
+            -0.087195, 0.301234, 0.1922698,
+            new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(125.0)));
+        public static final Transform3d FRONT_RIGHT = new Transform3d(
+            -0.010313, -0.301234, 0.1922698,
+            new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(-70.0)));
+        public static final Transform3d BACK_RIGHT = new Transform3d(
+            -0.087195, -0.301234, 0.1922698,
+            new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(-125.0)));
     }
 
     public final class Field {
@@ -53,6 +64,7 @@ public final class Constants {
         public static final double MAX_ANGULAR_VELOCITY = MAX_VELOCITY / (TRACK_WIDTH * Math.sqrt(2.0)); // TODO: Research HOW
 
         public static final double DEAD_BAND = 0.05;
+        public static final double STRATING_TOLERANCE = 0.15;
 
         public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(
             new Translation2d(TRACK_LENGTH / 2.0, TRACK_WIDTH / 2.0),

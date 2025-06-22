@@ -136,6 +136,11 @@ public class Intake extends SubsystemBase {
         this.lifter.setVoltage(Constants.Intake.ZERO_VOLTAGE);
     }
 
+    public static void setState(LifterState lifter, RollerState roller) {
+        lifterState = lifter;
+        rollerState = roller;
+    }
+
     public void stop() {
         this.lifter.setVoltage(0.0);
         this.roller.setVoltage(0.0);
@@ -200,8 +205,8 @@ public class Intake extends SubsystemBase {
     private final SingleJointedArmSim intakeSim = new SingleJointedArmSim(
         DCMotor.getFalcon500(1),
         160.0 / 3.0,
-        4.0,
-        0.35,
+        5.0,
+        0.25,
         0.0,
         Units.degreesToRadians(140.0),
         false,
@@ -213,7 +218,7 @@ public class Intake extends SubsystemBase {
     }
 
     public void simulationUpdate() {
-        this.intakeSim.setInput(this.lifter.get());
+        this.intakeSim.setInputVoltage(this.lifter.getMotorVoltage().getValueAsDouble());
         this.intakeSim.update(0.020);
         // this.lifter.setPosition(Units.degreesToRotations(0.5 * 140.0 * (1.0 + Math.sin(2.0 * Math.PI / 5.0 * Timer.getTimestamp()))));
         this.lifter.setPosition(Units.radiansToRotations(this.intakeSim.getAngleRads()));
