@@ -31,6 +31,7 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 
 public class Swerve extends SubsystemBase {
+    private static Swerve SWERVE;
     // ---------- Object ---------- //
     private final SwerveModule frontLeft = new SwerveModule(
         2, 1, 9,
@@ -76,12 +77,17 @@ public class Swerve extends SubsystemBase {
     private final PIDController headingController = new PIDController(7.5, 0.0, 0.0);
 
     public Swerve() {
+        SWERVE = this;
         Shuffleboard.getTab("Swerve").add("Front Left", this.frontLeft);
         Shuffleboard.getTab("Swerve").add("Front Right", this.frontRight);
         Shuffleboard.getTab("Swerve").add("Back Left", this.backLeft);
         Shuffleboard.getTab("Swerve").add("Back Right", this.backRight);
         Shuffleboard.getTab("Swerve").add("Subsystem", this);
         this.headingController.enableContinuousInput(-Math.PI, Math.PI);
+    }
+
+    public static Swerve getInstance() {
+        return SWERVE;
     }
 
     // ---------- Function ---------- //

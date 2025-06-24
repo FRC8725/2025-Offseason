@@ -29,6 +29,7 @@ public final class Constants {
         public static final double SAFE_DISTANCE_FROM_REEF_CENTER = Units.inchesToMeters(70.0);
         public static final double POSITION_DEPENDENT_KG = 0.29;
         public static final double ENCODER_OFFSET_ROTATION = 0.0;
+        public static final double SETPOINT_THRESHOLD = 0.0;
     }
 
     public final class Vision {

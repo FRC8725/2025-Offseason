@@ -94,3 +94,7 @@ v1.0
 5. Optimize elevator and arm simulation velocity
 
 ~~Let's go version 1.0 is very gooood :D~~
+
+v1.1
+1. Change subsystem to instance
+2. Add more State and Transitions

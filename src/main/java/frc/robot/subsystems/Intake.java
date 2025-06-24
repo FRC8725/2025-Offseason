@@ -30,14 +30,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Intake extends SubsystemBase {
+    private static Intake INTAKE;
     // ---------- Object ---------- //
     private final TalonFX lifter = new TalonFX(17);
     private final TalonFX roller = new TalonFX(20);
     private final TalonFX center = new TalonFX(21);
     private final LaserCan laserCan = new LaserCan(0);
     private final Supplier<SuperStructure.StructureInput> input;
-    private final Supplier<Double> armPosition;
-    private final Supplier<Double> elevatorHeight;
 
     public static boolean hasCoral = false;
     private boolean isZeroed = false;
@@ -76,12 +75,15 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public Intake(Supplier<SuperStructure.StructureInput> input, Supplier<Double> armPosition, Supplier<Double> elevatorHeight) {
+    public Intake(Supplier<SuperStructure.StructureInput> input) {
+        INTAKE = this;
         this.configMotor();
         this.setZeroPosition();
         this.input = input;
-        this.armPosition = armPosition;
-        this.elevatorHeight = elevatorHeight;
+    }
+
+    public static Intake getInstance() {
+        return INTAKE;
     }
 
     // ---------- Config ---------- //
@@ -165,7 +167,7 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean isUnsafeToGoUp() {
-        return Math.abs(MathUtil.angleModulus(this.armPosition.get())) < Math.PI - Arm.elevatorToArm.get(this.elevatorHeight.get());
+        return Math.abs(MathUtil.angleModulus(Arm.getInstance().getPosition())) < Math.PI - Arm.elevatorToArm.get(Elevator.getInstance().getHeight());
     }
 
     public boolean hasCoral() {

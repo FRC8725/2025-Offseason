@@ -23,15 +23,10 @@ public class RobotContainer {
 	private final SuperStructure superStructure = new SuperStructure(this.joysticks::getInput);
 	private final Arm arm = new Arm(
 		this.elevator::getCarriageComponentPose,
-		this.swerve::getPose,
-		this.elevator::getHeight,
-		() -> false,
 		this.joysticks.wantOffsetArmPositive,
 		this.joysticks.wantOffsetArmNegative);
 	private final Intake intake = new Intake(
-		this.superStructure.input,
-		this.arm::getPosition,
-		this.elevator::getHeight);
+		this.superStructure.input);
 	
 	public RobotContainer() {
 		// Shuffleboard.getTab("Vision").add(this.vision);

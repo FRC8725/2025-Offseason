@@ -45,13 +45,12 @@ import frc.robot.Robot;
 import frc.robot.lib.math.MathUtils;
 
 public class Arm extends SubsystemBase {
+    private static Arm ARM;
+    // ---------- Object ---------- //
     private final TalonFX roller = new TalonFX(15);
     private final TalonFX lifter = new TalonFX(16);
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(0);
     private final StatusSignal<Current> statorCurrent = this.roller.getStatorCurrent();
-    private final Supplier<Pose2d> estimatedPose;
-    private final Supplier<Double> elevatorHeight;
-    private final Supplier<Boolean> intakeAtSetpoint;
     private final Supplier<Boolean> wantOffsetArmPositive;
     private final Supplier<Boolean> wantOffsetArmNegative;
     public static boolean hasObject = false;
@@ -93,7 +92,11 @@ public class Arm extends SubsystemBase {
         ScoreCoral(0.0, MirrorType.ClosestToReef),
         ScoreL4Coral(0.0, MirrorType.ClosestToReef),
         FinishScoreL4Coral(0.0, MirrorType.ClosestToReef),
-        FinishScoreCoral(0.0, MirrorType.ClosestToReef);
+        FinishScoreCoral(0.0, MirrorType.ClosestToReef),
+        SafeInsideRobotAngle(Math.PI - Constants.Arm.SAFE_INSIDE_ROBOT_ANGLE, MirrorType.ClosestToReef),
+        GetAlgae(Units.degreesToRadians(100.0), MirrorType.ClosestToReef),
+        PostAlgae(Units.degreesToRadians(110.0), MirrorType.ClosestToReef),
+        DescoreAlgae(Units.degreesToRadians(110.0), MirrorType.ClosestToReef);
 
         public final double value;
         public final MirrorType mirrorType;
@@ -161,7 +164,8 @@ public class Arm extends SubsystemBase {
     public static final InterpolatingDoubleTreeMap elevatorToArm = new InterpolatingDoubleTreeMap();
     public static final InterpolatingDoubleTreeMap elevatorToArmWhenIntakeDown = new InterpolatingDoubleTreeMap();
 
-    public Arm(Supplier<Pose3d> carriagePose, Supplier<Pose2d> estimatedPose, Supplier<Double> elevatorHeight, Supplier<Boolean> intakeAtSetpoint, Supplier<Boolean> wantOffsetArmPositive, Supplier<Boolean> wantOffsetArmNegative) {
+    public Arm(Supplier<Pose3d> carriagePose, Supplier<Boolean> wantOffsetArmPositive, Supplier<Boolean> wantOffsetArmNegative) {
+        ARM = this;
         this.configRollerMotor();
         this.resetRelativeFromAbsolute();
         this.statorCurrent.setUpdateFrequency(100.0);
@@ -174,12 +178,13 @@ public class Arm extends SubsystemBase {
             elevatorToArmWhenIntakeDown.put(pair.getSecond(), pair.getFirst());
         }
 
-        this.estimatedPose = estimatedPose;
         this.carriagePose = carriagePose;
-        this.elevatorHeight = elevatorHeight;
         this.wantOffsetArmPositive = wantOffsetArmPositive;
         this.wantOffsetArmNegative = wantOffsetArmNegative;
-        this.intakeAtSetpoint = intakeAtSetpoint;
+    }
+
+    public static Arm getInstance() {
+        return ARM;
     }
 
     // ----------- Config ----------- //
@@ -268,8 +273,12 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean atSafeReedDistance() {
-        return this.estimatedPose.get().getTranslation()
+        return Swerve.getInstance().getPose().getTranslation()
             .getDistance(MathUtils.mirrorIfRed(Constants.Field.BLUE_REEF_CENTER)) > Constants.Arm.SAFE_DISTANCE_FROM_REEF_CENTER;
+    }
+
+    public boolean atSetpoint() {
+        return Math.abs(this.getDesiredPosition() - this.getPosition()) < Constants.Arm.SETPOINT_THRESHOLD;
     }
 
     public boolean undebouncedHasObject() {
@@ -278,8 +287,8 @@ public class Arm extends SubsystemBase {
     }
 
     public Side getCloserToReef() {
-        Rotation2d directionTowardReefCenter = MathUtils.mirrorIfRed(Constants.Field.BLUE_REEF_CENTER).minus(this.estimatedPose.get().getTranslation()).getAngle();
-        Rotation2d directionTowardRight = this.estimatedPose.get().getRotation().rotateBy(Rotation2d.kCW_90deg);
+        Rotation2d directionTowardReefCenter = MathUtils.mirrorIfRed(Constants.Field.BLUE_REEF_CENTER).minus(Swerve.getInstance().getPose().getTranslation()).getAngle();
+        Rotation2d directionTowardRight = Swerve.getInstance().getPose().getRotation().rotateBy(Rotation2d.kCW_90deg);
 
         double angle = Math.acos(directionTowardReefCenter.getCos() * directionTowardRight.getCos() + directionTowardReefCenter.getSin() * directionTowardRight.getSin());
         assert angle >= 0.0; // the math works out this way
@@ -294,8 +303,9 @@ public class Arm extends SubsystemBase {
     }
 
     public Side getCloserToBarge() {
-        boolean isOnBlue = !(this.estimatedPose.get().getX() > (Constants.Field.FIELD_X_SIZE / 2.0));
-        double rotation = this.estimatedPose.get().getRotation().getRadians();
+        Pose2d estimatedPose = Swerve.getInstance().getPose();
+        boolean isOnBlue = !(estimatedPose.getX() > (Constants.Field.FIELD_X_SIZE / 2.0));
+        double rotation = estimatedPose.getRotation().getRadians();
 
         if ((rotation < Math.PI && rotation > Math.PI - Constants.Arm.DEADZONE_ANGLE) ||
             (rotation > -Math.PI && rotation < -Math.PI + Constants.Arm.DEADZONE_ANGLE) ||
@@ -310,8 +320,9 @@ public class Arm extends SubsystemBase {
     }
 
     public Side getCloserToProcessor() {
-        boolean isOnBlue = !(this.estimatedPose.get().getX() > (Constants.Field.FIELD_X_SIZE / 2.0));
-        double rotation = this.estimatedPose.get().getRotation().getRadians();
+        Pose2d estimatedPose = Swerve.getInstance().getPose();
+        boolean isOnBlue = !(estimatedPose.getX() > (Constants.Field.FIELD_X_SIZE / 2.0));
+        double rotation = estimatedPose.getRotation().getRadians();
 
         if ((rotation < (Math.PI / 2.0 + Constants.Arm.DEADZONE_ANGLE) && rotation > (Math.PI / 2.0 - Constants.Arm.DEADZONE_ANGLE)) ||
             (rotation > (-Math.PI / 2.0 - Constants.Arm.DEADZONE_ANGLE) && rotation < (-Math.PI / 2.0 + Constants.Arm.DEADZONE_ANGLE))
@@ -380,9 +391,9 @@ public class Arm extends SubsystemBase {
             this.isStuck = false;
         }
 
-        double actualElevatorHeight = this.elevatorHeight.get();
+        double actualElevatorHeight = Elevator.getInstance().getHeight();
 
-        double limit = Intake.lifterState == Intake.LifterState.Down && this.intakeAtSetpoint.get() ?
+        double limit = Intake.lifterState == Intake.LifterState.Down && Intake.getInstance().atSetpoint() ?
             elevatorToArmWhenIntakeDown.get(actualElevatorHeight) :
             elevatorToArm.get(actualElevatorHeight);
         

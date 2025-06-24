@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
+    private static Elevator ELEVATOR;
     // ---------- Object ---------- //
     private final TalonFX main = new TalonFX(13);
     private final TalonFX follower = new TalonFX(14);
@@ -59,6 +60,7 @@ public class Elevator extends SubsystemBase {
         PostL3(0.0),
         HighAglae(0.0),
         LowAglae(0.0),
+        AutoAlgae(0.0),
         SourceIntake(0.0);
 
         private final double value;
@@ -69,8 +71,13 @@ public class Elevator extends SubsystemBase {
     }
 
     public Elevator() {
+        ELEVATOR = this;
         this.configMotor();
         this.setZeroPositon();
+    }
+
+    public static Elevator getInstance() {
+        return ELEVATOR;
     }
 
     // ---------- Config ----------

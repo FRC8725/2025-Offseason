@@ -104,9 +104,18 @@ public class SuperStructure extends SubsystemBase {
             Arm.LifterState.FinishScoreL4Coral, Arm.RollerState.off),
         AfterL4(
             Elevator.State.PreHandoff,
-            Arm.LifterState.Down, Arm.RollerState.slowout)
+            Arm.LifterState.Down, Arm.RollerState.slowout),
             
-
+        // Aglae
+        PreGetAlgae(
+            Elevator.State.HighAglae,
+            Arm.LifterState.SafeInsideRobotAngle, Arm.RollerState.in),
+        GetAlgae(
+            Elevator.State.AutoAlgae,
+            Arm.LifterState.GetAlgae, Arm.RollerState.in),
+        PoseGetAlgae(
+            Elevator.State.AutoAlgae,
+            Arm.LifterState.PostAlgae, Arm.RollerState.algeaIdle)
         ;
 
         public final Elevator.State elevator;
@@ -176,14 +185,33 @@ public class SuperStructure extends SubsystemBase {
         new Transition(State.SourceIntake, State.Rest, () -> !this.input.get().wantSourceIntake || Intake.hasCoral),
 
         new Transition(State.PreScore, State.Rest, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through || !Arm.hasObject),
-        new Transition(State.Rest, State.ReverseHandOff, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through && Arm.hasObject && !Intake.hasCoral),
+        new Transition(State.Rest, State.ReverseHandOff, () -> Arm.getInstance().atSetpoint() && Elevator.getInstance().atSetpoint() &&
+                                                                this.input.get().wantedScoringLevel == ScoreLevel.Through && Arm.hasObject && !Intake.hasCoral &&
+                                                                Intake.lifterState == Intake.LifterState.Up && Intake.getInstance().atSetpoint()),
 
-        new Transition(State.ReverseHandOff, State.Rest, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through || !Arm.hasObject),
+        new Transition(State.ReverseHandOff, State.Rest, () -> Intake.hasCoral || this.input.get().wantResetSuperstructure),
 
-        new Transition(State.Rest, State.PreThrough, () ->  this.input.get().wantExtend && this.input.get().wantedScoringLevel == ScoreLevel.Through),
-        new Transition(State.PreThrough, State.Through, () -> this.input.get().wantScore),
+        new Transition(State.Rest, State.PreThrough, () -> this.input.get().wantExtend && this.input.get().wantedScoringLevel == ScoreLevel.Through &&
+                                                            Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint()),
+        new Transition(State.PreThrough, State.Through, () -> Intake.getInstance().atSetpoint() && this.input.get().wantScore),
         new Transition(State.PreThrough, State.Rest, () -> !this.input.get().wantExtend),
-        new Transition(State.Through, State.Rest, () -> !this.input.get().wantScore)
+        new Transition(State.Through, State.Rest, () -> !this.input.get().wantScore),
+
+        new Transition(State.Rest, State.PreHandoff, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSafeReedDistance() &&
+                                                            this.input.get().wantedScoringLevel != ScoreLevel.Through && Intake.hasCoral),
+        
+        new Transition(State.PreHandoff, State.Handoff, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && Intake.getInstance().atSetpoint()),
+        new Transition(State.Handoff, State.Rest, () -> Arm.hasObject),
+        new Transition(State.Rest, State.PreScore, () -> Arm.hasObject && this.input.get().wantedScoringLevel != ScoreLevel.Through),
+        new Transition(State.Handoff, State.Rest, () -> this.input.get().wantResetSuperstructure),
+
+        new Transition(State.PreScore, State.PrepareL4, () -> this.input.get().wantExtend && input.get().wantedScoringLevel == ScoreLevel.L4),
+        new Transition(State.PreScore, State.PrepareL3, () -> this.input.get().wantExtend && input.get().wantedScoringLevel == ScoreLevel.L3),
+        new Transition(State.PreScore, State.PrepareL2, () -> this.input.get().wantExtend && input.get().wantedScoringLevel == ScoreLevel.L2)
+
+        // scoreing Transitions
+
+        // Algae Removal
     );
 
     public class Transition {
