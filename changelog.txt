@@ -98,3 +98,7 @@ v1.0
 v1.1
 1. Change subsystem to instance
 2. Add more State and Transitions
+
+v1.2
+1. Add more transitions and state
+2. Fix mechnical simulation error
