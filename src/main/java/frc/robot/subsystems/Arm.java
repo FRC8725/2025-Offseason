@@ -14,6 +14,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 
 import edu.wpi.first.math.MathUtil;
@@ -73,7 +74,8 @@ public class Arm extends SubsystemBase {
         fastIdle(-0.1),
         in(-1.0),
         out(1.0),
-        slowout(0.075);
+        slowout(0.075),
+        descore(0.8);
 
         public final double value;
 
@@ -96,7 +98,13 @@ public class Arm extends SubsystemBase {
         SafeInsideRobotAngle(Math.PI - Constants.Arm.SAFE_INSIDE_ROBOT_ANGLE, MirrorType.ClosestToReef),
         GetAlgae(Units.degreesToRadians(100.0), MirrorType.ClosestToReef),
         PostAlgae(Units.degreesToRadians(110.0), MirrorType.ClosestToReef),
-        DescoreAlgae(Units.degreesToRadians(110.0), MirrorType.ClosestToReef);
+        DescoreAlgae(Units.degreesToRadians(110.0), MirrorType.ClosestToReef),
+        AlgaeUp(Math.PI, MirrorType.FixedAngle),
+        PreBarge(Units.degreesToRadians(160.0), MirrorType.AlgaeScore),
+        BargeScore(Units.degreesToRadians(160.0), MirrorType.AlgaeScore),
+        Processor(Units.degreesToRadians(70.0), MirrorType.ProcessorScore),
+        AlgaeGroundPickup(Units.degreesToRadians(-78.0), MirrorType.ActuallyFixedAngle),
+        ExitAlgaeGroundPickup(Units.degreesToRadians(-95.0), MirrorType.ActuallyFixedAngle);
 
         public final double value;
         public final MirrorType mirrorType;
@@ -272,9 +280,22 @@ public class Arm extends SubsystemBase {
             Math.abs(MathUtil.angleModulus(this.getPosition())) > (Math.PI - Constants.Arm.SAFE_INSIDE_ROBOT_ANGLE);
     }
 
-    public boolean atSafeReedDistance() {
+    public boolean atSafeReefDistance() {
         return Swerve.getInstance().getPose().getTranslation()
             .getDistance(MathUtils.mirrorIfRed(Constants.Field.BLUE_REEF_CENTER)) > Constants.Arm.SAFE_DISTANCE_FROM_REEF_CENTER;
+    }
+
+    public boolean atSafeBargeDistance() {
+        return Swerve.getInstance().getPose().getX() < Constants.Field.FIELD_X_SIZE / 2.0 - Constants.Arm.SAFE_BARGE_DISTANCE ||
+            Swerve.getInstance().getPose().getX() > Constants.Field.FIELD_X_SIZE / 2.0 + Constants.Arm.SAFE_BARGE_DISTANCE;
+    }
+
+    public boolean atSafeProcessorDistance() {
+        return Swerve.getInstance().getPose().getY() > Constants.Field.SAFE_WALL_DISTANCE && Swerve.getInstance().getPose().getY() < (Constants.Field.FIELD_Y_SIZE - Constants.Field.SAFE_WALL_DISTANCE);
+    }
+
+    public boolean atSafePlacementDistance() {
+        return Swerve.getInstance().getPose().getTranslation().getDistance(MathUtils.mirrorIfRed(Constants.Field.BLUE_REEF_CENTER)) > Constants.Arm.SAFE_PLACEMENT_DISANCE;
     }
 
     public boolean atSetpoint() {
@@ -375,7 +396,7 @@ public class Arm extends SubsystemBase {
                 .orElse(positions.get(0));
         }
 
-        boolean notAtSafeReefDistance = !this.atSafeReedDistance();
+        boolean notAtSafeReefDistance = !this.atSafeReefDistance();
 
         if (actualArmPosition > Math.PI / 2.0 && p < Math.PI / 2.0 &&
             closeSide == Side.Right && notAtSafeReefDistance
@@ -448,6 +469,7 @@ public class Arm extends SubsystemBase {
     }
 
     // ---------- Simulation ---------- //
+    private final TalonFXSimState simState = this.lifter.getSimState();
     private final StructPublisher<Pose3d> armComponent = NetworkTableInstance.getDefault()
         .getStructTopic("Component/Arm",  Pose3d.struct).publish();
     private final Supplier<Pose3d> carriagePose;
@@ -468,10 +490,17 @@ public class Arm extends SubsystemBase {
     }
 
     public void simulationUpdate() {
-        this.armSim.setInputVoltage(this.lifter.getMotorVoltage().getValueAsDouble() * 15.0);
+        this.armSim.setInputVoltage(this.simState.getMotorVoltage());
         this.armSim.update(0.020);
-        // this.lifter.setPosition(Math.IEEEremainder(2.0 * Math.PI / 4.0 * Timer.getTimestamp(), 2.0 * Math.PI));
-        this.lifter.setPosition(Units.radiansToRotations(this.armSim.getAngleRads() + Math.PI));
+
+        double angleRad = this.armSim.getAngleRads();
+        double velocity = this.armSim.getVelocityRadPerSec();
+
+        double angleRadTicks = angleRad * (224.0 / 3.0) / (2.0 * Math.PI);
+        double velocityTicks = velocity * (224.0 / 3.0) / (2.0 * Math.PI);
+
+        this.simState.setRawRotorPosition(angleRadTicks);
+        this.simState.setRotorVelocity(velocityTicks);
 
         this.armComponent.accept(this.getArmComponentPose());
     }

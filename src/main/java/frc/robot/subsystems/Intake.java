@@ -2,13 +2,14 @@ package frc.robot.subsystems;
 
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.sim.ChassisReference;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import au.grapplerobotics.ConfigurationFailedException;
 import au.grapplerobotics.LaserCan;
@@ -24,7 +25,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -80,6 +80,7 @@ public class Intake extends SubsystemBase {
         this.configMotor();
         this.setZeroPosition();
         this.input = input;
+        this.simState.Orientation = ChassisReference.Clockwise_Positive;
     }
 
     public static Intake getInstance() {
@@ -196,18 +197,20 @@ public class Intake extends SubsystemBase {
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("Angle", () -> Units.rotationsToDegrees(this.lifter.getPosition().getValueAsDouble()), null);
+        builder.addDoubleProperty("Voltage", () -> this.lifter.getMotorVoltage().getValueAsDouble(), null);
         builder.addBooleanProperty("IsZeroed", () -> this.isZeroed, null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
-        builder.addStringProperty("LifterState", () -> lifterState.toString(), null);
+        builder.addStringProperty("LifterState", () -> this.getEffectiveLifterState().toString(), null);
     }
 
     // --------- Simulation ---------- //
+    private final TalonFXSimState simState = this.lifter.getSimState();
     private final StructPublisher<Pose3d> intakeComponent = NetworkTableInstance.getDefault()
         .getStructTopic("Component/Intake",  Pose3d.struct).publish();
     private final SingleJointedArmSim intakeSim = new SingleJointedArmSim(
         DCMotor.getFalcon500(1),
-        160.0 / 3.0,
-        5.0,
+        Constants.Intake.GEAR_RATIO,
+        SingleJointedArmSim.estimateMOI(0.25, 3.5),
         0.25,
         0.0,
         Units.degreesToRadians(140.0),
@@ -220,10 +223,17 @@ public class Intake extends SubsystemBase {
     }
 
     public void simulationUpdate() {
-        this.intakeSim.setInputVoltage(this.lifter.getMotorVoltage().getValueAsDouble());
+        this.intakeSim.setInputVoltage(this.simState.getMotorVoltage());
         this.intakeSim.update(0.020);
-        // this.lifter.setPosition(Units.degreesToRotations(0.5 * 140.0 * (1.0 + Math.sin(2.0 * Math.PI / 5.0 * Timer.getTimestamp()))));
-        this.lifter.setPosition(Units.radiansToRotations(this.intakeSim.getAngleRads()));
+
+        double angleRad = this.intakeSim.getAngleRads();
+        double velocity = this.intakeSim.getVelocityRadPerSec();
+
+        double angleRadTicks = angleRad * Constants.Intake.GEAR_RATIO / (2.0 * Math.PI);
+        double velocityTicks = velocity * Constants.Intake.GEAR_RATIO / (2.0 * Math.PI);
+
+        this.simState.setRawRotorPosition(angleRadTicks);
+        this.simState.setRotorVelocity(velocityTicks);
 
         this.intakeComponent.accept(this.getIntakeComponentPose());
     }

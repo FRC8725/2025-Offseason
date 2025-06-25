@@ -17,6 +17,7 @@ public final class Constants {
         public static final double TOLERANCE = 0.01;
         public static final double ZERO_VOLTAGE = 0.29;
         public static final double SAFE_HEIGHT = Units.inchesToMeters(34.0);
+        public static final double LAZIER_SETPOINT_THRESHOLD = 0.03;
     }
 
     public final class Arm {
@@ -30,6 +31,8 @@ public final class Constants {
         public static final double POSITION_DEPENDENT_KG = 0.29;
         public static final double ENCODER_OFFSET_ROTATION = 0.0;
         public static final double SETPOINT_THRESHOLD = 0.0;
+        public static final double SAFE_BARGE_DISTANCE = Units.inchesToMeters(50.0);
+        public static final double SAFE_PLACEMENT_DISANCE = Units.inchesToMeters(60.0);
     }
 
     public final class Vision {
@@ -51,6 +54,9 @@ public final class Constants {
         public static final double FIELD_X_SIZE = 17.548249;
         public static final double FIELD_Y_SIZE = 8.0518;
         public static final Translation2d BLUE_REEF_CENTER = new Translation2d(Units.inchesToMeters(176.75), Units.inchesToMeters(158.5));
+        public static final double BLUE_BARGE_SCORING_X = 7.0;
+        public static final double RED_BARGE_SCORING_X = FIELD_X_SIZE - BLUE_BARGE_SCORING_X;
+        public static final double SAFE_WALL_DISTANCE = 1.0;
     }
 
     public final class Swerve {

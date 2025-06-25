@@ -11,8 +11,8 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 
-import edu.wpi.first.hal.PowerJNI;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -22,10 +22,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -61,7 +58,10 @@ public class Elevator extends SubsystemBase {
         HighAglae(0.0),
         LowAglae(0.0),
         AutoAlgae(0.0),
-        SourceIntake(0.0);
+        AlgaeRest(0.0),
+        SourceIntake(0.0),
+        Processor(0.0),
+        GroundAlgaeIntake(0.0);
 
         private final double value;
 
@@ -148,6 +148,10 @@ public class Elevator extends SubsystemBase {
         return Math.abs(this.main.getPosition().getValueAsDouble() - state.value) < Constants.Elevator.TOLERANCE;
     }
 
+    public boolean lazierAtSetpoint() {
+        return Math.abs(this.getHeight() - state.value) < Constants.Elevator.LAZIER_SETPOINT_THRESHOLD;
+    }
+
     public double getHeight() {
         return this.main.getPosition().getValueAsDouble();
     }
@@ -169,6 +173,7 @@ public class Elevator extends SubsystemBase {
     }
 
     // ---------- Simulation ---------- //
+    private final TalonFXSimState simState = this.main.getSimState();
     private final StructPublisher<Pose3d> stageComponent = NetworkTableInstance.getDefault()
         .getStructTopic("Component/StageComponent", Pose3d.struct).publish();
     private final StructPublisher<Pose3d> carriageComponent = NetworkTableInstance.getDefault()
@@ -197,9 +202,19 @@ public class Elevator extends SubsystemBase {
 
     public void simulationUpdate() {
         if (!isZeroed) return;
-        this.elevatorSim.setInputVoltage(this.main.getMotorVoltage().getValueAsDouble() * 2.0);
+        this.elevatorSim.setInputVoltage(this.simState.getMotorVoltage());
         this.elevatorSim.update(0.02);
-        this.main.setPosition(this.elevatorSim.getPositionMeters());
+
+        double positionMeters = this.elevatorSim.getPositionMeters();
+        double velocity = this.elevatorSim.getVelocityMetersPerSecond();
+
+        double positionTicks = positionMeters / (2.0 * Math.PI * Units.inchesToMeters(0.75) / 4.0);
+        double velocityTicks = velocity / (2.0 * Math.PI * Units.inchesToMeters(0.75) / 4.0);
+
+        this.simState.setRawRotorPosition(positionTicks);
+        this.simState.setRotorVelocity(velocityTicks);
+
+        // this.main.setPosition(this.elevatorSim.getPositionMeters());
         // this.main.setPosition(0.5 * Units.inchesToMeters(50) * (1 + Math.sin(2.0 * Math.PI / 5.0 * Timer.getTimestamp())));
 
         this.stageComponent.accept(this.getStageComponentPose());

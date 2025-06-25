@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -13,7 +12,6 @@ import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.Swerve;
-import frc.robot.subsystems.Vision;
 
 public class RobotContainer {
 	private final Swerve swerve = new Swerve();
@@ -41,14 +39,6 @@ public class RobotContainer {
 	}
 
 	// ---------- Simulation ---------- //
-	private final Mechanism2d mechanisms = new Mechanism2d(1.0, 2.0);
-	private final MechanismRoot2d root = this.mechanisms.getRoot("root", 0.0, 0.0);
-
-	private final MechanismLigament2d elevatorStage = this.root
-		.append(new MechanismLigament2d("ElevatorStage", 0.0, 0.0, 0.0, new Color8Bit(Color.kWhite)));
-	private final MechanismLigament2d armLigament = this.root
-		.append(new MechanismLigament2d("Arm", 0.0, 0.0, 0.0, new Color8Bit(Color.kOrange)));
-
 	public void updateSimulation() {
 		this.elevator.simulationUpdate();
 		this.intake.simulationUpdate();

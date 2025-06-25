@@ -22,7 +22,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -106,6 +105,16 @@ public class Swerve extends SubsystemBase {
             this.backLeft.getPosition(),
             this.backRight.getPosition()
         };
+    }
+
+    public boolean atGoodScoringDistance() {
+        if (!Robot.isRedAlliance) {
+            return this.getPose().getX() > Constants.Field.BLUE_BARGE_SCORING_X - 0.1 &&
+                this.getPose().getX() < Constants.Field.BLUE_BARGE_SCORING_X + 0.1;
+        } else {
+            return this.getPose().getX() > Constants.Field.RED_BARGE_SCORING_X - 0.1 &&
+                this.getPose().getX() < Constants.Field.RED_BARGE_SCORING_X + 0.1;
+        }
     }
 
     // ---------- Method ---------- //

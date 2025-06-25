@@ -1,14 +1,21 @@
 package frc.robot.subsystems;
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 
 public class SuperStructure extends SubsystemBase {
     public Supplier<StructureInput> input;
+    private final Timer stateTime = new Timer();
 
     public SuperStructure(Supplier<StructureInput> input) {
         this.input = input;
@@ -42,7 +49,7 @@ public class SuperStructure extends SubsystemBase {
         PreHandoff(
             Elevator.State.PreHandoff,
             Arm.LifterState.Down, Arm.RollerState.in,
-            Intake.LifterState.Up, Intake.RollerState.Off),
+            Intake.LifterState.Down, Intake.RollerState.Off),
         Handoff(
             Elevator.State.Handoff,
             Arm.LifterState.Down, Arm.RollerState.in,
@@ -115,7 +122,37 @@ public class SuperStructure extends SubsystemBase {
             Arm.LifterState.GetAlgae, Arm.RollerState.in),
         PoseGetAlgae(
             Elevator.State.AutoAlgae,
-            Arm.LifterState.PostAlgae, Arm.RollerState.algeaIdle)
+            Arm.LifterState.PostAlgae, Arm.RollerState.algeaIdle),
+        AlgaeRest(
+            Elevator.State.AlgaeRest,
+            Arm.LifterState.AlgaeUp, Arm.RollerState.algeaIdle),
+        PreBarge(
+            Elevator.State.Barge,
+            Arm.LifterState.PreBarge, Arm.RollerState.algeaIdle),
+        ScoreBarge(
+            Elevator.State.Barge,
+            Arm.LifterState.BargeScore, Arm.RollerState.out),
+        AlgaeDescore(
+            Elevator.State.AutoAlgae,
+            Arm.LifterState.DescoreAlgae, Arm.RollerState.descore),
+        AlgaeExit(
+            Elevator.State.PreHandoff,
+            Arm.LifterState.Down, Arm.RollerState.out),
+        PreProcessor(
+            Elevator.State.Processor,
+            Arm.LifterState.Processor, Arm.RollerState.algeaIdle),
+        ScoreProcessor(
+            Elevator.State.Processor,
+            Arm.LifterState.Processor, Arm.RollerState.slowout),
+        // PreAlgaeGroundIntake(
+            
+        // ),
+        AlgaeGroundIntake(
+            Elevator.State.GroundAlgaeIntake,
+            Arm.LifterState.AlgaeGroundPickup, Arm.RollerState.in),
+        ExitAlgaeGroundIntake(
+            Elevator.State.PreHandoff,
+            Arm.LifterState.ExitAlgaeGroundPickup, Arm.RollerState.algeaIdle),
         ;
 
         public final Elevator.State elevator;
@@ -173,46 +210,101 @@ public class SuperStructure extends SubsystemBase {
     }
 
     // ---------- Transition ---------- //
-    private final List<Transition> transitions = List.of(
-        // new Transition(State.Start, State.PreHandoff, () -> this.input.get().wantGroundIntake || this.input.get().wantArmSourceIntake),
-        new Transition(State.Start, State.PreHandoff, () -> true),
-        new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
+    private final List<Transition> transitions = Stream.concat(
+        Stream.of(
+            // new Transition(State.Start, State.PreHandoff, () -> this.input.get().wantGroundIntake || this.input.get().wantArmSourceIntake),
+            new Transition(State.Start, State.PreHandoff, () -> true),
+            new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
 
-        new Transition(State.Rest, State.ArmSourceIntake, () -> this.input.get().wantArmSourceIntake),
-        new Transition(State.ArmSourceIntake, State.Rest, () -> !this.input.get().wantArmSourceIntake || Arm.hasObject),
+            new Transition(State.Rest, State.ArmSourceIntake, () -> this.input.get().wantArmSourceIntake),
+            new Transition(State.ArmSourceIntake, State.Rest, () -> !this.input.get().wantArmSourceIntake || Arm.hasObject),
 
-        new Transition(State.Rest, State.SourceIntake, () -> this.input.get().wantSourceIntake),
-        new Transition(State.SourceIntake, State.Rest, () -> !this.input.get().wantSourceIntake || Intake.hasCoral),
+            new Transition(State.Rest, State.SourceIntake, () -> this.input.get().wantSourceIntake),
+            new Transition(State.SourceIntake, State.Rest, () -> !this.input.get().wantSourceIntake || Intake.hasCoral),
 
-        new Transition(State.PreScore, State.Rest, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through || !Arm.hasObject),
-        new Transition(State.Rest, State.ReverseHandOff, () -> Arm.getInstance().atSetpoint() && Elevator.getInstance().atSetpoint() &&
+            new Transition(State.PreScore, State.Rest, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through || !Arm.hasObject),
+            new Transition(State.Rest, State.ReverseHandOff, () -> Arm.getInstance().atSetpoint() && Elevator.getInstance().atSetpoint() &&
                                                                 this.input.get().wantedScoringLevel == ScoreLevel.Through && Arm.hasObject && !Intake.hasCoral &&
                                                                 Intake.lifterState == Intake.LifterState.Up && Intake.getInstance().atSetpoint()),
 
-        new Transition(State.ReverseHandOff, State.Rest, () -> Intake.hasCoral || this.input.get().wantResetSuperstructure),
+            new Transition(State.ReverseHandOff, State.Rest, () -> Intake.hasCoral || this.input.get().wantResetSuperstructure),
 
-        new Transition(State.Rest, State.PreThrough, () -> this.input.get().wantExtend && this.input.get().wantedScoringLevel == ScoreLevel.Through &&
+            new Transition(State.Rest, State.PreThrough, () -> this.input.get().wantExtend && this.input.get().wantedScoringLevel == ScoreLevel.Through &&
                                                             Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint()),
-        new Transition(State.PreThrough, State.Through, () -> Intake.getInstance().atSetpoint() && this.input.get().wantScore),
-        new Transition(State.PreThrough, State.Rest, () -> !this.input.get().wantExtend),
-        new Transition(State.Through, State.Rest, () -> !this.input.get().wantScore),
+            new Transition(State.PreThrough, State.Through, () -> Intake.getInstance().atSetpoint() && this.input.get().wantScore),
+            new Transition(State.PreThrough, State.Rest, () -> !this.input.get().wantExtend),
+            new Transition(State.Through, State.Rest, () -> !this.input.get().wantScore),
 
-        new Transition(State.Rest, State.PreHandoff, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSafeReedDistance() &&
+            new Transition(State.Rest, State.PreHandoff, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSafeReefDistance() &&
                                                             this.input.get().wantedScoringLevel != ScoreLevel.Through && Intake.hasCoral),
         
-        new Transition(State.PreHandoff, State.Handoff, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && Intake.getInstance().atSetpoint()),
-        new Transition(State.Handoff, State.Rest, () -> Arm.hasObject),
-        new Transition(State.Rest, State.PreScore, () -> Arm.hasObject && this.input.get().wantedScoringLevel != ScoreLevel.Through),
-        new Transition(State.Handoff, State.Rest, () -> this.input.get().wantResetSuperstructure),
+            new Transition(State.PreHandoff, State.Handoff, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && Intake.getInstance().atSetpoint()),
+            new Transition(State.Handoff, State.Rest, () -> Arm.hasObject),
+            new Transition(State.Rest, State.PreScore, () -> Arm.hasObject && this.input.get().wantedScoringLevel != ScoreLevel.Through),
+            new Transition(State.Handoff, State.Rest, () -> this.input.get().wantResetSuperstructure),
 
-        new Transition(State.PreScore, State.PrepareL4, () -> this.input.get().wantExtend && input.get().wantedScoringLevel == ScoreLevel.L4),
-        new Transition(State.PreScore, State.PrepareL3, () -> this.input.get().wantExtend && input.get().wantedScoringLevel == ScoreLevel.L3),
-        new Transition(State.PreScore, State.PrepareL2, () -> this.input.get().wantExtend && input.get().wantedScoringLevel == ScoreLevel.L2)
+            new Transition(State.PreScore, State.PrepareL4, () -> this.input.get().wantExtend && input.get().wantedScoringLevel == ScoreLevel.L4),
+            new Transition(State.PreScore, State.PrepareL3, () -> this.input.get().wantExtend && input.get().wantedScoringLevel == ScoreLevel.L3),
+            new Transition(State.PreScore, State.PrepareL2, () -> this.input.get().wantExtend && input.get().wantedScoringLevel == ScoreLevel.L2),
 
-        // scoreing Transitions
+            // Algae Removal
+            new Transition(State.AlgaeExit, State.PreGetAlgae, () -> this.input.get().wantGetAlgae && !Arm.hasObject),
+            new Transition(State.Rest, State.PreGetAlgae, () -> this.input.get().wantGetAlgae && !Arm.hasObject),
+            new Transition(State.PreGetAlgae, State.Rest, () -> !this.input.get().wantGetAlgae),
 
-        // Algae Removal
-    );
+            new Transition(State.PreGetAlgae, State.GetAlgae, () -> Elevator.getInstance().atSetpoint()),
+            new Transition(State.GetAlgae, State.PreGetAlgae, () -> !this.input.get().wantGetAlgae),
+
+            new Transition(State.GetAlgae, State.PoseGetAlgae, () -> Arm.hasObject),
+            new Transition(State.PoseGetAlgae, State.AlgaeRest, () -> Arm.getInstance().atSetpoint() && Arm.getInstance().atSafeReefDistance()),
+
+            new Transition(State.AlgaeRest, State.AlgaeExit, () -> !Arm.hasObject),
+            new Transition(State.AlgaeExit, State.Rest, () -> Arm.getInstance().atSetpoint() && Elevator.getInstance().atSetpoint()),
+
+            new Transition(State.AlgaeRest, State.PreBarge, () -> this.input.get().wantExtend),
+            new Transition(State.PreBarge, State.AlgaeRest, () -> !this.input.get().wantExtend),
+
+            new Transition(State.PreBarge, State.ScoreBarge, () -> this.input.get().wantScore && Swerve.getInstance().atGoodScoringDistance()),
+            new Transition(State.ScoreBarge, State.PreBarge, () ->( !this.input.get().wantExtend || !Arm.hasObject) && Arm.getInstance().atSafeBargeDistance()),
+
+            new Transition(State.Rest, State.AlgaeDescore, () -> this.input.get().wantDescoreAlgae),
+            new Transition(State.AlgaeDescore, State.Rest, () -> !this.input.get().wantDescoreAlgae),
+
+            new Transition(State.AlgaeRest, State.PreProcessor, () -> this.input.get().wantScoreProcessor),
+            new Transition(State.PreProcessor, State.ScoreProcessor, () -> this.input.get().wantScore),
+
+            new Transition(State.ScoreProcessor, State.AlgaeRest, () -> !this.input.get().wantScoreProcessor && !Arm.hasObject && Arm.getInstance().atSafeProcessorDistance()),
+            new Transition(State.PreProcessor, State.AlgaeRest, () -> this.input.get().wantScoreProcessor && Arm.getInstance().atSafeProcessorDistance()),
+
+            new Transition(State.Rest, State.ExitAlgaeGroundIntake, () -> !this.input.get().wantAlgaeGroundIntake || Arm.hasObject),
+            new Transition(State.ExitAlgaeGroundIntake, State.AlgaeRest, () -> Elevator.getInstance().atSetpoint()  && Arm.getInstance().atSetpoint()),
+
+            new Transition(State.PopciclePickup, State.PrePopciclePickup, () -> !this.input.get().wantPopsiclePickup ||
+            (RobotState.isAutonomous() && this.stateTime.hasElapsed(0.5))),
+            new Transition(State.PrePopciclePickup, State.Rest, () -> !this.input.get().wantPopsiclePickup),
+        
+            new Transition(State.Rest, State.PrePopciclePickup, () -> this.input.get().wantPopsiclePickup && !Arm.hasObject),
+            new Transition(State.PrePopciclePickup, State.PopciclePickup, () -> this.input.get().wantPopsiclePickup && Intake.getInstance().atSetpoint()),
+            new Transition(State.PopciclePickup, State.PreScore, () -> this.stateTime.hasElapsed(0.5))),
+        Stream.of(
+            // scoreing Transitions
+            this.scoringTransitions(ScoreLevel.L4, State.PrepareL4, State.StartL4, State.PlaceL4, State.AfterL4),
+            this.scoringTransitions(ScoreLevel.L3, State.PrepareL3, State.StartL3, State.PlaceL3, State.AfterL4),
+            this.scoringTransitions(ScoreLevel.L2, State.PrepareL2, State.StartL2, State.PlaceL2, State.AfterL4)
+        ).flatMap(List::stream)
+    ).toList();
+
+    public List<Transition> scoringTransitions(ScoreLevel scoreLevel, State prepare, State start, State place, State after) {
+        return List.<Transition>of(
+            // Exit transitions (have to be first)
+            new Transition(prepare, State.PreScore, () -> Arm.getInstance().atSetpoint() && (!Arm.hasObject || !this.input.get().wantExtend || this.input.get().wantedScoringLevel != scoreLevel)),
+            new Transition(start, prepare, () -> !this.input.get().wantExtend || this.input.get().wantedScoringLevel != scoreLevel || !Arm.hasObject),
+            // Normal transitions
+            new Transition(prepare, start, () -> Elevator.getInstance().lazierAtSetpoint() && Arm.hasObject && this.input.get().wantExtend && this.input.get().wantedScoringLevel == scoreLevel),
+            new Transition(start, place, () -> {}, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && this.input.get().wantScore),
+            new Transition(place, after, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && (place == State.PlaceL2 || place == State.PlaceL3 ? Arm.getInstance().atSafePlacementDistance() : true)),
+            new Transition(after, State.Rest, () -> Arm.getInstance().isInsideFrame()));
+    }
 
     public class Transition {
         public State currentState;
@@ -241,7 +333,8 @@ public class SuperStructure extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // if (!Elevator.isZeroed() || !Arm.isZeroed) return;
+        if (!Elevator.isZeroed || !Arm.isZeroed) return;
+        this.stateTime.start();
 
         for (Transition translate : this.transitions) {
             if (translate.currentState == state && translate.booleanSupplier.get()) {
