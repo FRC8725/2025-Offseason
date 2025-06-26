@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,12 +14,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
-import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -38,7 +34,6 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -172,7 +167,7 @@ public class Arm extends SubsystemBase {
     public static final InterpolatingDoubleTreeMap elevatorToArm = new InterpolatingDoubleTreeMap();
     public static final InterpolatingDoubleTreeMap elevatorToArmWhenIntakeDown = new InterpolatingDoubleTreeMap();
 
-    public Arm(Supplier<Pose3d> carriagePose, Supplier<Boolean> wantOffsetArmPositive, Supplier<Boolean> wantOffsetArmNegative) {
+    public Arm(Supplier<Boolean> wantOffsetArmPositive, Supplier<Boolean> wantOffsetArmNegative) {
         ARM = this;
         this.configRollerMotor();
         this.resetRelativeFromAbsolute();
@@ -186,7 +181,6 @@ public class Arm extends SubsystemBase {
             elevatorToArmWhenIntakeDown.put(pair.getSecond(), pair.getFirst());
         }
 
-        this.carriagePose = carriagePose;
         this.wantOffsetArmPositive = wantOffsetArmPositive;
         this.wantOffsetArmNegative = wantOffsetArmNegative;
     }
@@ -217,7 +211,7 @@ public class Arm extends SubsystemBase {
             .withNeutralMode(NeutralModeValue.Brake)
             .withInverted(InvertedValue.Clockwise_Positive);
         lifterConfig.Feedback
-            .withSensorToMechanismRatio(224.0 / 3.0);
+            .withSensorToMechanismRatio(Constants.Arm.GEAR_RATIO);
         lifterConfig.MotionMagic
             .withMotionMagicJerk(9999.0)
             .withMotionMagicAcceleration(4.5)
@@ -472,10 +466,9 @@ public class Arm extends SubsystemBase {
     private final TalonFXSimState simState = this.lifter.getSimState();
     private final StructPublisher<Pose3d> armComponent = NetworkTableInstance.getDefault()
         .getStructTopic("Component/Arm",  Pose3d.struct).publish();
-    private final Supplier<Pose3d> carriagePose;
     private final SingleJointedArmSim armSim = new SingleJointedArmSim(
         DCMotor.getFalcon500(1),
-        (224.0 / 3.0),
+        Constants.Arm.GEAR_RATIO,
         SingleJointedArmSim.estimateMOI(0.6, 2.5),
         0.6,
         -Math.PI,
@@ -484,7 +477,7 @@ public class Arm extends SubsystemBase {
         0.0);
     
     public Pose3d getArmComponentPose() {
-        return this.carriagePose.get()
+        return Elevator.getInstance().getCarriageComponentPose()
             .plus(new Transform3d(0.0, 0.0, 0.300355,
                 new Rotation3d(this.getPosition() + Math.PI, 0.0, 0.0)));
     }
@@ -493,14 +486,11 @@ public class Arm extends SubsystemBase {
         this.armSim.setInputVoltage(this.simState.getMotorVoltage());
         this.armSim.update(0.020);
 
-        double angleRad = this.armSim.getAngleRads();
-        double velocity = this.armSim.getVelocityRadPerSec();
+        double angleRad = this.armSim.getAngleRads() * Constants.Arm.GEAR_RATIO / (2.0 * Math.PI);
+        double velocity = this.armSim.getVelocityRadPerSec() * Constants.Arm.GEAR_RATIO / (2.0 * Math.PI);
 
-        double angleRadTicks = angleRad * (224.0 / 3.0) / (2.0 * Math.PI);
-        double velocityTicks = velocity * (224.0 / 3.0) / (2.0 * Math.PI);
-
-        this.simState.setRawRotorPosition(angleRadTicks);
-        this.simState.setRotorVelocity(velocityTicks);
+        this.simState.setRawRotorPosition(angleRad);
+        this.simState.setRotorVelocity(velocity);
 
         this.armComponent.accept(this.getArmComponentPose());
     }

@@ -20,7 +20,6 @@ public class RobotContainer {
 	private final Joysticks joysticks = new Joysticks();
 	private final SuperStructure superStructure = new SuperStructure(this.joysticks::getInput);
 	private final Arm arm = new Arm(
-		this.elevator::getCarriageComponentPose,
 		this.joysticks.wantOffsetArmPositive,
 		this.joysticks.wantOffsetArmNegative);
 	private final Intake intake = new Intake(

@@ -21,6 +21,7 @@ public final class Constants {
     }
 
     public final class Arm {
+        public static final double GEAR_RATIO = 224.0 / 3.0;
         public static final double IDEL_CURRENT_DRAW = 10.0; // TODO
         public static final double CURRENT_DRAW = 15.0; // TODO
         public static final double SAFE_INSIDE_ROBOT_ANGLE = Units.degreesToRadians(32.5);
@@ -72,6 +73,7 @@ public final class Constants {
 
         public static final double DEAD_BAND = 0.05;
         public static final double STRATING_TOLERANCE = 0.15;
+        public static final double ALIGNMENT_TOLERANCE = 0.04;
 
         public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(
             new Translation2d(TRACK_LENGTH / 2.0, TRACK_WIDTH / 2.0),

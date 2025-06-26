@@ -205,17 +205,11 @@ public class Elevator extends SubsystemBase {
         this.elevatorSim.setInputVoltage(this.simState.getMotorVoltage());
         this.elevatorSim.update(0.02);
 
-        double positionMeters = this.elevatorSim.getPositionMeters();
-        double velocity = this.elevatorSim.getVelocityMetersPerSecond();
+        double height = this.elevatorSim.getPositionMeters() * Constants.Elevator.MECHANISM_RATIO;
+        double velocity = this.elevatorSim.getVelocityMetersPerSecond() * Constants.Elevator.MECHANISM_RATIO;
 
-        double positionTicks = positionMeters / (2.0 * Math.PI * Units.inchesToMeters(0.75) / 4.0);
-        double velocityTicks = velocity / (2.0 * Math.PI * Units.inchesToMeters(0.75) / 4.0);
-
-        this.simState.setRawRotorPosition(positionTicks);
-        this.simState.setRotorVelocity(velocityTicks);
-
-        // this.main.setPosition(this.elevatorSim.getPositionMeters());
-        // this.main.setPosition(0.5 * Units.inchesToMeters(50) * (1 + Math.sin(2.0 * Math.PI / 5.0 * Timer.getTimestamp())));
+        this.simState.setRawRotorPosition(height);
+        this.simState.setRotorVelocity(velocity);
 
         this.stageComponent.accept(this.getStageComponentPose());
         this.carriageComponent.accept(this.getCarriageComponentPose());

@@ -14,6 +14,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -94,6 +95,10 @@ public class Swerve extends SubsystemBase {
         return this.poseEstimator.getEstimatedPosition();
     }
 
+    public boolean withinTolerance(Translation2d t) {
+        return this.getPose().getTranslation().getDistance(t) < Constants.Swerve.ALIGNMENT_TOLERANCE;
+    }
+
     public double getGyroAngle() {
         return MathUtil.angleModulus(Units.degreesToRadians(this.gyro.getAngle()));
     }
@@ -126,7 +131,7 @@ public class Swerve extends SubsystemBase {
         // this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions()) // TODO: TEST
     }
 
-    public void followTrajectory(SwerveSample sample) {
+    public void followSample(SwerveSample sample) {
         Pose2d pose = this.getPose();
 
         ChassisSpeeds speeds = new ChassisSpeeds(
@@ -135,6 +140,15 @@ public class Swerve extends SubsystemBase {
             sample.omega + this.headingController.calculate(pose.getRotation().getRadians(), sample.heading)
         );
 
+        this.driveRobotRelative(speeds);
+    }
+
+    public void followPose(Pose2d goalPose) {
+        Pose2d currentPose = this.getPose();
+        ChassisSpeeds speeds = new ChassisSpeeds(
+            this.xController.calculate(currentPose.getX(), goalPose.getX()),
+            this.yController.calculate(currentPose.getY(), goalPose.getY()),
+            this.headingController.calculate(currentPose.getRotation().getRadians(), goalPose.getRotation().getRadians()));
         this.driveRobotRelative(speeds);
     }
 
