@@ -26,7 +26,7 @@ public class SuperStructure extends SubsystemBase {
     public enum State {
         Start(
             Elevator.State.Down,
-            Arm.LifterState.Up, Arm.RollerState.idle,
+            Arm.LifterState.Up, Arm.RollerState.off,
             Intake.LifterState.Up, Intake.RollerState.Off),
         Rest(
             Elevator.State.PreHandoff,
@@ -49,7 +49,7 @@ public class SuperStructure extends SubsystemBase {
         PreHandoff(
             Elevator.State.PreHandoff,
             Arm.LifterState.Down, Arm.RollerState.in,
-            Intake.LifterState.Down, Intake.RollerState.Off),
+            Intake.LifterState.Up, Intake.RollerState.SlowIn),
         Handoff(
             Elevator.State.Handoff,
             Arm.LifterState.Down, Arm.RollerState.in,
@@ -212,8 +212,7 @@ public class SuperStructure extends SubsystemBase {
     // ---------- Transition ---------- //
     private final List<Transition> transitions = Stream.concat(
         Stream.of(
-            // new Transition(State.Start, State.PreHandoff, () -> this.input.get().wantGroundIntake || this.input.get().wantArmSourceIntake),
-            new Transition(State.Start, State.PreHandoff, () -> true),
+            new Transition(State.Start, State.Rest, () -> this.input.get().wantGroundIntake || this.input.get().wantArmSourceIntake),
             new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
 
             new Transition(State.Rest, State.ArmSourceIntake, () -> this.input.get().wantArmSourceIntake),
@@ -236,7 +235,7 @@ public class SuperStructure extends SubsystemBase {
             new Transition(State.Through, State.Rest, () -> !this.input.get().wantScore),
 
             new Transition(State.Rest, State.PreHandoff, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSafeReefDistance() &&
-                                                            this.input.get().wantedScoringLevel != ScoreLevel.Through && Intake.hasCoral),
+                                                            this.input.get().wantedScoringLevel != ScoreLevel.Through && Intake.getInstance().hasCoral()),
         
             new Transition(State.PreHandoff, State.Handoff, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && Intake.getInstance().atSetpoint()),
             new Transition(State.Handoff, State.Rest, () -> Arm.hasObject),
@@ -276,8 +275,8 @@ public class SuperStructure extends SubsystemBase {
             new Transition(State.ScoreProcessor, State.AlgaeRest, () -> !this.input.get().wantScoreProcessor && !Arm.hasObject && Arm.getInstance().atSafeProcessorDistance()),
             new Transition(State.PreProcessor, State.AlgaeRest, () -> this.input.get().wantScoreProcessor && Arm.getInstance().atSafeProcessorDistance()),
 
-            new Transition(State.Rest, State.ExitAlgaeGroundIntake, () -> !this.input.get().wantAlgaeGroundIntake || Arm.hasObject),
-            new Transition(State.ExitAlgaeGroundIntake, State.AlgaeRest, () -> Elevator.getInstance().atSetpoint()  && Arm.getInstance().atSetpoint()),
+            // new Transition(State.Rest, State.Pre, () -> !this.input.get().wantAlgaeGroundIntake || Arm.hasObject),
+            // new Transition(State.ExitAlgaeGroundIntake, State.AlgaeRest, () -> Elevator.getInstance().atSetpoint()  && Arm.getInstance().atSetpoint()),
 
             new Transition(State.PopciclePickup, State.PrePopciclePickup, () -> !this.input.get().wantPopsiclePickup ||
             (RobotState.isAutonomous() && this.stateTime.hasElapsed(0.5))),

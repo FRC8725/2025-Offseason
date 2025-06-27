@@ -18,6 +18,7 @@ public final class Constants {
         public static final double ZERO_VOLTAGE = 0.29;
         public static final double SAFE_HEIGHT = Units.inchesToMeters(34.0);
         public static final double LAZIER_SETPOINT_THRESHOLD = 0.03;
+        public static final double MAX_EXTENSION = Units.inchesToMeters(55.0);
     }
 
     public final class Arm {
@@ -31,7 +32,7 @@ public final class Constants {
         public static final double SAFE_DISTANCE_FROM_REEF_CENTER = Units.inchesToMeters(70.0);
         public static final double POSITION_DEPENDENT_KG = 0.29;
         public static final double ENCODER_OFFSET_ROTATION = 0.0;
-        public static final double SETPOINT_THRESHOLD = 0.0;
+        public static final double SETPOINT_THRESHOLD = 0.1;
         public static final double SAFE_BARGE_DISTANCE = Units.inchesToMeters(50.0);
         public static final double SAFE_PLACEMENT_DISANCE = Units.inchesToMeters(60.0);
     }
@@ -85,7 +86,7 @@ public final class Constants {
     public final class Intake {
         public static final double GEAR_RATIO = 160.0 / 3.0;
         public static final double ZERO_VOLTAGE = 0.0;
-        public static final double LASER_DISTANCE = 0.0; // TODO
+        public static final double LASER_DISTANCE = 50.0;
         public static final double TOLERANCE = 0.01;
     }
 

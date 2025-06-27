@@ -1,22 +1,32 @@
 package frc.robot;
 
+import au.grapplerobotics.CanBridge;
 import choreo.Choreo;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Elevator;
 
 public class Robot extends TimedRobot {
 	private Command autonomousCommand;
 	private final RobotContainer robotContainer;
+	private final GenericEntry coastModeToggle = Shuffleboard.getTab("Autonomous")
+		.add("Coast Mode", false)
+		.getEntry();
+	private boolean wasCoastModeEnabled = false;
 	
 	public static final boolean isRedAlliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
 	public static double tick = 0.0;
@@ -33,6 +43,7 @@ public class Robot extends TimedRobot {
 	public Robot() {
 		super(0.02);
 		this.robotContainer = new RobotContainer();
+		CanBridge.runTCP();
 		
 		this.chooser.setDefaultOption("Null", null);
 		for (String trajectoryName : Choreo.availableTrajectories()) {
@@ -47,6 +58,7 @@ public class Robot extends TimedRobot {
 			this.initializeAutonomousCommand();
 		});
 
+		SmartDashboard.putBoolean("Coast Mode", false);
 		SmartDashboard.putData("Chooser", this.chooser);
 	}
 
@@ -64,7 +76,18 @@ public class Robot extends TimedRobot {
 	public void disabledInit() {}
 
 	@Override
-	public void disabledPeriodic() {}
+	public void disabledPeriodic() {
+		boolean pressed = this.coastModeToggle.getBoolean(false);
+		if (!this.wasCoastModeEnabled && pressed) {
+			Elevator.getInstance().setCoastMode(true);
+			Arm.getInstance().setCoastEnabled(true);
+			this.wasCoastModeEnabled = true;
+		} else if (this.wasCoastModeEnabled && !pressed) {
+			Elevator.getInstance().setCoastMode(false);
+			Arm.getInstance().setCoastEnabled(false);
+			this.wasCoastModeEnabled = false;
+		}
+	}
 
 	@Override
 	public void autonomousInit() {

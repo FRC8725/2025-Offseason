@@ -13,14 +13,18 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -34,6 +38,7 @@ public class Elevator extends SubsystemBase {
     private final Follower follower2 = new Follower(this.main.getDeviceID(), true);
     private final StatusSignal<Current> statorCurrent = this.main.getStatorCurrent();
     private final MotionMagicVoltage request = new MotionMagicVoltage(0);
+    private double lastClampedSetpointForLogging = 0.0;
 
     public static boolean isZeroed = false;
 
@@ -42,10 +47,10 @@ public class Elevator extends SubsystemBase {
     public enum State {
         Down(0.0),
         PreHandoff(Units.inchesToMeters(36.0)),
-        Handoff(0.0),
+        Handoff(Units.inchesToMeters(31.0)),
         PopcicleHandoff(0.0),
-        PreScore(0.0),
-        Through(0.0),
+        PreScore(Units.inchesToMeters(20.0)),
+        Through(Units.inchesToMeters(38.0)),
         L2(0.0),
         L3(0.0),
         L4(0.0),
@@ -59,7 +64,7 @@ public class Elevator extends SubsystemBase {
         LowAglae(0.0),
         AutoAlgae(0.0),
         AlgaeRest(0.0),
-        SourceIntake(0.0),
+        SourceIntake(Units.inchesToMeters(53.0)),
         Processor(0.0),
         GroundAlgaeIntake(0.0);
 
@@ -70,10 +75,21 @@ public class Elevator extends SubsystemBase {
         }
     }
 
+    // ----------- Form ----------- //
+    public static final InterpolatingDoubleTreeMap armToElevator = new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap armToElevatorWhenIntakeDown = new InterpolatingDoubleTreeMap();
+
     public Elevator() {
         ELEVATOR = this;
         this.configMotor();
         this.setZeroPositon();
+
+        for (Pair<Double, Double> pair : Constants.armElevatorPairs) {
+            armToElevator.put(pair.getFirst(), pair.getSecond() + Units.inchesToMeters(0.5)) ;
+        }
+        for (Pair<Double, Double> pair : Constants.armInterpolationIntakeDown) {
+            armToElevatorWhenIntakeDown.put(pair.getFirst(), pair.getSecond() + Units.inchesToMeters(0.5));
+        }
     }
 
     public static Elevator getInstance() {
@@ -97,7 +113,7 @@ public class Elevator extends SubsystemBase {
         MotionMagicConfigs motionMagicConfig = new MotionMagicConfigs();
         motionMagicConfig
             .withMotionMagicAcceleration(14.0)
-            .withMotionMagicCruiseVelocity(3.0);
+            .withMotionMagicCruiseVelocity(3.0 / 2.0);
 
         FeedbackConfigs feedbackConfig = new FeedbackConfigs();
         feedbackConfig.SensorToMechanismRatio = Constants.Elevator.MECHANISM_RATIO;
@@ -139,7 +155,7 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic() {
         if (!isZeroed) return;
-        this.main.setControl(this.request.withPosition(state.value));
+        this.main.setControl(this.request.withPosition(this.clampSetpoint(state.value)));
         this.follower.setControl(this.follower2);
     }
 
@@ -158,6 +174,35 @@ public class Elevator extends SubsystemBase {
 
     public double getVelocity() {
         return this.main.getVelocity().getValueAsDouble();
+    }
+
+    public double clampSetpoint(double v) {
+        double ret = 0.0;
+        double startTime = System.currentTimeMillis();
+
+        double armDesiredPositionSignum = Math.signum(Arm.getInstance().getDesiredPosition());
+        double angleForInterpolation;
+
+        if (Math.signum(Arm.getInstance().getPosition()) != armDesiredPositionSignum) {
+            angleForInterpolation = 0.0;
+        } else if ((Arm.getInstance().getPosition() < 0.0 && Arm.getInstance().getDesiredPosition() > Arm.getInstance().getPosition()) ||
+           (Arm.getInstance().getPosition() > 0.0 && Arm.getInstance().getDesiredPosition() < Arm.getInstance().getPosition())) {
+            angleForInterpolation = Arm.getInstance().getDesiredPosition();
+        } else {
+            angleForInterpolation = Arm.getInstance().getPosition();
+        }
+
+        double interpolationTableInput = Math.PI - Math.abs(MathUtil.angleModulus(angleForInterpolation));
+
+        double interpolatedValue = (Intake.lifterState == Intake.LifterState.Down && Intake.getInstance().atSetpoint()) ?
+            armToElevatorWhenIntakeDown.get(interpolationTableInput) :
+            armToElevator.get(interpolationTableInput);
+
+        ret = Math.max(interpolatedValue, Math.min(v, Constants.Elevator.MAX_EXTENSION));
+        this.lastClampedSetpointForLogging = ret;
+        
+        if (System.currentTimeMillis() - startTime > 5.0) System.out.println("Elevator.clampSetpoint() took " + startTime + " ms");
+        return ret;
     }
 
     @Override

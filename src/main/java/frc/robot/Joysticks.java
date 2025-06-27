@@ -69,7 +69,7 @@ public class Joysticks {
         return input;
     }
 
-    private ScoreLevel lastScoreLevel = ScoreLevel.Through;
+    private ScoreLevel lastScoreLevel = ScoreLevel.L2;
     public SuperStructure.StructureInput getInput() {
         ScoreLevel level;
         int pov = controller.getPOV();

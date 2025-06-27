@@ -106,3 +106,9 @@ v1.2
 v1.3
 1. Add AutoRunnerCmd part
 2. Optimize some code
+
+v1.4
+1. Add coast mode 
+2. Adjust Arm.algaeIdle volt
+3. Test Start, Rest, PreHandoff, Handoff, PreScore state
+4. Fix intake down degree

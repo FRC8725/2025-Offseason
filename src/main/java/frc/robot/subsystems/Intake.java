@@ -35,7 +35,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX lifter = new TalonFX(17);
     private final TalonFX roller = new TalonFX(20);
     private final TalonFX center = new TalonFX(21);
-    private final LaserCan laserCan = new LaserCan(0);
+    private final LaserCan laserCan = new LaserCan(50);
     private final Supplier<SuperStructure.StructureInput> input;
 
     public static boolean hasCoral = false;
@@ -45,7 +45,7 @@ public class Intake extends SubsystemBase {
     public static LifterState lifterState = LifterState.Up;
     public static RollerState rollerState = RollerState.Off;
     public enum LifterState {
-        Down(Units.degreesToRadians(126.0)),
+        Down(Units.degreesToRadians(234.0)),
         Through(Units.degreesToRadians(25.639507)),
         Up(0.0),
         OperatorControl(0.0);
@@ -59,9 +59,9 @@ public class Intake extends SubsystemBase {
 
     public enum RollerState {
         In(-6.0, -8.0),
-        SlowIn(-2.0, -3.0),
+        SlowIn(0.0, -3.0),
         TroughOut(3.25, 0.0),
-        Out(8.0, -4.0),
+        Out(8.0, 0.0),
         Off(0.0, 0.0),
         AlgaeModeIdle(0.0, 0.0),
         OperatorControl(0.0, 0.0);
@@ -78,6 +78,7 @@ public class Intake extends SubsystemBase {
     public Intake(Supplier<SuperStructure.StructureInput> input) {
         INTAKE = this;
         this.configMotor();
+        this.setLaserCanConfig();
         this.setZeroPosition();
         this.input = input;
         this.simState.Orientation = ChassisReference.Clockwise_Positive;
@@ -101,7 +102,7 @@ public class Intake extends SubsystemBase {
         lifterConfig.MotionMagic
             .withMotionMagicJerk(2000.0)
             .withMotionMagicAcceleration(200.0)
-            .withMotionMagicCruiseVelocity(2.0);
+            .withMotionMagicCruiseVelocity(2.0 / 2.0);
 
         lifterConfig.MotorOutput
             .withInverted(InvertedValue.Clockwise_Positive)
@@ -153,6 +154,7 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         if (!this.isZeroed) return;
+        hasCoral = this.hasCoral();
         this.lifter.setControl(new MotionMagicVoltage(Units.radiansToRotations(this.getEffectiveLifterState().value)));
         this.roller.setVoltage(this.getEffectiveRollerState().rollerVolt);
         this.center.setVoltage(this.getEffectiveRollerState().centerVolt);
@@ -199,7 +201,9 @@ public class Intake extends SubsystemBase {
         builder.addDoubleProperty("Angle", () -> Units.rotationsToDegrees(this.lifter.getPosition().getValueAsDouble()), null);
         builder.addDoubleProperty("Voltage", () -> this.lifter.getMotorVoltage().getValueAsDouble(), null);
         builder.addBooleanProperty("IsZeroed", () -> this.isZeroed, null);
+        builder.addBooleanProperty("HasCoral", () -> this.hasCoral(), null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
+        builder.addStringProperty("Effective RollerState", () -> this.getEffectiveRollerState().toString(), null);
         builder.addStringProperty("LifterState", () -> this.getEffectiveLifterState().toString(), null);
     }
 

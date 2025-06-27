@@ -29,6 +29,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -65,7 +66,7 @@ public class Arm extends SubsystemBase {
     public enum RollerState {
         off(0.0),
         idle(-0.035),
-        algeaIdle(-0.225),
+        algeaIdle(-0.135),
         fastIdle(-0.1),
         in(-1.0),
         out(1.0),
@@ -85,8 +86,8 @@ public class Arm extends SubsystemBase {
         Up(Math.PI, MirrorType.FixedAngle),
         PrePopciclePickup(0.0, MirrorType.AlgaeScore),
         PopciclePickup(0.0, MirrorType.ActuallyFixedAngle),
-        AboveScoreCoral(0.0, MirrorType.ClosestToReef),
-        ScoreCoral(0.0, MirrorType.ClosestToReef),
+        AboveScoreCoral(Units.degreesToRadians(160.0), MirrorType.ClosestToReef),
+        ScoreCoral(Units.degreesToRadians(130.0), MirrorType.ClosestToReef),
         ScoreL4Coral(0.0, MirrorType.ClosestToReef),
         FinishScoreL4Coral(0.0, MirrorType.ClosestToReef),
         FinishScoreCoral(0.0, MirrorType.ClosestToReef),
@@ -172,7 +173,6 @@ public class Arm extends SubsystemBase {
         this.configRollerMotor();
         this.resetRelativeFromAbsolute();
         this.statorCurrent.setUpdateFrequency(100.0);
-        rollerState = RollerState.in;
 
         for (Pair<Double, Double> pair : Constants.armElevatorPairs) {
             elevatorToArm.put(pair.getSecond(), pair.getFirst());
@@ -215,7 +215,7 @@ public class Arm extends SubsystemBase {
         lifterConfig.MotionMagic
             .withMotionMagicJerk(9999.0)
             .withMotionMagicAcceleration(4.5)
-            .withMotionMagicCruiseVelocity(2.0 / 4.0); // RPS
+            .withMotionMagicCruiseVelocity(2.0 / 2.0); // RPS
         lifterConfig.CurrentLimits
             .withStatorCurrentLimitEnable(true)
             .withStatorCurrentLimit(70.0)
@@ -235,6 +235,10 @@ public class Arm extends SubsystemBase {
 
     public void offsetArm(double v) {
         this.offsetRad += v;
+    }
+
+    public void setCoastEnabled(boolean coast) {
+        this.lifter.setNeutralMode(coast ? NeutralModeValue.Coast : NeutralModeValue.Brake);
     }
 
     public static void setState(LifterState lifter, RollerState roller) {
@@ -454,6 +458,7 @@ public class Arm extends SubsystemBase {
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addBooleanProperty("HasObject", () -> hasObject, null);
+        builder.addBooleanProperty("AtSafeReefDistance", () -> this.atSafeReefDistance(), null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
         builder.addStringProperty("ArmState", () -> lifterState.toString(), null);
         builder.addDoubleProperty("RollerCurrent", () -> this.statorCurrent.getValueAsDouble(), null);
