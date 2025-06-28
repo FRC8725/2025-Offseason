@@ -29,7 +29,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -84,13 +83,12 @@ public class Arm extends SubsystemBase {
     public enum LifterState {
         Down(0.0, MirrorType.ActuallyFixedAngle), 
         Up(Math.PI, MirrorType.FixedAngle),
-        PrePopciclePickup(0.0, MirrorType.AlgaeScore),
-        PopciclePickup(0.0, MirrorType.ActuallyFixedAngle),
+        PopciclePickup(Units.degreesToRadians(-80.0), MirrorType.ActuallyFixedAngle),
         AboveScoreCoral(Units.degreesToRadians(160.0), MirrorType.ClosestToReef),
         ScoreCoral(Units.degreesToRadians(130.0), MirrorType.ClosestToReef),
-        ScoreL4Coral(0.0, MirrorType.ClosestToReef),
-        FinishScoreL4Coral(0.0, MirrorType.ClosestToReef),
-        FinishScoreCoral(0.0, MirrorType.ClosestToReef),
+        ScoreL4Coral(Units.degreesToRadians(135.0), MirrorType.ClosestToReef),
+        FinishScoreL4Coral(Units.degreesToRadians(105.0), MirrorType.ClosestToReef),
+        FinishScoreCoral(Units.degreesToRadians(105.0), MirrorType.ClosestToReef),
         SafeInsideRobotAngle(Math.PI - Constants.Arm.SAFE_INSIDE_ROBOT_ANGLE, MirrorType.ClosestToReef),
         GetAlgae(Units.degreesToRadians(100.0), MirrorType.ClosestToReef),
         PostAlgae(Units.degreesToRadians(110.0), MirrorType.ClosestToReef),
@@ -429,9 +427,9 @@ public class Arm extends SubsystemBase {
         value = this.getPositionFromAngle(
             lifterState.desiredAngle(
                 this.getPosition(),
-                getCloserToReef(),
-                getCloserToBarge(),
-                getCloserToProcessor()),
+                this.getCloserToReef(),
+                this.getCloserToBarge(),
+                this.getCloserToProcessor()),
             lifterState.mirrorType != MirrorType.ActuallyFixedAngle);
         double milliseconds = System.currentTimeMillis() - startTime;
 

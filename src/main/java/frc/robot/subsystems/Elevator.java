@@ -24,7 +24,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -36,7 +35,7 @@ public class Elevator extends SubsystemBase {
     private final TalonFX main = new TalonFX(13);
     private final TalonFX follower = new TalonFX(14);
     private final Follower follower2 = new Follower(this.main.getDeviceID(), true);
-    private final StatusSignal<Current> statorCurrent = this.main.getStatorCurrent();
+    public final StatusSignal<Current> statorCurrent = this.main.getStatorCurrent();
     private final MotionMagicVoltage request = new MotionMagicVoltage(0);
     private double lastClampedSetpointForLogging = 0.0;
 
@@ -47,26 +46,26 @@ public class Elevator extends SubsystemBase {
     public enum State {
         Down(0.0),
         PreHandoff(Units.inchesToMeters(36.0)),
-        Handoff(Units.inchesToMeters(31.0)),
-        PopcicleHandoff(0.0),
-        PreScore(Units.inchesToMeters(20.0)),
+        Handoff(Units.inchesToMeters(33.25)), // TODO
+        PopciclePickup(0.065),
+        PreScore(Units.inchesToMeters(20.0 - 1.0)),
         Through(Units.inchesToMeters(38.0)),
-        L2(0.0),
-        L3(0.0),
-        L4(0.0),
-        Barge(0.0),
-        ScoreL2(0.0),
-        ScoreL3(0.0),
-        ScoreL4(0.0),
-        PostL2(0.0),
-        PostL3(0.0),
-        HighAglae(0.0),
-        LowAglae(0.0),
-        AutoAlgae(0.0),
-        AlgaeRest(0.0),
+        L2(Units.inchesToMeters(15.0 - 1.0)),
+        L3(L2.value + Units.inchesToMeters(15.8701)),
+        L4(Units.inchesToMeters(54.5 - 0.125 - 1.0)),
+        Barge(Units.inchesToMeters(55.0 - 0.125)),
+        ScoreL2(L2.value - Units.inchesToMeters(3.5)),
+        ScoreL3(L3.value - Units.inchesToMeters(3.5)),
+        ScoreL4(L4.value - Units.inchesToMeters(1.0)),
+        PostL2(L2.value - Units.inchesToMeters(3.5)), // TODO: Tunr
+        PostL3(L2.value - Units.inchesToMeters(6.0)), // TODO: Tune
+        LowAglae(Units.inchesToMeters(22.25 - 1.0)),
+        HighAglae(LowAglae.value + Units.inchesToMeters(15.8701)),
+        AutoAlgae(Units.inchesToMeters(21.75)),
+        AlgaeRest(Units.inchesToMeters(15.0)),
         SourceIntake(Units.inchesToMeters(53.0)),
-        Processor(0.0),
-        GroundAlgaeIntake(0.0);
+        Processor(Units.inchesToMeters(20.0 - 1.0)),
+        GroundAlgaeIntake(0.14);
 
         private final double value;
 
@@ -140,6 +139,10 @@ public class Elevator extends SubsystemBase {
     public void setVoltage(double voltage) {
         this.main.setVoltage(voltage);
         this.follower.setControl(this.follower2);
+    }
+
+    public void stop() {
+        this.main.setVoltage(0.0);
     }
 
     public void setCoastMode(boolean isCoast) {

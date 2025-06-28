@@ -1,17 +1,17 @@
 package frc.robot.subsystems;
 
-import java.lang.reflect.Array;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
+import frc.robot.commands.ZeroArmCmd;
+import frc.robot.commands.ZeroElevatorCmd;
+import frc.robot.commands.ZeroIntakeCmd;
 
 public class SuperStructure extends SubsystemBase {
     public Supplier<StructureInput> input;
@@ -26,17 +26,17 @@ public class SuperStructure extends SubsystemBase {
     public enum State {
         Start(
             Elevator.State.Down,
-            Arm.LifterState.Up, Arm.RollerState.off,
+            Arm.LifterState.Up, Arm.RollerState.idle,
             Intake.LifterState.Up, Intake.RollerState.Off),
         Rest(
             Elevator.State.PreHandoff,
             Arm.LifterState.Down, Arm.RollerState.idle),
         PrePopciclePickup(
             Elevator.State.PreHandoff,
-            Arm.LifterState.PrePopciclePickup, Arm.RollerState.in,
+            Arm.LifterState.PopciclePickup, Arm.RollerState.in,
             Intake.LifterState.Down, Intake.RollerState.Off),
         PopciclePickup(
-            Elevator.State.PopcicleHandoff,
+            Elevator.State.PopciclePickup,
             Arm.LifterState.PopciclePickup, Arm.RollerState.in,
             Intake.LifterState.Up, Intake.RollerState.Off),
         ArmSourceIntake(
@@ -47,9 +47,9 @@ public class SuperStructure extends SubsystemBase {
             Arm.LifterState.Down, Arm.RollerState.idle,
             Intake.LifterState.Up, Intake.RollerState.In),
         PreHandoff(
-            Elevator.State.PreHandoff,
+            Elevator.State.Handoff,
             Arm.LifterState.Down, Arm.RollerState.in,
-            Intake.LifterState.Up, Intake.RollerState.SlowIn),
+            Intake.LifterState.Up, Intake.RollerState.SlowIn), // TODO: Intake roller
         Handoff(
             Elevator.State.Handoff,
             Arm.LifterState.Down, Arm.RollerState.in,
@@ -94,7 +94,7 @@ public class SuperStructure extends SubsystemBase {
             Arm.LifterState.ScoreCoral, Arm.RollerState.idle),
         PlaceL3(
             Elevator.State.ScoreL2,
-            Arm.LifterState.FinishScoreCoral, Arm.RollerState.slowout),
+            Arm.LifterState.FinishScoreCoral, Arm.RollerState.off),
         AfterL3(
             Elevator.State.PostL3,
             Arm.LifterState.Up, Arm.RollerState.slowout),
@@ -120,7 +120,7 @@ public class SuperStructure extends SubsystemBase {
         GetAlgae(
             Elevator.State.AutoAlgae,
             Arm.LifterState.GetAlgae, Arm.RollerState.in),
-        PoseGetAlgae(
+        PostGetAlgae(
             Elevator.State.AutoAlgae,
             Arm.LifterState.PostAlgae, Arm.RollerState.algeaIdle),
         AlgaeRest(
@@ -144,16 +144,18 @@ public class SuperStructure extends SubsystemBase {
         ScoreProcessor(
             Elevator.State.Processor,
             Arm.LifterState.Processor, Arm.RollerState.slowout),
-        // PreAlgaeGroundIntake(
-            
-        // ),
+        PreAlgaeGroundIntake(
+            State.Rest.elevator,
+            Arm.LifterState.AlgaeGroundPickup, Arm.RollerState.off,
+            Intake.LifterState.Down, Intake.RollerState.Off),
         AlgaeGroundIntake(
             Elevator.State.GroundAlgaeIntake,
-            Arm.LifterState.AlgaeGroundPickup, Arm.RollerState.in),
+            Arm.LifterState.AlgaeGroundPickup, Arm.RollerState.in,
+            Intake.LifterState.Down, Intake.RollerState.Off),
         ExitAlgaeGroundIntake(
             Elevator.State.PreHandoff,
-            Arm.LifterState.ExitAlgaeGroundPickup, Arm.RollerState.algeaIdle),
-        ;
+            Arm.LifterState.ExitAlgaeGroundPickup, Arm.RollerState.algeaIdle,
+            Intake.LifterState.Down, Intake.RollerState.Off);
 
         public final Elevator.State elevator;
         public final Arm.LifterState armLifter;
@@ -212,15 +214,20 @@ public class SuperStructure extends SubsystemBase {
     // ---------- Transition ---------- //
     private final List<Transition> transitions = Stream.concat(
         Stream.of(
+            // this just makes it so the elevator doesn't move until the operator wants to intake
             new Transition(State.Start, State.Rest, () -> this.input.get().wantGroundIntake || this.input.get().wantArmSourceIntake),
+            // this is just for auto, probably should be done differently
             new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
 
+            // Arm source intaking, must be here
             new Transition(State.Rest, State.ArmSourceIntake, () -> this.input.get().wantArmSourceIntake),
             new Transition(State.ArmSourceIntake, State.Rest, () -> !this.input.get().wantArmSourceIntake || Arm.hasObject),
 
+            // Intake source intaking
             new Transition(State.Rest, State.SourceIntake, () -> this.input.get().wantSourceIntake),
             new Transition(State.SourceIntake, State.Rest, () -> !this.input.get().wantSourceIntake || Intake.hasCoral),
 
+            //Trough reverse handoff, must be here
             new Transition(State.PreScore, State.Rest, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through || !Arm.hasObject),
             new Transition(State.Rest, State.ReverseHandOff, () -> Arm.getInstance().atSetpoint() && Elevator.getInstance().atSetpoint() &&
                                                                 this.input.get().wantedScoringLevel == ScoreLevel.Through && Arm.hasObject && !Intake.hasCoral &&
@@ -235,7 +242,7 @@ public class SuperStructure extends SubsystemBase {
             new Transition(State.Through, State.Rest, () -> !this.input.get().wantScore),
 
             new Transition(State.Rest, State.PreHandoff, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSafeReefDistance() &&
-                                                            this.input.get().wantedScoringLevel != ScoreLevel.Through && Intake.getInstance().hasCoral()),
+                                                            this.input.get().wantedScoringLevel != ScoreLevel.Through && Intake.hasCoral),
         
             new Transition(State.PreHandoff, State.Handoff, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && Intake.getInstance().atSetpoint()),
             new Transition(State.Handoff, State.Rest, () -> Arm.hasObject),
@@ -254,8 +261,8 @@ public class SuperStructure extends SubsystemBase {
             new Transition(State.PreGetAlgae, State.GetAlgae, () -> Elevator.getInstance().atSetpoint()),
             new Transition(State.GetAlgae, State.PreGetAlgae, () -> !this.input.get().wantGetAlgae),
 
-            new Transition(State.GetAlgae, State.PoseGetAlgae, () -> Arm.hasObject),
-            new Transition(State.PoseGetAlgae, State.AlgaeRest, () -> Arm.getInstance().atSetpoint() && Arm.getInstance().atSafeReefDistance()),
+            new Transition(State.GetAlgae, State.PostGetAlgae, () -> Arm.hasObject),
+            new Transition(State.PostGetAlgae, State.AlgaeRest, () -> Arm.getInstance().atSetpoint() && Arm.getInstance().atSafeReefDistance()),
 
             new Transition(State.AlgaeRest, State.AlgaeExit, () -> !Arm.hasObject),
             new Transition(State.AlgaeExit, State.Rest, () -> Arm.getInstance().atSetpoint() && Elevator.getInstance().atSetpoint()),
@@ -264,7 +271,7 @@ public class SuperStructure extends SubsystemBase {
             new Transition(State.PreBarge, State.AlgaeRest, () -> !this.input.get().wantExtend),
 
             new Transition(State.PreBarge, State.ScoreBarge, () -> this.input.get().wantScore && Swerve.getInstance().atGoodScoringDistance()),
-            new Transition(State.ScoreBarge, State.PreBarge, () ->( !this.input.get().wantExtend || !Arm.hasObject) && Arm.getInstance().atSafeBargeDistance()),
+            new Transition(State.ScoreBarge, State.PreBarge, () -> (!this.input.get().wantExtend || !Arm.hasObject) && Arm.getInstance().atSafeBargeDistance()),
 
             new Transition(State.Rest, State.AlgaeDescore, () -> this.input.get().wantDescoreAlgae),
             new Transition(State.AlgaeDescore, State.Rest, () -> !this.input.get().wantDescoreAlgae),
@@ -273,10 +280,12 @@ public class SuperStructure extends SubsystemBase {
             new Transition(State.PreProcessor, State.ScoreProcessor, () -> this.input.get().wantScore),
 
             new Transition(State.ScoreProcessor, State.AlgaeRest, () -> !this.input.get().wantScoreProcessor && !Arm.hasObject && Arm.getInstance().atSafeProcessorDistance()),
-            new Transition(State.PreProcessor, State.AlgaeRest, () -> this.input.get().wantScoreProcessor && Arm.getInstance().atSafeProcessorDistance()),
+            new Transition(State.PreProcessor, State.AlgaeRest, () -> !this.input.get().wantScoreProcessor && Arm.getInstance().atSafeProcessorDistance()),
 
-            // new Transition(State.Rest, State.Pre, () -> !this.input.get().wantAlgaeGroundIntake || Arm.hasObject),
-            // new Transition(State.ExitAlgaeGroundIntake, State.AlgaeRest, () -> Elevator.getInstance().atSetpoint()  && Arm.getInstance().atSetpoint()),
+            new Transition(State.Rest, State.PreAlgaeGroundIntake, () -> this.input.get().wantAlgaeGroundIntake && !Arm.hasObject),
+            new Transition(State.PreAlgaeGroundIntake, State.AlgaeGroundIntake, () -> this.input.get().wantAlgaeGroundIntake && Intake.getInstance().atSetpoint()),
+            new Transition(State.AlgaeGroundIntake, State.ExitAlgaeGroundIntake, () -> !this.input.get().wantAlgaeGroundIntake || Arm.hasObject),
+            new Transition(State.ExitAlgaeGroundIntake, State.AlgaeRest, () -> Elevator.getInstance().atSetpoint()  && Arm.getInstance().atSetpoint()),
 
             new Transition(State.PopciclePickup, State.PrePopciclePickup, () -> !this.input.get().wantPopsiclePickup ||
             (RobotState.isAutonomous() && this.stateTime.hasElapsed(0.5))),
@@ -284,12 +293,12 @@ public class SuperStructure extends SubsystemBase {
         
             new Transition(State.Rest, State.PrePopciclePickup, () -> this.input.get().wantPopsiclePickup && !Arm.hasObject),
             new Transition(State.PrePopciclePickup, State.PopciclePickup, () -> this.input.get().wantPopsiclePickup && Intake.getInstance().atSetpoint()),
-            new Transition(State.PopciclePickup, State.PreScore, () -> this.stateTime.hasElapsed(0.5))),
+            new Transition(State.PopciclePickup, State.PreScore, () -> this.stateTime.hasElapsed(0.5) && Arm.hasObject)),
         Stream.of(
             // scoreing Transitions
             this.scoringTransitions(ScoreLevel.L4, State.PrepareL4, State.StartL4, State.PlaceL4, State.AfterL4),
-            this.scoringTransitions(ScoreLevel.L3, State.PrepareL3, State.StartL3, State.PlaceL3, State.AfterL4),
-            this.scoringTransitions(ScoreLevel.L2, State.PrepareL2, State.StartL2, State.PlaceL2, State.AfterL4)
+            this.scoringTransitions(ScoreLevel.L3, State.PrepareL3, State.StartL3, State.PlaceL3, State.AfterL3),
+            this.scoringTransitions(ScoreLevel.L2, State.PrepareL2, State.StartL2, State.PlaceL2, State.AfterL2)
         ).flatMap(List::stream)
     ).toList();
 
@@ -347,6 +356,14 @@ public class SuperStructure extends SubsystemBase {
                 return;
             }
         }
+    }
+
+    // ---------- Function ---------- //
+    public ParallelCommandGroup makeZeroAllSubsystemsCommand() {
+        return new ParallelCommandGroup(
+            new ZeroIntakeCmd(),
+            new ZeroElevatorCmd(),
+            new ZeroArmCmd());
     }
 
     @Override

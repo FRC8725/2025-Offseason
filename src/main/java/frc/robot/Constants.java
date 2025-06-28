@@ -19,6 +19,7 @@ public final class Constants {
         public static final double SAFE_HEIGHT = Units.inchesToMeters(34.0);
         public static final double LAZIER_SETPOINT_THRESHOLD = 0.03;
         public static final double MAX_EXTENSION = Units.inchesToMeters(55.0);
+        public static final double ZERO_MIN_CURRENT = 1.7; // Amps
     }
 
     public final class Arm {
@@ -88,6 +89,7 @@ public final class Constants {
         public static final double ZERO_VOLTAGE = 0.0;
         public static final double LASER_DISTANCE = 50.0;
         public static final double TOLERANCE = 0.01;
+        public static final double ZERO_MIN_CURRENT = 20.0; // Amps
     }
 
     public static final List<Pair<Double, Double>> armElevatorPairs = List.of(

@@ -112,3 +112,8 @@ v1.4
 2. Adjust Arm.algaeIdle volt
 3. Test Start, Rest, PreHandoff, Handoff, PreScore state
 4. Fix intake down degree
+
+v1.5
+1. Check all subsystems current state and variable
+2. Add three commands to zero all subsystems
+3. Add all transitions and all states

@@ -39,7 +39,7 @@ public class Intake extends SubsystemBase {
     private final Supplier<SuperStructure.StructureInput> input;
 
     public static boolean hasCoral = false;
-    private boolean isZeroed = false;
+    public static boolean isZeroed = false;
 
     // ---------- State ---------- //
     public static LifterState lifterState = LifterState.Up;
@@ -133,7 +133,7 @@ public class Intake extends SubsystemBase {
     // ---------- Method ---------- //
     public void setZeroPosition() {
         this.lifter.setPosition(0.0);
-        this.isZeroed = true;
+        isZeroed = true;
     }
 
     public void setZeroVoltage() {
@@ -153,7 +153,7 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (!this.isZeroed) return;
+        if (!isZeroed) return;
         hasCoral = this.hasCoral();
         this.lifter.setControl(new MotionMagicVoltage(Units.radiansToRotations(this.getEffectiveLifterState().value)));
         this.roller.setVoltage(this.getEffectiveRollerState().rollerVolt);
@@ -167,6 +167,10 @@ public class Intake extends SubsystemBase {
     
     public double getPosition() {
         return Units.rotationsToRadians(this.lifter.getPosition().getValueAsDouble());
+    }
+
+    public double getVelocity() {
+        return Units.rotationsToRadians(this.lifter.getVelocity().getValueAsDouble());
     }
 
     public boolean isUnsafeToGoUp() {
@@ -200,7 +204,7 @@ public class Intake extends SubsystemBase {
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("Angle", () -> Units.rotationsToDegrees(this.lifter.getPosition().getValueAsDouble()), null);
         builder.addDoubleProperty("Voltage", () -> this.lifter.getMotorVoltage().getValueAsDouble(), null);
-        builder.addBooleanProperty("IsZeroed", () -> this.isZeroed, null);
+        builder.addBooleanProperty("IsZeroed", () -> isZeroed, null);
         builder.addBooleanProperty("HasCoral", () -> this.hasCoral(), null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
         builder.addStringProperty("Effective RollerState", () -> this.getEffectiveRollerState().toString(), null);
