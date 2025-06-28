@@ -57,7 +57,7 @@ public class Elevator extends SubsystemBase {
         ScoreL2(L2.value - Units.inchesToMeters(3.5)),
         ScoreL3(L3.value - Units.inchesToMeters(3.5)),
         ScoreL4(L4.value - Units.inchesToMeters(1.0)),
-        PostL2(L2.value - Units.inchesToMeters(3.5)), // TODO: Tunr
+        PostL2(L2.value - Units.inchesToMeters(3.5)), // TODO: Tune
         PostL3(L2.value - Units.inchesToMeters(6.0)), // TODO: Tune
         LowAglae(Units.inchesToMeters(22.25 - 1.0)),
         HighAglae(LowAglae.value + Units.inchesToMeters(15.8701)),

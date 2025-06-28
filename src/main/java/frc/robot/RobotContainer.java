@@ -1,12 +1,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.CoralSim.CoralSimScoreLocation;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
@@ -24,6 +20,9 @@ public class RobotContainer {
 		this.joysticks.wantOffsetArmNegative);
 	private final Intake intake = new Intake(
 		this.superStructure.input);
+
+	private final CoralSim coralSim = new CoralSim(
+		this.superStructure, this.swerve::getPose);
 	
 	public RobotContainer() {
 		// Shuffleboard.getTab("Vision").add(this.vision);

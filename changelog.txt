@@ -117,3 +117,8 @@ v1.5
 1. Check all subsystems current state and variable
 2. Add three commands to zero all subsystems
 3. Add all transitions and all states
+
+v1.6
+1. Add camera pose to advantage scope
+2. Add CoralSim to simualtion coral
+3. Adjust Elevator.SAFE_HEIGHT

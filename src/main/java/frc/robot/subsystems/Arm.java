@@ -33,6 +33,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -254,7 +255,7 @@ public class Arm extends SubsystemBase {
 
         boolean debouncedHasCoral = this.coralCurrentDebouncer.calculate(this.undebouncedHasObject());
         boolean debouncedHasAlgae = this.algaeCurrentDebouncer.calculate(this.undebouncedHasObject());
-        hasObject = atStartOfAuto || (rollerState == RollerState.algeaIdle ? debouncedHasAlgae : debouncedHasCoral);
+        if (RobotBase.isReal()) hasObject = atStartOfAuto || (rollerState == RollerState.algeaIdle ? debouncedHasAlgae : debouncedHasCoral);
 
         if (!isZeroed || !Elevator.isZeroed) return;
 

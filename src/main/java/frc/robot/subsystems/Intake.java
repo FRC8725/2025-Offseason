@@ -11,12 +11,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
-import au.grapplerobotics.ConfigurationFailedException;
-import au.grapplerobotics.LaserCan;
 import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
-import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
-import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
-import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -25,9 +20,11 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.lib.sensor.LaserCan;
 
 public class Intake extends SubsystemBase {
     private static Intake INTAKE;
@@ -78,7 +75,6 @@ public class Intake extends SubsystemBase {
     public Intake(Supplier<SuperStructure.StructureInput> input) {
         INTAKE = this;
         this.configMotor();
-        this.setLaserCanConfig();
         this.setZeroPosition();
         this.input = input;
         this.simState.Orientation = ChassisReference.Clockwise_Positive;
@@ -120,16 +116,6 @@ public class Intake extends SubsystemBase {
         this.center.getConfigurator().apply(rollerConfig);
     }
 
-    public void setLaserCanConfig() {
-        try {
-            this.laserCan.setRangingMode(RangingMode.SHORT);
-            this.laserCan.setRegionOfInterest(new RegionOfInterest(8, 8, 16, 16));
-            this.laserCan.setTimingBudget(TimingBudget.TIMING_BUDGET_33MS);
-        } catch (ConfigurationFailedException e) {
-            e.printStackTrace();
-        }
-    }
-
     // ---------- Method ---------- //
     public void setZeroPosition() {
         this.lifter.setPosition(0.0);
@@ -154,7 +140,7 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         if (!isZeroed) return;
-        hasCoral = this.hasCoral();
+        if (RobotBase.isReal()) hasCoral = this.hasCoral();
         this.lifter.setControl(new MotionMagicVoltage(Units.radiansToRotations(this.getEffectiveLifterState().value)));
         this.roller.setVoltage(this.getEffectiveRollerState().rollerVolt);
         this.center.setVoltage(this.getEffectiveRollerState().centerVolt);

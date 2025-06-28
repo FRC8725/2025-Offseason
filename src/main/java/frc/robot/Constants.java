@@ -3,6 +3,8 @@ package frc.robot;
 import java.util.List;
 
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -16,7 +18,7 @@ public final class Constants {
         public static final double MECHANISM_RATIO = GEAR_RATIO / (2.0 * SPOOL_RADIUS * Math.PI);
         public static final double TOLERANCE = 0.01;
         public static final double ZERO_VOLTAGE = 0.29;
-        public static final double SAFE_HEIGHT = Units.inchesToMeters(34.0);
+        public static final double SAFE_HEIGHT = Units.inchesToMeters(32.25);
         public static final double LAZIER_SETPOINT_THRESHOLD = 0.03;
         public static final double MAX_EXTENSION = Units.inchesToMeters(55.0);
         public static final double ZERO_MIN_CURRENT = 1.7; // Amps
@@ -90,6 +92,18 @@ public final class Constants {
         public static final double LASER_DISTANCE = 50.0;
         public static final double TOLERANCE = 0.01;
         public static final double ZERO_MIN_CURRENT = 20.0; // Amps
+    }
+
+    public final class CoralStation {
+        public static final Pose2d RIGHT_CENTER_FACE = new Pose2d(
+            Units.inchesToMeters(33.526),
+            Units.inchesToMeters(25.824),
+            Rotation2d.fromDegrees(144.011 - 90.0));
+        public static final Pose2d LEFT_CENTER_FACE = new Pose2d(
+            RIGHT_CENTER_FACE.getX(),
+            Field.FIELD_Y_SIZE - RIGHT_CENTER_FACE.getY(),
+            Rotation2d.fromRadians(-RIGHT_CENTER_FACE.getRotation().getRadians()));
+        
     }
 
     public static final List<Pair<Double, Double>> armElevatorPairs = List.of(
