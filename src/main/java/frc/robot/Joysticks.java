@@ -4,6 +4,8 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj.PS5Controller;
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ScoreLevel;
 
@@ -13,8 +15,14 @@ public class Joysticks {
 
     // ---------- Suppliers ---------- //
     private final Supplier<Boolean> wantCoralAutoAlign = () -> this.getInput().wantExtend;
-    private final Supplier<Boolean> wantAlgaeAutoAlign = () -> this.getInput().wantGetAlgae;
-    private final Supplier<Boolean> wantBargeAlign = () -> this.getInput().wantExtend;
+    private final Supplier<Boolean> wantAlgaeAutoAlign = () -> this.getInput().wantGetAlgae &&
+        Arm.getInstance().atSetpoint() &&
+        Elevator.getInstance().atSetpoint();
+    private final Supplier<Boolean> wantBargeAlign = () -> this.getInput().wantExtend &&
+        (SuperStructure.getInstance().state == SuperStructure.State.AlgaeRest ||
+            SuperStructure.getInstance().state == SuperStructure.State.PreBarge ||
+            SuperStructure.getInstance().state == SuperStructure.State.ScoreBarge);
+
     public final Supplier<Boolean> wantOffsetArmPositive = () -> this.controller.getLeftX() > 0.9 && this.controller.getL3Button();
     public final Supplier<Boolean> wantOffsetArmNegative = () -> this.controller.getLeftX() < -0.9 && this.controller.getL3Button();
 
@@ -57,14 +65,17 @@ public class Joysticks {
         input.rightX = this.driver.getRightX();
         input.deadZone = 0.05;
         
-        if (this.wantBargeAlign.get()) input.alignMode = AlignMode.BargeAlign;
-        else if (this.wantCoralAutoAlign.get() &&
-            this.getInput().wantedScoringLevel != ScoreLevel.Through) input.alignMode = AlignMode.ReefAlign;
-        else if (this.wantCoralAutoAlign.get() && 
-            this.getInput().wantedScoringLevel == ScoreLevel.Through) input.alignMode = AlignMode.ThroughAlign;
-        else if (this.wantAlgaeAutoAlign.get() &&
-            this.getInput().wantGetAlgae) input.alignMode = AlignMode.AlgaeAlign;
-        else input.alignMode = AlignMode.None;
+        if (this.wantBargeAlign.get()) {
+            input.alignMode = AlignMode.BargeAlign;
+        } else if (this.wantCoralAutoAlign.get() && this.getInput().wantedScoringLevel != ScoreLevel.Through) {
+            input.alignMode = AlignMode.ReefAlign;
+        } else if (this.wantCoralAutoAlign.get() && this.getInput().wantedScoringLevel == ScoreLevel.Through) {
+            input.alignMode = AlignMode.ThroughAlign;
+        } else if (this.wantAlgaeAutoAlign.get() && this.getInput().wantGetAlgae) {
+            input.alignMode = AlignMode.AlgaeAlign;
+        } else {
+            input.alignMode = AlignMode.None;
+        }
         
         return input;
     }

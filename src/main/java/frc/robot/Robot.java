@@ -6,8 +6,6 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -88,6 +86,9 @@ public class Robot extends TimedRobot {
 			Elevator.getInstance().setCoastMode(false);
 			Arm.getInstance().setCoastEnabled(false);
 			this.wasCoastModeEnabled = false;
+		} else {
+			this.wasCoastModeEnabled = false;
+			this.coastModeToggle.setBoolean(false);
 		}
 	}
 

@@ -166,7 +166,7 @@ public class Intake extends SubsystemBase {
     public boolean hasCoral() {
         Measurement measurement = this.laserCan.getMeasurement();
         if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-            if (measurement.distance_mm < Constants.Intake.LASER_DISTANCE) return true;
+            if (measurement.distance_mm < Constants.Intake.LASERCAN_DISTANCE) return true;
         }
         return false;
     }

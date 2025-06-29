@@ -17,32 +17,61 @@ import frc.robot.lib.math.MathUtils;
 
 public final class Constants {
     public final class Elevator {
+        // Mechanism
         public static final double GEAR_RATIO = 4.0;
         public static final double SPOOL_RADIUS = Units.inchesToMeters(0.75);
         public static final double MECHANISM_RATIO = GEAR_RATIO / (2.0 * SPOOL_RADIUS * Math.PI);
-        public static final double TOLERANCE = 0.01;
+
+        // Zero
         public static final double ZERO_VOLTAGE = 0.29;
-        public static final double SAFE_HEIGHT = Units.inchesToMeters(32.25);
-        public static final double LAZIER_SETPOINT_THRESHOLD = 0.03;
-        public static final double MAX_EXTENSION = Units.inchesToMeters(55.0);
         public static final double ZERO_MIN_CURRENT = 1.7; // Amps
+
+        // Height
+        public static final double SAFE_HEIGHT = Units.inchesToMeters(32.25);
+        public static final double MAX_EXTENSION = Units.inchesToMeters(55.0);
+
+        // Tolerance
+        public static final double TOLERANCE = 0.01;
+        public static final double LAZIER_TOLERANCE = 0.03;
     }
 
     public final class Arm {
+        // Mechanism
         public static final double GEAR_RATIO = 224.0 / 3.0;
-        public static final double IDEL_CURRENT_DRAW = 10.0; // TODO
-        public static final double CURRENT_DRAW = 15.0; // TODO
-        public static final double SAFE_INSIDE_ROBOT_ANGLE = Units.degreesToRadians(32.5);
-        public static final double ALLOWED_OPERATING_MIN_RADIANS = Units.degreesToRadians(-350.0);
-        public static final double ALLOWED_OPERATING_MAX_RADIANS = Units.degreesToRadians(350.0);
-        public static final double DEADZONE_ANGLE = Units.degreesToRadians(20.0); // TODO
-        public static final double SAFE_DISTANCE_FROM_REEF_CENTER = Units.inchesToMeters(70.0);
         public static final double POSITION_DEPENDENT_KG = 0.29;
+        public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(9.5); // TODO
         public static final double ENCODER_OFFSET_ROTATION = 0.0;
-        public static final double SETPOINT_THRESHOLD = 0.1;
+
+        // Detect has object
+        public static final double IDEL_CURRENT_DRAW = 10.0;
+        public static final double CURRENT_DRAW = 15.0;
+
+        // Safe
+        public static final double SAFE_INSIDE_ROBOT_ANGLE = Units.degreesToRadians(32.5);
+        public static final double SAFE_DISTANCE_FROM_REEF_CENTER = Units.inchesToMeters(70.0);
         public static final double SAFE_BARGE_DISTANCE = Units.inchesToMeters(50.0);
         public static final double SAFE_PLACEMENT_DISANCE = Units.inchesToMeters(60.0);
-        public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(9.5);
+
+        // Limit
+        public static final double ALLOWED_OPERATING_MIN_RADIANS = Units.degreesToRadians(-350.0);
+        public static final double ALLOWED_OPERATING_MAX_RADIANS = Units.degreesToRadians(350.0);
+
+        // Tolerance
+        public static final double TOLERANCE = 0.1;
+        public static final double DEADZONE_ANGLE = Units.degreesToRadians(20.0); // TODO
+    }
+
+    public final class Intake {
+        // Mechanism
+        public static final double GEAR_RATIO = 160.0 / 3.0;
+        public static final double LASERCAN_DISTANCE = 50.0;
+
+        // Zero
+        public static final double ZERO_VOLTAGE = 0.0;
+        public static final double ZERO_MIN_CURRENT = 20.0; // Amps
+
+        // Tolerance
+        public static final double TOLERANCE = 0.01;
     }
 
     public final class Vision {
@@ -60,16 +89,66 @@ public final class Constants {
             new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(-125.0)));
     }
 
+    public final class Swerve {
+        // Module
+        public static final double TRACK_WIDTH = Units.inchesToMeters(12.75);
+        public static final double TRACK_LENGTH = Units.inchesToMeters(12.75);
+        public static final double WHEEL_RADIUS = Units.inchesToMeters(3.95 / 2.0);
+        public static final double DRIVE_GEAR_RATIO = 57.0 / 7.0;
+        public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
+
+        // Phycical Limit
+        public static final double MAX_MOTOR_RPM = 5500.0;
+        public static final double MAX_VELOCITY = (MAX_MOTOR_RPM / 60.0) / DRIVE_GEAR_RATIO * 2.0 * WHEEL_RADIUS * Math.PI;
+        public static final double MAX_ANGULAR_VELOCITY = MAX_VELOCITY / (TRACK_WIDTH * Math.sqrt(2.0)); // TODO: Research HOW
+
+        // Align Limit
+        public static final double MAX_BARGE_ALIGN_TRANSLATION_SPEED = 1.5;
+        public static final double MAX_BARGE_ALIGN_ROTAITON_SPEED = 1.5;
+        public static final double MAX_ALIGN_TRANSLATION_SPEED = 1.5;
+
+        // Tolerance
+        public static final double DEAD_BAND = 0.05;
+        public static final double STRATING_TOLERANCE = 0.15;
+        public static final double ALIGNMENT_TOLERANCE = 0.04;
+
+        // Align
+        public static final double MAX_NODE_DISTANCE = 3.0;
+        public static final double ALIGN_TRANSLATION_WEIGHT = 5.0;
+        public static final double ALIGN_ANGLE_WEIGHT = 2.7;
+        public static final double ALREADY_SCORED_BADNESS = 0.5 + Units.inchesToMeters(12.9375) * ALIGN_ANGLE_WEIGHT * (1.0 - 2.0 * 0.3);
+
+        public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(
+            new Translation2d(TRACK_LENGTH / 2.0, TRACK_WIDTH / 2.0),
+            new Translation2d(TRACK_LENGTH / 2.0, -TRACK_WIDTH / 2.0),
+            new Translation2d(-TRACK_LENGTH / 2.0, TRACK_WIDTH / 2.0),
+            new Translation2d(-TRACK_LENGTH / 2.0, -TRACK_LENGTH / 2.0));
+    }
+
     public final class Field {
+        // Field size
         public static final double FIELD_X_SIZE = 17.548249;
         public static final double FIELD_Y_SIZE = 8.0518;
+
         public static final Translation2d BLUE_REEF_CENTER = new Translation2d(Units.inchesToMeters(176.75), Units.inchesToMeters(158.5));
+        
+        // Safe
+        public static final double SAFE_WALL_DISTANCE = 1.0;
+
+        // Distance
+        public static final double ROBOT_REEF_CENTER_DISTANCE = Units.inchesToMeters(32.25 + 18.0);
+        public static final double REEF_BRANCE_OFFSET_DISTANCE = Units.inchesToMeters(12.9375 / 2.0);
+        public static final double TROUGH_OFFSET_DISTANCE = Units.inchesToMeters(14.5 / 2.0);
+
+        // Score pose
         public static final double BLUE_BARGE_SCORING_X = 7.0;
         public static final double RED_BARGE_SCORING_X = FIELD_X_SIZE - BLUE_BARGE_SCORING_X;
-        public static final double SAFE_WALL_DISTANCE = 1.0;
+
+        // Poses
         public static final ArrayList<Pose2d> BLUE_SCORING_POSES = getBlueScoringPoses();
         public static final ArrayList<Pose2d> BLUE_TROUGH_SCORING_POSES = getBlueTroughScoringPoses();
         public static final ArrayList<Pose2d> BLUE_AGLAE_GRABBING_POSE = getBlueAlgaeGrabbingPose();
+
         public static final ArrayList<Pose2d> RED_SCORING_POSES = 
             new ArrayList<>(BLUE_SCORING_POSES.stream()
                 .map(pose -> MathUtils.mirror(pose))
@@ -82,48 +161,7 @@ public final class Constants {
             new ArrayList<>(BLUE_AGLAE_GRABBING_POSE.stream()
                 .map(pose -> MathUtils.mirror(pose))
                 .collect(Collectors.toList()));
-        public static final double ROBOT_REEF_CENTER_DISTANCE = Units.inchesToMeters(32.25 + 18.0);
-        public static final double REEF_BRANCE_OFFSET_DISTANCE = Units.inchesToMeters(12.9375 / 2.0);
-        public static final double TROUGH_OFFSET_DISTANCE = Units.inchesToMeters(14.5 / 2.0);
-    }
-
-    public final class Swerve {
-        public static final double TRACK_WIDTH = Units.inchesToMeters(12.75);
-        public static final double TRACK_LENGTH = Units.inchesToMeters(12.75);
-        public static final double WHEEL_RADIUS = Units.inchesToMeters(3.95 / 2.0);
-        public static final double DRIVE_GEAR_RATIO = 57.0 / 7.0;
-        public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
-
-        public static final double MAX_MOTOR_RPM = 5500.0;
-        public static final double MAX_VELOCITY = (MAX_MOTOR_RPM / 60.0) / DRIVE_GEAR_RATIO * 2.0 * WHEEL_RADIUS * Math.PI;
-        public static final double MAX_ANGULAR_VELOCITY = MAX_VELOCITY / (TRACK_WIDTH * Math.sqrt(2.0)); // TODO: Research HOW
-        public static final double MAX_BARGE_ALIGN_TRANSLATION_SPEED = 1.5;
-        public static final double MAX_BARGE_ALIGN_ROTAITON_SPEED = 1.5;
-        public static final double MAX_ALIGN_TRANSLATION_SPEED = 1.5;
-
-        public static final double DEAD_BAND = 0.05;
-        public static final double STRATING_TOLERANCE = 0.15;
-        public static final double ALIGNMENT_TOLERANCE = 0.04;
-        public static final double MAX_NODE_DISTANCE = 3.0;
-
-        public static final double ALIGN_TRANSLATION_WEIGHT = 5.0;
-        public static final double ALIGN_ANGLE_WEIGHT = 2.7;
-        public static final double ALREADY_SCORED_BDNESS = 0.5 + Units.inchesToMeters(12.9375) * ALIGN_ANGLE_WEIGHT * (1.0 - 2.0 * 0.3);
-
-        public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(
-            new Translation2d(TRACK_LENGTH / 2.0, TRACK_WIDTH / 2.0),
-            new Translation2d(TRACK_LENGTH / 2.0, -TRACK_WIDTH / 2.0),
-            new Translation2d(-TRACK_LENGTH / 2.0, TRACK_WIDTH / 2.0),
-            new Translation2d(-TRACK_LENGTH / 2.0, -TRACK_LENGTH / 2.0));
-    }
-
-    public final class Intake {
-        public static final double GEAR_RATIO = 160.0 / 3.0;
-        public static final double ZERO_VOLTAGE = 0.0;
-        public static final double LASER_DISTANCE = 50.0;
-        public static final double TOLERANCE = 0.01;
-        public static final double ZERO_MIN_CURRENT = 20.0; // Amps
-    }
+    }    
 
     public final class CoralStation {
         public static final Pose2d RIGHT_CENTER_FACE = new Pose2d(

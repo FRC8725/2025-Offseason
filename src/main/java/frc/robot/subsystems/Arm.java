@@ -296,7 +296,7 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean atSetpoint() {
-        return Math.abs(this.getDesiredPosition() - this.getPosition()) < Constants.Arm.SETPOINT_THRESHOLD;
+        return Math.abs(this.getDesiredPosition() - this.getPosition()) < Constants.Arm.TOLERANCE;
     }
 
     public boolean undebouncedHasObject() {

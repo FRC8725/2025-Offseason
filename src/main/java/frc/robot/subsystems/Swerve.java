@@ -115,7 +115,7 @@ public class Swerve extends SubsystemBase {
             .min(Comparator.comparingDouble(entry -> {
                 int index = entry.getKey();
                 Pose2d pose = entry.getValue();
-                double fudge = this.wasPoseScored(index) ? Constants.Swerve.ALREADY_SCORED_BDNESS : 0.0;
+                double fudge = this.wasPoseScored(index) ? Constants.Swerve.ALREADY_SCORED_BADNESS : 0.0;
                 return fudge + this.score(pose);
             }));
     }

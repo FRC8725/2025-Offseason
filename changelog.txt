@@ -127,3 +127,7 @@ v1.7
 1. Add filed scoring, trough, algae grab poses
 2. Add DriveCmd.align proccess
 3. Add Swerve get closer function
+
+v1.8
+1. Optimize Constants varibale
+2. Fix joysticks wantAlign supplier code

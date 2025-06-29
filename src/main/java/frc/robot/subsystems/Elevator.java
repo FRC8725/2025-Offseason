@@ -168,7 +168,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public boolean lazierAtSetpoint() {
-        return Math.abs(this.getHeight() - state.value) < Constants.Elevator.LAZIER_SETPOINT_THRESHOLD;
+        return Math.abs(this.getHeight() - state.value) < Constants.Elevator.LAZIER_TOLERANCE;
     }
 
     public double getHeight() {

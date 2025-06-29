@@ -2,7 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.CoralSim.CoralSimScoreLocation;
+import frc.robot.commands.DriveCmd;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
@@ -25,6 +25,8 @@ public class RobotContainer {
 		this.superStructure, this.swerve::getPose);
 	
 	public RobotContainer() {
+		this.swerve.setDefaultCommand(new DriveCmd(this.swerve, this.joysticks::getDriveInput));
+
 		// Shuffleboard.getTab("Vision").add(this.vision);
 		Shuffleboard.getTab("Elevator").add(this.elevator);
 		Shuffleboard.getTab("Arm").add(this.arm);
@@ -40,9 +42,7 @@ public class RobotContainer {
 	public void updateSimulation() {
 		this.elevator.simulationUpdate();
 		this.intake.simulationUpdate();
-		this.arm.simulationUpdate();
-		
-		// this.elevatorStage.setLength(this.elevator.getHeight());
-		// this.armLigament.setAngle(Units.radiansToDegrees(this.arm.getPosition()));
+		this.arm.simulationUpdate();	
+		this.coralSim.simulationUpdate();	
 	}
 }

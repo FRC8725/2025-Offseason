@@ -55,8 +55,7 @@ public class CoralSim extends SubsystemBase {
         this.swervePose = swervePose;
     }
 
-    @Override
-    public void periodic() {
+    public void simulationUpdate() {
         // coral to intake
         if (this.location == CoralSimLocation.Floor && this.canIntakeCoral()) {
             this.setLocation(CoralSimLocation.Intake);
