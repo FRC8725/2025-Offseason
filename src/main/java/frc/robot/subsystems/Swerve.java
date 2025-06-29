@@ -4,6 +4,13 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -60,6 +67,8 @@ public class Swerve extends SubsystemBase {
     private final StructPublisher<Pose2d> pose = NetworkTableInstance.getDefault()
         .getStructTopic("Component/SwervePose", Pose2d.struct).publish();
 
+    private final Boolean[] probablyScoredPoses = new Boolean[24 * 4];
+    public boolean isAligned = false;
     private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
         new SysIdRoutine.Config(),
         new SysIdRoutine.Mechanism(
@@ -95,12 +104,69 @@ public class Swerve extends SubsystemBase {
         return this.poseEstimator.getEstimatedPosition();
     }
 
+    public Optional<Map.Entry<Integer, Pose2d>> getClosestFudgedScoringPose() {
+        ArrayList<Pose2d> poses = Robot.isRedAlliance ?
+            Constants.Field.RED_SCORING_POSES :
+            Constants.Field.BLUE_SCORING_POSES;
+
+        return IntStream.range(0, poses.size())
+            .mapToObj(i -> Map.entry(i, poses.get(i)))
+            .filter(entry -> entry.getValue().getTranslation().getDistance(this.getPose().getTranslation()) < Constants.Swerve.MAX_NODE_DISTANCE)
+            .min(Comparator.comparingDouble(entry -> {
+                int index = entry.getKey();
+                Pose2d pose = entry.getValue();
+                double fudge = this.wasPoseScored(index) ? Constants.Swerve.ALREADY_SCORED_BDNESS : 0.0;
+                return fudge + this.score(pose);
+            }));
+    }
+
+    public Pose2d getClosestAlgaeGrabPose() {
+        ArrayList<Pose2d> poses = Robot.isRedAlliance ? 
+            Constants.Field.RED_AGLAE_GRABBING_POSE : 
+            Constants.Field.BLUE_AGLAE_GRABBING_POSE;
+        poses = new ArrayList<>(
+            poses.stream()
+            .filter(pose -> pose.getTranslation()
+                .getDistance(this.getPose().getTranslation()) < Constants.Swerve.MAX_NODE_DISTANCE)
+            .collect(Collectors.toList()));
+        
+        return poses.stream()
+            .min(Comparator.comparingDouble(this::score))
+            .orElse(null);
+    }
+
+    public Pose2d getClosestThroughScoringPose() {
+        ArrayList<Pose2d> poses = Robot.isRedAlliance ? 
+            Constants.Field.RED_TROUGH_SCORING_POSES :
+            Constants.Field.BLUE_TROUGH_SCORING_POSES;
+        poses = new ArrayList<>(poses.stream()
+            .filter(pose -> pose.getTranslation()
+                .getDistance(this.getPose().getTranslation()) < Constants.Swerve.MAX_NODE_DISTANCE)
+            .collect(Collectors.toList()));
+
+        return poses.stream()
+            .min(Comparator.comparingDouble(this::score))
+            .orElse(null);
+    }
+
     public boolean withinTolerance(Translation2d t) {
         return this.getPose().getTranslation().getDistance(t) < Constants.Swerve.ALIGNMENT_TOLERANCE;
     }
 
+    public boolean wasPoseScored(int index) {
+        return this.probablyScoredPoses[index * 4 + SuperStructure.getInstance().input.get().wantedScoringLevel.index];
+    }
+
     public double getGyroAngle() {
         return MathUtil.angleModulus(Units.degreesToRadians(this.gyro.getAngle()));
+    }
+
+    public double score(Pose2d pose) {
+        double translation = pose.getTranslation().getDistance(this.getPose().getTranslation());
+        double rotation = Math.abs(pose.getRotation().minus(this.getPose().getRotation()).getRadians());
+
+        return Constants.Swerve.ALIGN_TRANSLATION_WEIGHT * translation +
+            Constants.Swerve.ALIGN_ANGLE_WEIGHT * rotation;
     }
 
     public SwerveModulePosition[] getModulePositions() {
@@ -113,7 +179,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public boolean atGoodScoringDistance() {
-        if (!Robot.isRedAlliance) {
+        if (!Robot.isOnRedSide) {
             return this.getPose().getX() > Constants.Field.BLUE_BARGE_SCORING_X - 0.1 &&
                 this.getPose().getX() < Constants.Field.BLUE_BARGE_SCORING_X + 0.1;
         } else {

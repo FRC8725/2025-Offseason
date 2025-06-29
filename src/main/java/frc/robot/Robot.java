@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Swerve;
 
 public class Robot extends TimedRobot {
 	private Command autonomousCommand;
@@ -29,6 +30,7 @@ public class Robot extends TimedRobot {
 	private boolean wasCoastModeEnabled = false;
 	
 	public static final boolean isRedAlliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
+	public static final boolean isOnRedSide = Swerve.getInstance().getPose().getX() > (Constants.Field.FIELD_X_SIZE / 2.0);
 	public static double tick = 0.0;
 
 	// ---------- Simualtion ---------- //

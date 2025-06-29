@@ -20,7 +20,7 @@ public class Joysticks {
 
     public enum AlignMode {
         None,
-        Reef,   
+        ReefAlign,   
         ThroughAlign,
         AlgaeAlign,
         BargeAlign
@@ -59,7 +59,7 @@ public class Joysticks {
         
         if (this.wantBargeAlign.get()) input.alignMode = AlignMode.BargeAlign;
         else if (this.wantCoralAutoAlign.get() &&
-            this.getInput().wantedScoringLevel != ScoreLevel.Through) input.alignMode = AlignMode.Reef;
+            this.getInput().wantedScoringLevel != ScoreLevel.Through) input.alignMode = AlignMode.ReefAlign;
         else if (this.wantCoralAutoAlign.get() && 
             this.getInput().wantedScoringLevel == ScoreLevel.Through) input.alignMode = AlignMode.ThroughAlign;
         else if (this.wantAlgaeAutoAlign.get() &&

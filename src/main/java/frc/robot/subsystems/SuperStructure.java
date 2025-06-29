@@ -14,11 +14,18 @@ import frc.robot.commands.ZeroElevatorCmd;
 import frc.robot.commands.ZeroIntakeCmd;
 
 public class SuperStructure extends SubsystemBase {
+    private static SuperStructure SUPERSTRUCTURE;
+    // ---------- Object ---------- //
     public Supplier<StructureInput> input;
     private final Timer stateTime = new Timer();
 
     public SuperStructure(Supplier<StructureInput> input) {
+        SUPERSTRUCTURE = this;
         this.input = input;
+    }
+
+    public static SuperStructure getInstance() {
+        return SUPERSTRUCTURE;
     }
 
     // ---------- State ---------- //
@@ -188,10 +195,16 @@ public class SuperStructure extends SubsystemBase {
     }
 
     public enum ScoreLevel {
-        Through,
-        L2,
-        L3,
-        L4;
+        Through(0),
+        L2(1),
+        L3(2),
+        L4(3);
+
+        public final int index;
+
+        ScoreLevel(int index) {
+            this.index = index;
+        }
     }
 
     // ---------- Input ---------- //

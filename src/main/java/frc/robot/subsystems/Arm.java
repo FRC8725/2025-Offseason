@@ -321,9 +321,8 @@ public class Arm extends SubsystemBase {
     }
 
     public Side getCloserToBarge() {
-        Pose2d estimatedPose = Swerve.getInstance().getPose();
-        boolean isOnBlue = !(estimatedPose.getX() > (Constants.Field.FIELD_X_SIZE / 2.0));
-        double rotation = estimatedPose.getRotation().getRadians();
+        boolean isOnBlue = !Robot.isOnRedSide;
+        double rotation = Swerve.getInstance().getPose().getRotation().getRadians();
 
         if ((rotation < Math.PI && rotation > Math.PI - Constants.Arm.DEADZONE_ANGLE) ||
             (rotation > -Math.PI && rotation < -Math.PI + Constants.Arm.DEADZONE_ANGLE) ||
@@ -338,9 +337,8 @@ public class Arm extends SubsystemBase {
     }
 
     public Side getCloserToProcessor() {
-        Pose2d estimatedPose = Swerve.getInstance().getPose();
-        boolean isOnBlue = !(estimatedPose.getX() > (Constants.Field.FIELD_X_SIZE / 2.0));
-        double rotation = estimatedPose.getRotation().getRadians();
+        boolean isOnBlue = !Robot.isOnRedSide;
+        double rotation = Swerve.getInstance().getPose().getRotation().getRadians();
 
         if ((rotation < (Math.PI / 2.0 + Constants.Arm.DEADZONE_ANGLE) && rotation > (Math.PI / 2.0 - Constants.Arm.DEADZONE_ANGLE)) ||
             (rotation > (-Math.PI / 2.0 - Constants.Arm.DEADZONE_ANGLE) && rotation < (-Math.PI / 2.0 + Constants.Arm.DEADZONE_ANGLE))

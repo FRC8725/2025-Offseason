@@ -122,3 +122,8 @@ v1.6
 1. Add camera pose to advantage scope
 2. Add CoralSim to simualtion coral
 3. Adjust Elevator.SAFE_HEIGHT
+
+v1.7
+1. Add filed scoring, trough, algae grab poses
+2. Add DriveCmd.align proccess
+3. Add Swerve get closer function

@@ -4,14 +4,15 @@ package frc.robot.commands;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Joysticks;
+import frc.robot.Robot;
 import frc.robot.Joysticks.AlignMode;
+import frc.robot.lib.math.MathUtils;
 import frc.robot.subsystems.Swerve;
 
 public class DriveCmd extends Command {
@@ -20,7 +21,7 @@ public class DriveCmd extends Command {
 	
 	private final PIDController xPid = new PIDController(0, 0, 0);
 	private final PIDController yPid = new PIDController(0, 0, 0);
-	private final PIDController rotatePid = new PIDController(0, 0, 0);
+	private final PIDController turnPid = new PIDController(0, 0, 0);
 
 	private AlignMode lastAlignMode = AlignMode.None;
 
@@ -36,7 +37,7 @@ public class DriveCmd extends Command {
 	@Override
 	public void execute() {
 		Joysticks.DriveInputs inputs = this.driveInputs.get();
-		if (DriverStation.getAlliance().get() == Alliance.Red) inputs = inputs.getRedFlipped();
+		if (Robot.isRedAlliance) inputs = inputs.getRedFlipped();
 
 		if (inputs.isNonZero() && !RobotState.isAutonomous()) {
 			inputs.alignMode = AlignMode.None;
@@ -45,26 +46,95 @@ public class DriveCmd extends Command {
 		if (inputs.alignMode != this.lastAlignMode) {
 			this.xPid.reset();
 			this.yPid.reset();
-			this.rotatePid.reset();
+			this.turnPid.reset();
 		}
 		this.lastAlignMode = inputs.alignMode;
 
 		if (inputs.alignMode == AlignMode.None) {
 			this.swerve.driveRobotRelative(this.getSpeeds());
 		} else if (inputs.alignMode == AlignMode.BargeAlign) {
+			double currentAngle = this.swerve.getPose().getRotation().getRadians();
 
+			double xSetpoint = Robot.isOnRedSide ?
+				Constants.Field.FIELD_X_SIZE - Constants.Field.BLUE_BARGE_SCORING_X :
+				Constants.Field.BLUE_BARGE_SCORING_X;
+			double rotSetpoint = Math.abs(Math.PI / 2.0 - currentAngle) < Math.abs(-Math.PI / 2.0 - currentAngle) ?
+				Math.PI / 2.0 :
+				-Math.PI / 2.0;
+
+			double fixBargeX = this.fixBargeTranslationInput(
+				this.xPid.calculate(this.swerve.getPose().getX(), xSetpoint));
+			double fixBargeRotatin = this.fixRotationInput(
+				this.turnPid.calculate(currentAngle, rotSetpoint));
+
+			this.swerve.driveRobotRelative(new ChassisSpeeds(fixBargeX, 0.0, fixBargeRotatin));
 		} else {
+			Pose2d pose = null;
+			switch (this.driveInputs.get().alignMode) {
+				case ThroughAlign:
+					pose = this.swerve.getClosestThroughScoringPose();
+					break;
+				
+				case ReefAlign:
+					pose = this.swerve.getClosestFudgedScoringPose().get().getValue();
+					break;
+
+				case AlgaeAlign:
+					pose = this.swerve.getClosestAlgaeGrabPose();
+					break;
 			
+				default:
+					System.err.println("UNREACHABLE");
+					break;
+			}
+			if (pose == null) {
+				this.swerve.driveRobotRelative(this.getSpeeds());
+			} else {
+				this.swerve.isAligned = this.swerve.withinTolerance(pose.getTranslation());
+				ChassisSpeeds speeds = new ChassisSpeeds(
+					this.fixTranslationInput(
+						this.xPid.calculate(this.swerve.getPose().getX(), pose.getX())),
+					this.fixTranslationInput(
+						this.yPid.calculate(this.swerve.getPose().getY(), pose.getY())),
+					this.fixRotationInput(
+						this.turnPid.calculate(this.swerve.getPose().getRotation().getRadians(), pose.getRotation().getRadians())));
+				
+				this.swerve.driveRobotRelative(speeds);
+			}
 		}
 	}
 
 	@Override
 	public void end(boolean interrupted) {
+		this.swerve.stopModules();
 	}
 
 	@Override
 	public boolean isFinished() {
 		return false;
+	}
+
+	public double fixTranslationInput(double n) {
+		n = Math.max(
+			-Constants.Swerve.MAX_ALIGN_TRANSLATION_SPEED,
+			Math.min(n, Constants.Swerve.MAX_ALIGN_TRANSLATION_SPEED));
+		return MathUtils.unclampedDeadzone(n, 0.03);
+	}
+
+	public double fixRotationInput(double n) {
+		n = Math.max(
+			-Constants.Swerve.MAX_BARGE_ALIGN_ROTAITON_SPEED, 
+			Math.min(n, Constants.Swerve.MAX_BARGE_ALIGN_ROTAITON_SPEED));
+
+		return MathUtils.unclampedDeadzone(n, 0.03);
+	}
+
+	public double fixBargeTranslationInput(double n) {
+		n = Math.max(
+			-Constants.Swerve.MAX_BARGE_ALIGN_TRANSLATION_SPEED, 
+			Math.min(n, Constants.Swerve.MAX_BARGE_ALIGN_TRANSLATION_SPEED));
+
+		return MathUtils.unclampedDeadzone(n, 0.03);
 	}
 
 	public ChassisSpeeds getSpeeds() {
