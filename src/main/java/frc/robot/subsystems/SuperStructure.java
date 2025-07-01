@@ -56,7 +56,7 @@ public class SuperStructure extends SubsystemBase {
         PreHandoff(
             Elevator.State.Handoff,
             Arm.LifterState.Down, Arm.RollerState.in,
-            Intake.LifterState.Up, Intake.RollerState.SlowIn), // TODO: Intake roller
+            Intake.LifterState.Up, Intake.RollerState.SlowIn),
         Handoff(
             Elevator.State.Handoff,
             Arm.LifterState.Down, Arm.RollerState.in,
@@ -240,11 +240,11 @@ public class SuperStructure extends SubsystemBase {
             new Transition(State.Rest, State.SourceIntake, () -> this.input.get().wantSourceIntake),
             new Transition(State.SourceIntake, State.Rest, () -> !this.input.get().wantSourceIntake || Intake.hasCoral),
 
-            //Trough reverse handoff, must be here
+            // Trough reverse handoff, must be here
             new Transition(State.PreScore, State.Rest, () -> this.input.get().wantedScoringLevel == ScoreLevel.Through || !Arm.hasObject),
-            new Transition(State.Rest, State.ReverseHandOff, () -> Arm.getInstance().atSetpoint() && Elevator.getInstance().atSetpoint() &&
+            new Transition(State.Rest, State.ReverseHandOff, () -> (Arm.getInstance().atSetpoint() && Elevator.getInstance().atSetpoint() &&
                                                                 this.input.get().wantedScoringLevel == ScoreLevel.Through && Arm.hasObject && !Intake.hasCoral &&
-                                                                Intake.lifterState == Intake.LifterState.Up && Intake.getInstance().atSetpoint()),
+                                                                Intake.getInstance().getEffectiveLifterState() == Intake.LifterState.Up && Intake.getInstance().atSetpoint())),
 
             new Transition(State.ReverseHandOff, State.Rest, () -> Intake.hasCoral || this.input.get().wantResetSuperstructure),
 

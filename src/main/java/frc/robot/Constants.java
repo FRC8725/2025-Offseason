@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -27,7 +28,7 @@ public final class Constants {
         public static final double ZERO_MIN_CURRENT = 1.7; // Amps
 
         // Height
-        public static final double SAFE_HEIGHT = Units.inchesToMeters(32.25);
+        public static final double SAFE_HEIGHT = Units.inchesToMeters(32.5);
         public static final double MAX_EXTENSION = Units.inchesToMeters(55.0);
 
         // Tolerance
@@ -40,7 +41,7 @@ public final class Constants {
         public static final double GEAR_RATIO = 224.0 / 3.0;
         public static final double POSITION_DEPENDENT_KG = 0.29;
         public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(9.5); // TODO
-        public static final double ENCODER_OFFSET_ROTATION = 0.0;
+        public static final double ENCODER_OFFSET_ROTATION = 0.5197092879927322;
 
         // Detect has object
         public static final double IDEL_CURRENT_DRAW = 10.0;
@@ -63,7 +64,7 @@ public final class Constants {
 
     public final class Intake {
         // Mechanism
-        public static final double GEAR_RATIO = 160.0 / 3.0;
+        public static final double GEAR_RATIO = 540.0 / 7.0;
         public static final double LASERCAN_DISTANCE = 50.0;
 
         // Zero
@@ -71,7 +72,7 @@ public final class Constants {
         public static final double ZERO_MIN_CURRENT = 20.0; // Amps
 
         // Tolerance
-        public static final double TOLERANCE = 0.01;
+        public static final double TOLERANCE = 0.6;
     }
 
     public final class Vision {
@@ -176,23 +177,26 @@ public final class Constants {
     }
 
     public static final List<Pair<Double, Double>> armElevatorPairs = List.of(
-        new Pair<>(Units.degreesToRadians(0.0), 0.0),
-        new Pair<>(Units.degreesToRadians(5.0), Units.inchesToMeters(2.0)),
-        new Pair<>(Units.degreesToRadians(15.0), Units.inchesToMeters(3.0)),
-        new Pair<>(Units.degreesToRadians(25.0), Units.inchesToMeters(4.0)),
+        new Pair<>(Units.degreesToRadians(7.0), 0.0),
+        new Pair<>(Units.degreesToRadians(12.0), Units.inchesToMeters(1.0)),
+        new Pair<>(Units.degreesToRadians(18.0), Units.inchesToMeters(2.0)),
+        new Pair<>(Units.degreesToRadians(22.0), Units.inchesToMeters(3.0)),
+        new Pair<>(Units.degreesToRadians(26.0), Units.inchesToMeters(4.0)),
         new Pair<>(Units.degreesToRadians(30.0), Units.inchesToMeters(5.0)),
         new Pair<>(Units.degreesToRadians(35.0), Units.inchesToMeters(6.0)),
-        new Pair<>(Units.degreesToRadians(35.0), Units.inchesToMeters(7.0)),
-        new Pair<>(Units.degreesToRadians(40.0), Units.inchesToMeters(8.0)),
-        new Pair<>(Units.degreesToRadians(45.0), Units.inchesToMeters(9.0)),
-        new Pair<>(Units.degreesToRadians(60.0), Units.inchesToMeters(11.0)),
-        new Pair<>(Units.degreesToRadians(83.0), Units.inchesToMeters(13.5)),
-        new Pair<>(Units.degreesToRadians(93.0), Units.inchesToMeters(16.0)),
+        new Pair<>(Units.degreesToRadians(43.0), Units.inchesToMeters(7.0)),
+        new Pair<>(Units.degreesToRadians(51.0), Units.inchesToMeters(8.0)),
+        new Pair<>(Units.degreesToRadians(58.0), Units.inchesToMeters(9.0)),
+        new Pair<>(Units.degreesToRadians(63.0), Units.inchesToMeters(10.0)),
+        new Pair<>(Units.degreesToRadians(65.0), Units.inchesToMeters(11.0)),
+        new Pair<>(Units.degreesToRadians(77.0), Units.inchesToMeters(13.0)),
+        new Pair<>(Units.degreesToRadians(95.0), Units.inchesToMeters(16.0)),
         new Pair<>(Units.degreesToRadians(105.0), Units.inchesToMeters(18.0)),
         new Pair<>(Units.degreesToRadians(115.0), Units.inchesToMeters(20.0)),
         new Pair<>(Units.degreesToRadians(120.0), Units.inchesToMeters(23.0)),
-        new Pair<>(Units.degreesToRadians(130.0), Units.inchesToMeters(26.5)),
-        new Pair<>(Units.degreesToRadians(135.0), Units.inchesToMeters(28.5)),
+        new Pair<>(Units.degreesToRadians(125.0), Units.inchesToMeters(25.0)),
+        new Pair<>(Units.degreesToRadians(130.0), Units.inchesToMeters(27.0)),
+        new Pair<>(Units.degreesToRadians(135.0), Units.inchesToMeters(29.0)),
         new Pair<>(Units.degreesToRadians(140.0), Units.inchesToMeters(31.5)),
         new Pair<>(Units.degreesToRadians(180.0), Elevator.SAFE_HEIGHT)
     );
@@ -264,6 +268,34 @@ public final class Constants {
                         0.0, side * Arm.CORAL_CENTER_OFFSET, new Rotation2d(-side * Math.PI / 2.0)));
 
                 poseArray.add(pose);
+            }
+        }
+
+        return poseArray;
+    }
+
+    public static ArrayList<Pose3d> getCoralSimualtionScoreLocation() {
+        ArrayList<Pose3d> poseArray = new ArrayList<>();
+        double[] levelHeight = new double[]{Units.inchesToMeters(17.875), Units.inchesToMeters(30.563), Units.inchesToMeters(46.433), 1.75};
+
+        for (int i = 0; i < 4; i++) { // Floor
+            for (int angle = 0; angle < 360; angle += 60) { // Plane
+                Rotation2d angleRot = new Rotation2d(Units.degreesToRadians(angle));
+                Rotation2d angleRotPlus90 = new Rotation2d(Units.degreesToRadians(angle + 90.0));
+                for (int direction : new int[]{1, -1}) {
+                    Pose2d pose = new Pose2d(Field.BLUE_REEF_CENTER, Rotation2d.kZero)
+                        .plus(new Transform2d(
+                            new Translation2d(-Units.inchesToMeters(32.25), angleRot),
+                            Rotation2d.kZero))
+                        .plus(new Transform2d(
+                            new Translation2d(direction * Field.REEF_BRANCE_OFFSET_DISTANCE, angleRotPlus90),
+                            Rotation2d.kZero));
+                        
+                    poseArray.add(new Pose3d(pose)
+                        .plus(new Transform3d(
+                            0.0, 0.0, levelHeight[i],
+                            new Rotation3d(0.0, 0.0, angle))));
+                }
             }
         }
 

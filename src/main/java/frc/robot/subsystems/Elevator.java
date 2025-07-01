@@ -46,7 +46,7 @@ public class Elevator extends SubsystemBase {
     public enum State {
         Down(0.0),
         PreHandoff(Units.inchesToMeters(36.0)),
-        Handoff(Units.inchesToMeters(33.25)), // TODO
+        Handoff(Units.inchesToMeters(35.25)),
         PopciclePickup(0.065),
         PreScore(Units.inchesToMeters(20.0 - 1.0)),
         Through(Units.inchesToMeters(38.0)),
@@ -112,7 +112,7 @@ public class Elevator extends SubsystemBase {
         MotionMagicConfigs motionMagicConfig = new MotionMagicConfigs();
         motionMagicConfig
             .withMotionMagicAcceleration(14.0)
-            .withMotionMagicCruiseVelocity(3.0 / 2.0);
+            .withMotionMagicCruiseVelocity(3.0 / 5.0);
 
         FeedbackConfigs feedbackConfig = new FeedbackConfigs();
         feedbackConfig.SensorToMechanismRatio = Constants.Elevator.MECHANISM_RATIO;

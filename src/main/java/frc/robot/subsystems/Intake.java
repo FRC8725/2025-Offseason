@@ -42,8 +42,8 @@ public class Intake extends SubsystemBase {
     public static LifterState lifterState = LifterState.Up;
     public static RollerState rollerState = RollerState.Off;
     public enum LifterState {
-        Down(Units.degreesToRadians(234.0)),
-        Through(Units.degreesToRadians(25.639507)),
+        Down(Units.degreesToRadians(140.0)),
+        Through(Units.degreesToRadians(37.0)),
         Up(0.0),
         OperatorControl(0.0);
 
@@ -56,8 +56,8 @@ public class Intake extends SubsystemBase {
 
     public enum RollerState {
         In(-6.0, -8.0),
-        SlowIn(0.0, -3.0),
-        TroughOut(3.25, 0.0),
+        SlowIn(0.0, -5.0),
+        TroughOut(4.0, -3.0),
         Out(8.0, 0.0),
         Off(0.0, 0.0),
         AlgaeModeIdle(0.0, 0.0),
@@ -102,7 +102,7 @@ public class Intake extends SubsystemBase {
 
         lifterConfig.MotorOutput
             .withInverted(InvertedValue.Clockwise_Positive)
-            .withNeutralMode(NeutralModeValue.Coast); // TODO: Need test
+            .withNeutralMode(NeutralModeValue.Coast);
         lifterConfig.Feedback
             .withSensorToMechanismRatio(Constants.Intake.GEAR_RATIO);
 
@@ -148,7 +148,7 @@ public class Intake extends SubsystemBase {
 
     // ---------- Function ---------- //
     public boolean atSetpoint() {
-        return Math.abs(this.lifter.getPosition().getValueAsDouble() - lifterState.value) < Constants.Intake.TOLERANCE;
+        return Math.abs(this.lifter.getPosition().getValueAsDouble() - this.getEffectiveLifterState().value) < Constants.Intake.TOLERANCE;
     }
     
     public double getPosition() {
@@ -173,7 +173,7 @@ public class Intake extends SubsystemBase {
 
     public LifterState getEffectiveLifterState() {
         if (lifterState != LifterState.OperatorControl) return lifterState;
-        else if (this.isUnsafeToGoUp()) return LifterState.Down;
+        // else if (this.isUnsafeToGoUp()) return LifterState.Down;
         else if (this.hasCoral()) return LifterState.Up;
         else if (this.input.get().wantGroundIntake) return LifterState.Down;
         else return LifterState.Up;
@@ -191,7 +191,8 @@ public class Intake extends SubsystemBase {
         builder.addDoubleProperty("Angle", () -> Units.rotationsToDegrees(this.lifter.getPosition().getValueAsDouble()), null);
         builder.addDoubleProperty("Voltage", () -> this.lifter.getMotorVoltage().getValueAsDouble(), null);
         builder.addBooleanProperty("IsZeroed", () -> isZeroed, null);
-        builder.addBooleanProperty("HasCoral", () -> this.hasCoral(), null);
+        builder.addBooleanProperty("HasCoral", () -> hasCoral, null);
+        builder.addBooleanProperty("atsetpoint", () -> this.atSetpoint(), null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
         builder.addStringProperty("Effective RollerState", () -> this.getEffectiveRollerState().toString(), null);
         builder.addStringProperty("LifterState", () -> this.getEffectiveLifterState().toString(), null);

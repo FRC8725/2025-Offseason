@@ -131,3 +131,11 @@ v1.7
 v1.8
 1. Optimize Constants varibale
 2. Fix joysticks wantAlign supplier code
+
+v1.9
+1. Adjust elevator pair and save height
+2. Rewrite processing score coral location for CoralSim
+3. Add Apriltags pose array on advantage scope
+4. Fix Robot get swerve instance is null problem
+5. Test Handoff-score part
+6. Test trough part

@@ -214,7 +214,7 @@ public class Arm extends SubsystemBase {
         lifterConfig.MotionMagic
             .withMotionMagicJerk(9999.0)
             .withMotionMagicAcceleration(4.5)
-            .withMotionMagicCruiseVelocity(2.0 / 2.0); // RPS
+            .withMotionMagicCruiseVelocity(2.0 / 5.0); // RPS
         lifterConfig.CurrentLimits
             .withStatorCurrentLimitEnable(true)
             .withStatorCurrentLimit(70.0)
@@ -228,7 +228,7 @@ public class Arm extends SubsystemBase {
 
     // ---------- Method ---------- //
     public void resetRelativeFromAbsolute() {
-        this.lifter.setPosition(0.5);
+        this.lifter.setPosition(RobotBase.isReal() ? this.getCloseClampedPosition() : 0.5);
         isZeroed = true;
     }
 
@@ -445,23 +445,26 @@ public class Arm extends SubsystemBase {
         while (value < -0.5) value += 1.0;
         while (value > 0.5) value -= 1.0;
 
-        double allowedOffsetArmRotations = 12.0 / 360.0;
+        double allowedOffsetArmRotations = 1.0 / 360.0;
 
-        if (Math.abs(value - 0.5) < allowedOffsetArmRotations) return 0.5;
-        else if (Math.abs(value + 0.5) < allowedOffsetArmRotations) return -0.5;
-        else return value;
+        return value + 0.5;
+        // if (Math.abs(value - 0.5) < allowedOffsetArmRotations) return 0.5;
+        // else if (Math.abs(value + 0.5) < allowedOffsetArmRotations) return -0.5;
+        // else return value;
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addBooleanProperty("HasObject", () -> hasObject, null);
         builder.addBooleanProperty("AtSafeReefDistance", () -> this.atSafeReefDistance(), null);
+        builder.addBooleanProperty("Atsetpoint", () -> this.atSetpoint(), null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
         builder.addStringProperty("ArmState", () -> lifterState.toString(), null);
         builder.addDoubleProperty("RollerCurrent", () -> this.statorCurrent.getValueAsDouble(), null);
         builder.addDoubleProperty("Angle", () -> Units.radiansToRotations(this.getPosition()), null);
         builder.addDoubleProperty("MotionMagic Setpoint", () -> this.lifter.getClosedLoopReference().getValueAsDouble(), null);
         builder.addDoubleProperty("Voltage", () -> this.lifter.getMotorVoltage().getValueAsDouble(), null);
+        builder.addDoubleProperty("Encoder position", () -> this.encoder.get(), null);
     }
 
     // ---------- Simulation ---------- //

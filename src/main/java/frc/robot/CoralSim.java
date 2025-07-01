@@ -1,5 +1,6 @@
 package frc.robot;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -14,6 +15,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.lib.simulation.AprilTagsSim;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
@@ -23,11 +25,14 @@ import frc.robot.subsystems.SuperStructure.State;
 public class CoralSim extends SubsystemBase {
     private Pose3d pose = new Pose3d(-1000.0, -1000.0, -1000.0, new Rotation3d());
     private Pose3d[] scorePoses = new Pose3d[]{};
-    private final Set<CoralSimScoreLocation> scoreLocations = new HashSet<>();
+    private final Set<Pose3d> scoreLocations = new HashSet<>();
     private CoralSimLocation location = CoralSimLocation.Floor;
     private final Supplier<Pose2d> swervePose;
     private final SuperStructure superStructure;
     private SuperStructure.State lastState = SuperStructure.State.Start;
+    private final ArrayList<Pose3d> coralSimLocation = Constants.getCoralSimualtionScoreLocation();
+    @SuppressWarnings("unused")
+    private final AprilTagsSim aprilTagsSim = new AprilTagsSim();
 
     private final StructPublisher<Pose3d> coralPosePublisher = NetworkTableInstance.getDefault()
         .getStructTopic("Coral/coral", Pose3d.struct).publish();
@@ -57,7 +62,8 @@ public class CoralSim extends SubsystemBase {
 
     public void simulationUpdate() {
         // coral to intake
-        if (this.location == CoralSimLocation.Floor && this.canIntakeCoral()) {
+        if (this.location == CoralSimLocation.Floor && this.canIntakeCoral() &&
+            Intake.getInstance().getEffectiveLifterState() == Intake.LifterState.Down && Intake.getInstance().atSetpoint()) {
             this.setLocation(CoralSimLocation.Intake);
             Intake.hasCoral = true;
         }
@@ -67,9 +73,14 @@ public class CoralSim extends SubsystemBase {
             Arm.hasObject = true;
             Intake.hasCoral = false;
         }
-        if (this.lastState != this.superStructure.state && this.superStructure.state == State.PlaceL4) {
+        // Score
+        if (this.lastState != this.superStructure.state && (this.superStructure.state == State.PlaceL4 ||
+            this.superStructure.state == State.PlaceL3 || this.superStructure.state == State.PlaceL2))
+        {
             this.setLocation(CoralSimLocation.Hiden);
-            this.addScoringLocation(CoralSimScoreLocation.C_L4);
+            int index = this.superStructure.input.get().wantedScoringLevel.index;
+            this.addScoringPose(this.coralSimLocation.get(index * 4));
+            Arm.hasObject = false;
         }
         this.lastState = this.superStructure.state;
         switch (this.location) {
@@ -104,23 +115,23 @@ public class CoralSim extends SubsystemBase {
         }
 
         this.scorePoses = this.scoreLocations.stream()
-            .map((s) -> s.pose)
             .toArray(Pose3d[]::new);
 
         this.coralPosePublisher.accept(this.pose);
-        this.reefPosesPublisher.accept(this.scorePoses);
+        this.reefPosesPublisher.accept(
+            this.scoreLocations.stream().toArray(Pose3d[]::new));
     }
 
     public void setLocation(CoralSimLocation location) {
         this.location = location;
     }
 
-    public void addScoringLocation(CoralSimScoreLocation location) {
-        this.scoreLocations.add(location);
+    public void addScoringPose(Pose3d pose) {
+        this.scoreLocations.add(pose);
     }
 
-    public void removeScoringLocation(CoralSimScoreLocation location) {
-        this.scoreLocations.remove(location);
+    public void removeScoringPose(Pose3d pose) {
+        this.scoreLocations.remove(pose);
     }
 
     public void scoreCoral(State placeState) {

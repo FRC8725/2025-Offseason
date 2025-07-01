@@ -28,7 +28,7 @@ public class Robot extends TimedRobot {
 	private boolean wasCoastModeEnabled = false;
 	
 	public static final boolean isRedAlliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
-	public static final boolean isOnRedSide = Swerve.getInstance().getPose().getX() > (Constants.Field.FIELD_X_SIZE / 2.0);
+	public static final boolean isOnRedSide = (Swerve.getInstance() == null ? 0.0 : Swerve.getInstance().getPose().getX())  > (Constants.Field.FIELD_X_SIZE / 2.0);
 	public static double tick = 0.0;
 
 	// ---------- Simualtion ---------- //

@@ -1,6 +1,8 @@
 // Copyright (c) FIRST and other WPILib contributors.
 package frc.robot.commands;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -76,7 +78,9 @@ public class DriveCmd extends Command {
 					break;
 				
 				case ReefAlign:
-					pose = this.swerve.getClosestFudgedScoringPose().get().getValue();
+					// Optional<Map.Entry<Integer, Pose2d>> closestFudgedScoringPose = this.swerve.getClosestFudgedScoringPose();
+					pose = this.swerve.getClosestFudgedScoringPose().map(Map.Entry::getValue).orElse(null);
+
 					break;
 
 				case AlgaeAlign:
