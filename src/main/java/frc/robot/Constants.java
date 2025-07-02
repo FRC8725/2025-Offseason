@@ -72,7 +72,7 @@ public final class Constants {
         public static final double ZERO_MIN_CURRENT = 20.0; // Amps
 
         // Tolerance
-        public static final double TOLERANCE = 0.6;
+        public static final double TOLERANCE = 0.01;
     }
 
     public final class Vision {
@@ -198,10 +198,16 @@ public final class Constants {
         new Pair<>(Units.degreesToRadians(130.0), Units.inchesToMeters(27.0)),
         new Pair<>(Units.degreesToRadians(135.0), Units.inchesToMeters(29.0)),
         new Pair<>(Units.degreesToRadians(140.0), Units.inchesToMeters(31.5)),
-        new Pair<>(Units.degreesToRadians(180.0), Elevator.SAFE_HEIGHT)
-    );
+        new Pair<>(Units.degreesToRadians(180.0), Elevator.SAFE_HEIGHT));
 
-    public static final List<Pair<Double, Double>> armInterpolationIntakeDown = List.of();
+    public static final List<Pair<Double, Double>> armInterpolationIntakeDown = List.of(
+        new Pair<>(Units.degreesToRadians(88.0), 0.0),
+        new Pair<>(Units.degreesToRadians(105.0), Units.inchesToMeters(5.0)),
+        new Pair<>(Units.degreesToRadians(113.0), Units.inchesToMeters(8.0)),
+        new Pair<>(Units.degreesToRadians(117.0), Units.inchesToMeters(13.0)),
+        new Pair<>(Units.degreesToRadians(131.0), Units.inchesToMeters(18.0)),
+        new Pair<>(Units.degreesToRadians(137.0), Units.inchesToMeters(21.0)),
+        new Pair<>(Units.degreesToRadians(180.0), Units.inchesToMeters(23.0)));
 
     public static ArrayList<Pose2d> getBlueScoringPoses() {
         ArrayList<Pose2d> poseArray = new ArrayList<>();
@@ -276,7 +282,17 @@ public final class Constants {
 
     public static ArrayList<Pose3d> getCoralSimualtionScoreLocation() {
         ArrayList<Pose3d> poseArray = new ArrayList<>();
-        double[] levelHeight = new double[]{Units.inchesToMeters(17.875), Units.inchesToMeters(30.563), Units.inchesToMeters(46.433), 1.75};
+        double[] levelHeight = new double[]{
+            Units.inchesToMeters(18.95),
+            Units.inchesToMeters(29.3),
+            Units.inchesToMeters(45.3),
+            1.75};
+        double[] levelDistance = new double[]{
+            Units.inchesToMeters(30.0),
+            Units.inchesToMeters(28.0),
+            Units.inchesToMeters(28.0),
+            Units.inchesToMeters(30.5)
+        };
 
         for (int i = 0; i < 4; i++) { // Floor
             for (int angle = 0; angle < 360; angle += 60) { // Plane
@@ -285,16 +301,22 @@ public final class Constants {
                 for (int direction : new int[]{1, -1}) {
                     Pose2d pose = new Pose2d(Field.BLUE_REEF_CENTER, Rotation2d.kZero)
                         .plus(new Transform2d(
-                            new Translation2d(-Units.inchesToMeters(32.25), angleRot),
+                            new Translation2d(-levelDistance[i], angleRot),
                             Rotation2d.kZero))
                         .plus(new Transform2d(
                             new Translation2d(direction * Field.REEF_BRANCE_OFFSET_DISTANCE, angleRotPlus90),
                             Rotation2d.kZero));
+
+                    Rotation3d coralRot = new Rotation3d(
+                        0.0,
+                        (i == 1 || i == 2 ? Units.degreesToRadians(35.0) :
+                        (i == 3 ? Units.degreesToRadians(90.0) : 0.0)),
+                        Units.degreesToRadians(angle + (i == 0 ? 90.0 : 0.0)));
                         
                     poseArray.add(new Pose3d(pose)
                         .plus(new Transform3d(
                             0.0, 0.0, levelHeight[i],
-                            new Rotation3d(0.0, 0.0, angle))));
+                            coralRot)));
                 }
             }
         }

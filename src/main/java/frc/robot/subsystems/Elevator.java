@@ -112,7 +112,7 @@ public class Elevator extends SubsystemBase {
         MotionMagicConfigs motionMagicConfig = new MotionMagicConfigs();
         motionMagicConfig
             .withMotionMagicAcceleration(14.0)
-            .withMotionMagicCruiseVelocity(3.0 / 5.0);
+            .withMotionMagicCruiseVelocity(3.0 / 2.0);
 
         FeedbackConfigs feedbackConfig = new FeedbackConfigs();
         feedbackConfig.SensorToMechanismRatio = Constants.Elevator.MECHANISM_RATIO;

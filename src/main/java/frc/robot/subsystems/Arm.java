@@ -123,6 +123,8 @@ public class Arm extends SubsystemBase {
                             return -this.value;
                         case Right:
                             return this.value;
+                        case Neither:
+                            return (Math.abs(this.value) < Math.PI / 2.0) ? 0.0 : Math.PI;
                         default:
                             return Math.PI;
                     }
@@ -132,6 +134,8 @@ public class Arm extends SubsystemBase {
                             return -this.value;
                         case Right:
                             return this.value;
+                        case Neither:
+                            return Math.PI;
                         default:
                             return Math.PI;
                     }
@@ -141,6 +145,8 @@ public class Arm extends SubsystemBase {
                             return -this.value;
                         case Right:
                             return this.value;
+                        case Neither:
+                            return Math.PI;
                         default:
                             return Math.PI;
                     }
@@ -214,7 +220,7 @@ public class Arm extends SubsystemBase {
         lifterConfig.MotionMagic
             .withMotionMagicJerk(9999.0)
             .withMotionMagicAcceleration(4.5)
-            .withMotionMagicCruiseVelocity(2.0 / 5.0); // RPS
+            .withMotionMagicCruiseVelocity(2.0 / 2.0); // RPS
         lifterConfig.CurrentLimits
             .withStatorCurrentLimitEnable(true)
             .withStatorCurrentLimit(70.0)
@@ -263,7 +269,7 @@ public class Arm extends SubsystemBase {
 
         this.roller.set(atStartOfAuto ? RollerState.fastIdle.value : rollerState.value);
         this.lifter.setControl(
-            new MotionMagicVoltage(Units.radiansToRotations(this.getDesiredPosition() - this.offsetRad)).withSlot(0)
+            new MotionMagicVoltage(Units.radiansToRotations(this.getDesiredPosition() - this.offsetRad))
                 .withFeedForward(gravityFeedforward));
     }
 
@@ -377,13 +383,16 @@ public class Arm extends SubsystemBase {
                 case Right:
                     if (actualArmPosition < Math.PI / 2.0) p = positions.get(1);
                     else p = positions.get(0);
+                    break;
 
                 case Left:
                     if (actualArmPosition > -Math.PI / 2.0) p = positions.get(0);
                     else p = positions.get(1);
+                    break;
 
                 default:
                     p = positions.get(0);
+                    break;
             } 
         } else {
             p = positions.stream()
@@ -476,8 +485,8 @@ public class Arm extends SubsystemBase {
         Constants.Arm.GEAR_RATIO,
         SingleJointedArmSim.estimateMOI(0.6, 2.5),
         0.6,
-        -Math.PI,
-        Math.PI,
+        -Math.PI * 2.0,
+        Math.PI * 2.0,
         false,
         0.0);
     

@@ -100,7 +100,7 @@ public class SuperStructure extends SubsystemBase {
             Elevator.State.L3,
             Arm.LifterState.ScoreCoral, Arm.RollerState.idle),
         PlaceL3(
-            Elevator.State.ScoreL2,
+            Elevator.State.ScoreL3,
             Arm.LifterState.FinishScoreCoral, Arm.RollerState.off),
         AfterL3(
             Elevator.State.PostL3,

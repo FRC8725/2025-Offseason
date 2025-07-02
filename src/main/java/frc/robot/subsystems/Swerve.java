@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.lib.simulation.SwerveModuleSim;
 
 public class Swerve extends SubsystemBase {
     private static Swerve SWERVE;
@@ -194,7 +195,7 @@ public class Swerve extends SubsystemBase {
         ChassisSpeeds discretizeSpeeds = ChassisSpeeds.discretize(speeds, Robot.kDefaultPeriod);
         SwerveModuleState[] states = Constants.Swerve.KINEMATICS.toSwerveModuleStates(discretizeSpeeds);
         this.setDesiredState(states);
-
+        if (Robot.isSimulation()) this.setSimDesiredState(states);
         // this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions()) // TODO: TEST
     }
 
@@ -268,8 +269,8 @@ public class Swerve extends SubsystemBase {
     @Override
     public void periodic() {
         // Add vision measurement...
-        this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions());
-        this.pose.accept(new Pose2d());
+        this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), (Robot.isSimulation() ? this.getSimModulePositions() : this.getModulePositions()));
+        this.pose.accept(this.getPose());
 
         // SmartDashboard.putData("Quasistatic Forward", this.getQuasistaticForward());
         // SmartDashboard.putData("Dynamic Forward", this.getDynamicForward());
@@ -282,5 +283,27 @@ public class Swerve extends SubsystemBase {
         builder.addDoubleProperty("GyroAngle (Deg)", () -> Units.radiansToDegrees(this.getGyroAngle()), null);
         builder.addDoubleProperty("Vision Angle", () -> this.getPose().getRotation().getDegrees(), null);
         builder.addStringProperty("Pose", () -> this.getPose().toString(), null);
+    }
+
+    // ---------- Simulation ---------- //
+    private final SwerveModuleSim simFrontLeft = new SwerveModuleSim();
+    private final SwerveModuleSim simFrontRight = new SwerveModuleSim();
+    private final SwerveModuleSim simBackLeft = new SwerveModuleSim();
+    private final SwerveModuleSim simBackRight = new SwerveModuleSim();
+
+    public void setSimDesiredState(SwerveModuleState[] states) {
+        this.simFrontLeft.setDesiredState(states[0]);
+        this.simFrontRight.setDesiredState(states[1]);
+        this.simBackLeft.setDesiredState(states[2]);
+        this.simBackRight.setDesiredState(states[3]);
+    }
+
+    public SwerveModulePosition[] getSimModulePositions() {
+        return new SwerveModulePosition[] {
+            this.simFrontLeft.getPosition(),
+            this.simFrontRight.getPosition(),
+            this.simBackLeft.getPosition(),
+            this.simBackRight.getPosition()
+        };
     }
 }

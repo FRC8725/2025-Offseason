@@ -20,13 +20,13 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.ScoreLevel;
 import frc.robot.subsystems.SuperStructure.State;
 
 public class CoralSim extends SubsystemBase {
     private Pose3d pose = new Pose3d(-1000.0, -1000.0, -1000.0, new Rotation3d());
-    private Pose3d[] scorePoses = new Pose3d[]{};
     private final Set<Pose3d> scoreLocations = new HashSet<>();
-    private CoralSimLocation location = CoralSimLocation.Floor;
+    private CoralSimLocation location = CoralSimLocation.Hiden;
     private final Supplier<Pose2d> swervePose;
     private final SuperStructure superStructure;
     private SuperStructure.State lastState = SuperStructure.State.Start;
@@ -43,18 +43,6 @@ public class CoralSim extends SubsystemBase {
         Intake, Claw, Floor, Hiden
     }
 
-    public enum CoralSimScoreLocation {
-        G_L4(new Pose3d(5.27, 3.86, 1.75, new Rotation3d(0.0, Math.PI / 2.0, 0.0))),
-        D_L4(new Pose3d(4.24, 3.27, 1.75, new Rotation3d(0.0, Math.PI / 2.0, 0.0))),
-        C_L4(new Pose3d(3.96, 3.43, 1.75, new Rotation3d(0.0, Math.PI / 2.0, 0.0)));
-
-        public final Pose3d pose;
-
-        CoralSimScoreLocation(Pose3d pose) {
-            this.pose = pose;
-        }
-    }
-
     public CoralSim(SuperStructure superStructure, Supplier<Pose2d> swervePose) {
         this.superStructure = superStructure;
         this.swervePose = swervePose;
@@ -68,19 +56,41 @@ public class CoralSim extends SubsystemBase {
             Intake.hasCoral = true;
         }
         // PreHandoff to Handoff
-        if (this.lastState != this.superStructure.state && this.superStructure.state == State.Handoff) {
+        if (this.lastState != this.superStructure.state && this.superStructure.state == State.Handoff && 
+            this.superStructure.input.get().wantedScoringLevel != ScoreLevel.Through)
+        {
             this.setLocation(CoralSimLocation.Claw);
             Arm.hasObject = true;
             Intake.hasCoral = false;
         }
-        // Score
+        // Reverse hand off
+        if (this.lastState != this.superStructure.state && this.superStructure.state == State.ReverseHandOff) {
+            this.setLocation(CoralSimLocation.Intake);
+            Arm.hasObject = false;
+            Intake.hasCoral = true;
+        }
+        // L2~L4 Score
         if (this.lastState != this.superStructure.state && (this.superStructure.state == State.PlaceL4 ||
             this.superStructure.state == State.PlaceL3 || this.superStructure.state == State.PlaceL2))
         {
             this.setLocation(CoralSimLocation.Hiden);
             int index = this.superStructure.input.get().wantedScoringLevel.index;
-            this.addScoringPose(this.coralSimLocation.get(index * 4));
+            this.addScoringPose(this.coralSimLocation.get(index * 12));
             Arm.hasObject = false;
+            this.setLocation(CoralSimLocation.Floor);
+        }
+        // Through
+        if (this.lastState != this.superStructure.state && this.superStructure.state == State.Through) {
+            this.setLocation(CoralSimLocation.Hiden);
+            this.addScoringPose(this.coralSimLocation.get(0));
+            Intake.hasCoral = false;
+            this.setLocation(CoralSimLocation.Floor);
+        }
+        // PreGoundIntakeAlgae
+        if (this.lastState != this.superStructure.state && this.superStructure.state == State.AlgaeGroundIntake) {
+            this.setLocation(CoralSimLocation.Claw);
+            Arm.hasObject = true;
+
         }
         this.lastState = this.superStructure.state;
         switch (this.location) {
@@ -107,15 +117,12 @@ public class CoralSim extends SubsystemBase {
                 break;
             
             case Floor:
-                this.pose = this.canIntakeCoral() ? this.pose : new Pose3d(0.64, 0.1, Units.inchesToMeters(4.5 / 2.0), new Rotation3d(0.0, 0.0, Math.PI / 2.0));
+                this.pose = new Pose3d(0.64, 0.1, Units.inchesToMeters(4.5 / 2.0), new Rotation3d(0.0, 0.0, Math.PI / 2.0));
                 break;
 
             default:
                 this.pose = new Pose3d(-1000.0, -1000.0, -500.0, new Rotation3d());
         }
-
-        this.scorePoses = this.scoreLocations.stream()
-            .toArray(Pose3d[]::new);
 
         this.coralPosePublisher.accept(this.pose);
         this.reefPosesPublisher.accept(

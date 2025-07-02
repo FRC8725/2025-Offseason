@@ -42,7 +42,7 @@ public class Intake extends SubsystemBase {
     public static LifterState lifterState = LifterState.Up;
     public static RollerState rollerState = RollerState.Off;
     public enum LifterState {
-        Down(Units.degreesToRadians(140.0)),
+        Down(Units.degreesToRadians(126.0)),
         Through(Units.degreesToRadians(37.0)),
         Up(0.0),
         OperatorControl(0.0);
@@ -148,7 +148,7 @@ public class Intake extends SubsystemBase {
 
     // ---------- Function ---------- //
     public boolean atSetpoint() {
-        return Math.abs(this.lifter.getPosition().getValueAsDouble() - this.getEffectiveLifterState().value) < Constants.Intake.TOLERANCE;
+        return Math.abs(this.getPosition() - this.getEffectiveLifterState().value) < Constants.Intake.TOLERANCE;
     }
     
     public double getPosition() {
@@ -173,7 +173,7 @@ public class Intake extends SubsystemBase {
 
     public LifterState getEffectiveLifterState() {
         if (lifterState != LifterState.OperatorControl) return lifterState;
-        // else if (this.isUnsafeToGoUp()) return LifterState.Down;
+        else if (this.isUnsafeToGoUp()) return LifterState.Down;
         else if (this.hasCoral()) return LifterState.Up;
         else if (this.input.get().wantGroundIntake) return LifterState.Down;
         else return LifterState.Up;
