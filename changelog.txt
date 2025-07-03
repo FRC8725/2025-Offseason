@@ -144,3 +144,12 @@ v1.9.1
 1. Add pari for elevatorToArmWhenIntakeDown
 2. Add through coral simulation
 3. Add swerve simualtion (need test)
+
+v2.0
+1. Fix elevator max height
+2. Fix swerve proccess bug
+3. Fix intake position
+4. Test swerve feedforward
+5. Test PreBarge-Barge
+6. Test PreProcessor-Processor
+7. Test Arm.slowout voltage

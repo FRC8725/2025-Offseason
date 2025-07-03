@@ -42,7 +42,7 @@ public class Intake extends SubsystemBase {
     public static LifterState lifterState = LifterState.Up;
     public static RollerState rollerState = RollerState.Off;
     public enum LifterState {
-        Down(Units.degreesToRadians(126.0)),
+        Down(Units.degreesToRadians(140.0)),
         Through(Units.degreesToRadians(37.0)),
         Up(0.0),
         OperatorControl(0.0);
@@ -193,9 +193,12 @@ public class Intake extends SubsystemBase {
         builder.addBooleanProperty("IsZeroed", () -> isZeroed, null);
         builder.addBooleanProperty("HasCoral", () -> hasCoral, null);
         builder.addBooleanProperty("atsetpoint", () -> this.atSetpoint(), null);
+        builder.addBooleanProperty("isUnsafe", () -> this.isUnsafeToGoUp(), null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
         builder.addStringProperty("Effective RollerState", () -> this.getEffectiveRollerState().toString(), null);
         builder.addStringProperty("LifterState", () -> this.getEffectiveLifterState().toString(), null);
+        builder.addDoubleProperty("unsafe limit arm angle", () -> Math.abs(MathUtil.angleModulus(Arm.getInstance().getPosition())), null);
+        builder.addDoubleProperty("unsafe limit", () -> Math.PI - Arm.elevatorToArm.get(Elevator.getInstance().getHeight()), null);
     }
 
     // --------- Simulation ---------- //

@@ -26,7 +26,7 @@ import frc.robot.subsystems.SuperStructure.State;
 public class CoralSim extends SubsystemBase {
     private Pose3d pose = new Pose3d(-1000.0, -1000.0, -1000.0, new Rotation3d());
     private final Set<Pose3d> scoreLocations = new HashSet<>();
-    private CoralSimLocation location = CoralSimLocation.Hiden;
+    private CoralSimLocation location = CoralSimLocation.Floor;
     private final Supplier<Pose2d> swervePose;
     private final SuperStructure superStructure;
     private SuperStructure.State lastState = SuperStructure.State.Start;

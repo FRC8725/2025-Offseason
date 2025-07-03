@@ -1,14 +1,18 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Volt;
+import static edu.wpi.first.units.Units.Volts;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,8 +21,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
-import frc.robot.lib.simulation.SwerveModuleSim;
 
 public class SwerveModule implements Sendable {
     // ---------- Object ---------- //
@@ -44,7 +48,7 @@ public class SwerveModule implements Sendable {
         this.encoder = new CANcoder(canCoderId);
 
         this.turnPid = new PIDController(3.6, 0.1, 0.0);
-        this.feedforward = new SimpleMotorFeedforward(0.2187, 0.0019282, 0.00021717);
+        this.feedforward = new SimpleMotorFeedforward(0.2199442, 2.18943902193, 0.01);
 
         this.encoderOffset = encoderOffset;
         this.turnPid.enableContinuousInput(-Math.PI, Math.PI);
@@ -87,7 +91,7 @@ public class SwerveModule implements Sendable {
 
         this.driveMotor.getConfigurator().apply(driveConfig);
         this.turnMotor.getConfigurator().apply(turnConfig);
-        this.encoder.getConfigurator().apply(canCoderConfig);
+        // this.encoder.getConfigurator().apply(canCoderConfig);
     }
 
     public void resetMotor() {
@@ -98,8 +102,7 @@ public class SwerveModule implements Sendable {
     // ---------- Function ---------- //
     public double getTurnPosition() {
         double position = this.encoder.getAbsolutePosition().getValueAsDouble();
-        position %= 1.0;
-        return Units.rotationsToRadians(position > 0.5 ? position - 1.0 : position);
+        return MathUtil.angleModulus(Units.rotationsToRadians(position));
     }
 
     public double getInputVolt() {
@@ -108,22 +111,26 @@ public class SwerveModule implements Sendable {
 
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-            this.driveMotor.getPosition().getValueAsDouble() * 2.0 * Constants.Swerve.WHEEL_RADIUS * Math.PI,
+            this.getDrivePosition(),
             new Rotation2d(this.getTurnPosition()));
     }
 
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-            this.driveMotor.getVelocity().getValueAsDouble() * 2.0 * Constants.Swerve.WHEEL_RADIUS * Math.PI,
+            this.getDriveVolocity(),
             new Rotation2d(this.getTurnPosition()));
     }
 
     public double getDriveVolocity() {
-        return this.driveMotor.getVelocity().getValueAsDouble();
+        return this.driveMotor.getVelocity().getValueAsDouble() * 2.0 * Constants.Swerve.WHEEL_RADIUS * Math.PI;
     }
 
-    public double gerDrivePosition() {
-        return this.driveMotor.getPosition().getValueAsDouble();
+    public double getDrivePosition() {
+        return this.driveMotor.getPosition().getValueAsDouble() * 2.0 * Constants.Swerve.WHEEL_RADIUS * Math.PI;
+    }
+
+    public double getDriveAcceleration() {
+        return this.driveMotor.getAcceleration().getValueAsDouble() * 2.0 * Constants.Swerve.WHEEL_RADIUS * Math.PI;
     }
 
     // ---------- Method ---------- //
@@ -137,7 +144,7 @@ public class SwerveModule implements Sendable {
         this.goalTurnPosition = state.angle.getRadians();
         
         this.goalDriveVelocity = state.speedMetersPerSecond * Math.cos(this.getTurnPosition() - this.goalTurnPosition);
-        this.driveVoltage = this.feedforward.calculate(this.getDriveVolocity(), this.driveMotor.getAcceleration().getValueAsDouble());
+        this.driveVoltage = this.feedforward.calculate(goalDriveVelocity, this.getDriveAcceleration());
         double turnVoltage = this.turnPid.calculate(this.getTurnPosition(), goalTurnPosition);
 
         this.driveMotor.setVoltage(this.driveVoltage);
@@ -145,7 +152,7 @@ public class SwerveModule implements Sendable {
     }
 
     public void setDriveVoltage(double voltage) {
-        this.driveMotor.setVoltage(voltage);
+        this.driveMotor.setControl(new VoltageOut(0.0).withOutput(Volt.of(voltage)));
     }
 
     public void stop() {

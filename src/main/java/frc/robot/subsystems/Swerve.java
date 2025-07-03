@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -30,9 +31,11 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Robot;
@@ -44,19 +47,19 @@ public class Swerve extends SubsystemBase {
     private final SwerveModule frontLeft = new SwerveModule(
         2, 1, 9,
         false, true,
-        -0.1123046875);
+        0.05322265625);
     private final SwerveModule frontRight = new SwerveModule(
         4, 3, 10,
         true, true,
-        -0.4814453125);
+        0.3681640625);
     private final SwerveModule backLeft = new SwerveModule(
         6, 5, 11,
         false, true,
-        -0.196533203125);
+        -0.245361328125);
     private final SwerveModule backRight = new SwerveModule(
         8, 7, 12,
         true, true,
-        -0.276611328125);
+        -0.3212890625);
     private final AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
         Constants.Swerve.KINEMATICS,
@@ -71,13 +74,15 @@ public class Swerve extends SubsystemBase {
     private final Boolean[] probablyScoredPoses = new Boolean[24 * 4];
     public boolean isAligned = false;
     private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
-        new SysIdRoutine.Config(),
+        new SysIdRoutine.Config(
+            null,
+            Volts.of(4),
+            null,
+            (state) -> SignalLogger.writeString("frontLeft", state.toString())
+        ),
         new SysIdRoutine.Mechanism(
             (volts) -> this.setSwerveVoltage(volts.in(Volts)),
-            log -> log.motor("frontLeft")
-                .voltage(Volts.of(this.frontLeft.getInputVolt()))
-                .linearVelocity(MetersPerSecond.of(this.frontLeft.getDriveVolocity()))
-                .linearPosition(Meters.of(this.frontLeft.gerDrivePosition())),
+            null,
             this
         ));
 
@@ -160,7 +165,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public double getGyroAngle() {
-        return MathUtil.angleModulus(Units.degreesToRadians(this.gyro.getAngle()));
+        return MathUtil.angleModulus(Units.degreesToRadians(-this.gyro.getAngle()));
     }
 
     public double score(Pose2d pose) {
@@ -192,7 +197,8 @@ public class Swerve extends SubsystemBase {
 
     // ---------- Method ---------- //
     public void driveRobotRelative(ChassisSpeeds speeds) {
-        ChassisSpeeds discretizeSpeeds = ChassisSpeeds.discretize(speeds, Robot.kDefaultPeriod);
+        ChassisSpeeds relativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, new Rotation2d(this.getGyroAngle()));
+        ChassisSpeeds discretizeSpeeds = ChassisSpeeds.discretize(relativeSpeeds, Robot.kDefaultPeriod);
         SwerveModuleState[] states = Constants.Swerve.KINEMATICS.toSwerveModuleStates(discretizeSpeeds);
         this.setDesiredState(states);
         if (Robot.isSimulation()) this.setSimDesiredState(states);
@@ -261,8 +267,11 @@ public class Swerve extends SubsystemBase {
     public Command sysIdTest() {
         return Commands.sequence(
             this.getQuasistaticBackward().withTimeout(5.0),
+            new WaitCommand(1.0),
             this.getQuasistaticForward().withTimeout(5.0),
+            new WaitCommand(1.0),
             this.getDynamicBackward().withTimeout(2.0),
+            new WaitCommand(1.0),
             this.getDynamicForward().withTimeout(2.0));
     }
 
@@ -271,11 +280,6 @@ public class Swerve extends SubsystemBase {
         // Add vision measurement...
         this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), (Robot.isSimulation() ? this.getSimModulePositions() : this.getModulePositions()));
         this.pose.accept(this.getPose());
-
-        // SmartDashboard.putData("Quasistatic Forward", this.getQuasistaticForward());
-        // SmartDashboard.putData("Dynamic Forward", this.getDynamicForward());
-        // SmartDashboard.putData("Quasistatic Backward", this.getQuasistaticBackward());
-        // SmartDashboard.putData("Dynamic Backward", this.getDynamicBackward());
     }
 
     @Override
@@ -283,6 +287,7 @@ public class Swerve extends SubsystemBase {
         builder.addDoubleProperty("GyroAngle (Deg)", () -> Units.radiansToDegrees(this.getGyroAngle()), null);
         builder.addDoubleProperty("Vision Angle", () -> this.getPose().getRotation().getDegrees(), null);
         builder.addStringProperty("Pose", () -> this.getPose().toString(), null);
+        builder.addBooleanProperty("atGoodDistance", () -> this.atGoodScoringDistance(), null);
     }
 
     // ---------- Simulation ---------- //

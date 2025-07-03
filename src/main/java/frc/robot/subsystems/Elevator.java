@@ -50,10 +50,10 @@ public class Elevator extends SubsystemBase {
         PopciclePickup(0.065),
         PreScore(Units.inchesToMeters(20.0 - 1.0)),
         Through(Units.inchesToMeters(38.0)),
-        L2(Units.inchesToMeters(15.0 - 1.0)),
+        L2(Units.inchesToMeters(15.0)),
         L3(L2.value + Units.inchesToMeters(15.8701)),
-        L4(Units.inchesToMeters(54.5 - 0.125 - 1.0)),
-        Barge(Units.inchesToMeters(55.0 - 0.125)),
+        L4(Units.inchesToMeters(49.0 - 1.0)),
+        Barge(Units.inchesToMeters(49.0 - 1.0)),
         ScoreL2(L2.value - Units.inchesToMeters(3.5)),
         ScoreL3(L3.value - Units.inchesToMeters(3.5)),
         ScoreL4(L4.value - Units.inchesToMeters(1.0)),
@@ -112,7 +112,7 @@ public class Elevator extends SubsystemBase {
         MotionMagicConfigs motionMagicConfig = new MotionMagicConfigs();
         motionMagicConfig
             .withMotionMagicAcceleration(14.0)
-            .withMotionMagicCruiseVelocity(3.0 / 2.0);
+            .withMotionMagicCruiseVelocity(3.0 / 5.0);
 
         FeedbackConfigs feedbackConfig = new FeedbackConfigs();
         feedbackConfig.SensorToMechanismRatio = Constants.Elevator.MECHANISM_RATIO;

@@ -29,7 +29,7 @@ public final class Constants {
 
         // Height
         public static final double SAFE_HEIGHT = Units.inchesToMeters(32.5);
-        public static final double MAX_EXTENSION = Units.inchesToMeters(55.0);
+        public static final double MAX_EXTENSION = Units.inchesToMeters(49.25);
 
         // Tolerance
         public static final double TOLERANCE = 0.01;
@@ -99,7 +99,7 @@ public final class Constants {
         public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
         // Phycical Limit
-        public static final double MAX_MOTOR_RPM = 5500.0;
+        public static final double MAX_MOTOR_RPM = 3000.0;
         public static final double MAX_VELOCITY = (MAX_MOTOR_RPM / 60.0) / DRIVE_GEAR_RATIO * 2.0 * WHEEL_RADIUS * Math.PI;
         public static final double MAX_ANGULAR_VELOCITY = MAX_VELOCITY / (TRACK_WIDTH * Math.sqrt(2.0)); // TODO: Research HOW
 
@@ -188,7 +188,7 @@ public final class Constants {
         new Pair<>(Units.degreesToRadians(51.0), Units.inchesToMeters(8.0)),
         new Pair<>(Units.degreesToRadians(58.0), Units.inchesToMeters(9.0)),
         new Pair<>(Units.degreesToRadians(63.0), Units.inchesToMeters(10.0)),
-        new Pair<>(Units.degreesToRadians(65.0), Units.inchesToMeters(11.0)),
+        new Pair<>(Units.degreesToRadians(68.0), Units.inchesToMeters(11.0)), // TODO 7/3
         new Pair<>(Units.degreesToRadians(77.0), Units.inchesToMeters(13.0)),
         new Pair<>(Units.degreesToRadians(95.0), Units.inchesToMeters(16.0)),
         new Pair<>(Units.degreesToRadians(105.0), Units.inchesToMeters(18.0)),

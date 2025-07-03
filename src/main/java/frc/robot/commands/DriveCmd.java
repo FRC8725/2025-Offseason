@@ -2,7 +2,6 @@
 package frc.robot.commands;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -142,8 +141,8 @@ public class DriveCmd extends Command {
 	}
 
 	public ChassisSpeeds getSpeeds() {
-		double x = this.driveInputs.get().leftX;
-		double y = this.driveInputs.get().leftY;
+		double x = this.driveInputs.get().leftY;
+		double y = this.driveInputs.get().leftX;
 		double rot = this.driveInputs.get().rightX;
 
 		double theta = Math.atan2(y, x);

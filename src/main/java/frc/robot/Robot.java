@@ -86,9 +86,6 @@ public class Robot extends TimedRobot {
 			Elevator.getInstance().setCoastMode(false);
 			Arm.getInstance().setCoastEnabled(false);
 			this.wasCoastModeEnabled = false;
-		} else {
-			this.wasCoastModeEnabled = false;
-			this.coastModeToggle.setBoolean(false);
 		}
 	}
 

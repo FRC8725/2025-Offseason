@@ -70,7 +70,7 @@ public class Arm extends SubsystemBase {
         fastIdle(-0.1),
         in(-1.0),
         out(1.0),
-        slowout(0.075),
+        slowout(0.5),
         descore(0.8);
 
         public final double value;
@@ -220,7 +220,7 @@ public class Arm extends SubsystemBase {
         lifterConfig.MotionMagic
             .withMotionMagicJerk(9999.0)
             .withMotionMagicAcceleration(4.5)
-            .withMotionMagicCruiseVelocity(2.0 / 2.0); // RPS
+            .withMotionMagicCruiseVelocity(2.0 / 3.0); // RPS
         lifterConfig.CurrentLimits
             .withStatorCurrentLimitEnable(true)
             .withStatorCurrentLimit(70.0)
