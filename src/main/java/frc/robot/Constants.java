@@ -48,7 +48,7 @@ public final class Constants {
         public static final double CURRENT_DRAW = 15.0;
 
         // Safe
-        public static final double SAFE_INSIDE_ROBOT_ANGLE = Units.degreesToRadians(32.5);
+        public static final double SAFE_INSIDE_ROBOT_ANGLE = Units.degreesToRadians(40.0);
         public static final double SAFE_DISTANCE_FROM_REEF_CENTER = Units.inchesToMeters(70.0);
         public static final double SAFE_BARGE_DISTANCE = Units.inchesToMeters(50.0);
         public static final double SAFE_PLACEMENT_DISANCE = Units.inchesToMeters(60.0);
@@ -137,7 +137,7 @@ public final class Constants {
         public static final double SAFE_WALL_DISTANCE = 1.0;
 
         // Distance
-        public static final double ROBOT_REEF_CENTER_DISTANCE = Units.inchesToMeters(32.25 + 18.0);
+        public static final double ROBOT_REEF_CENTER_DISTANCE = Units.inchesToMeters(53.0);
         public static final double REEF_BRANCE_OFFSET_DISTANCE = Units.inchesToMeters(12.9375 / 2.0);
         public static final double TROUGH_OFFSET_DISTANCE = Units.inchesToMeters(14.5 / 2.0);
 
@@ -184,7 +184,7 @@ public final class Constants {
         new Pair<>(Units.degreesToRadians(26.0), Units.inchesToMeters(4.0)),
         new Pair<>(Units.degreesToRadians(30.0), Units.inchesToMeters(5.0)),
         new Pair<>(Units.degreesToRadians(35.0), Units.inchesToMeters(6.0)),
-        new Pair<>(Units.degreesToRadians(43.0), Units.inchesToMeters(7.0)),
+        new Pair<>(Units.degreesToRadians(45.0), Units.inchesToMeters(7.0)),
         new Pair<>(Units.degreesToRadians(51.0), Units.inchesToMeters(8.0)),
         new Pair<>(Units.degreesToRadians(58.0), Units.inchesToMeters(9.0)),
         new Pair<>(Units.degreesToRadians(63.0), Units.inchesToMeters(10.0)),
@@ -215,16 +215,17 @@ public final class Constants {
         for (int angle = 0; angle < 360; angle += 60) {
             for (int direction : new int[]{1, -1}) {
                 for (int side : new int[]{1, -1}) {
-                    Rotation2d angleRot = new Rotation2d(Units.degreesToRadians(angle));
-                    Rotation2d angleRotPlus90 = new Rotation2d(Units.degreesToRadians(angle + 90.0));
-
                     Pose2d pose = new Pose2d(Field.BLUE_REEF_CENTER, Rotation2d.kZero)
                         .plus(new Transform2d(
-                            new Translation2d(-Field.ROBOT_REEF_CENTER_DISTANCE, angleRot),
+                            new Translation2d(
+                                -Field.ROBOT_REEF_CENTER_DISTANCE,
+                                new Rotation2d(Units.degreesToRadians(angle))),
                             Rotation2d.kZero))
                         .plus(new Transform2d(
-                            new Translation2d(direction * Field.REEF_BRANCE_OFFSET_DISTANCE, angleRotPlus90),
-                            Rotation2d.kZero))
+                            new Translation2d(
+                                direction * Field.REEF_BRANCE_OFFSET_DISTANCE,
+                                new Rotation2d(Units.degreesToRadians(angle + 90.0))),
+                            new Rotation2d(Units.degreesToRadians(angle))))
                         .plus(new Transform2d(
                             0.0, side * Arm.CORAL_CENTER_OFFSET, new Rotation2d(-side * Math.PI / 2.0)));
                     

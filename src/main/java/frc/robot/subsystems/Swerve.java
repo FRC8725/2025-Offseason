@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.ArrayList;
@@ -39,7 +37,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.lib.simulation.SwerveModuleSim;
 
 public class Swerve extends SubsystemBase {
     private static Swerve SWERVE;
@@ -71,7 +68,7 @@ public class Swerve extends SubsystemBase {
     private final StructPublisher<Pose2d> pose = NetworkTableInstance.getDefault()
         .getStructTopic("Component/SwervePose", Pose2d.struct).publish();
 
-    private final Boolean[] probablyScoredPoses = new Boolean[24 * 4];
+    private Boolean[] probablyScoredPoses = new Boolean[24 * 4];
     public boolean isAligned = false;
     private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -87,9 +84,9 @@ public class Swerve extends SubsystemBase {
         ));
 
     // ---------- Path PID ---------- //
-    private final PIDController xController = new PIDController(10.0, 0.0, 0.0);
-    private final PIDController yController = new PIDController(10.0, 0.0, 0.0);
-    private final PIDController headingController = new PIDController(7.5, 0.0, 0.0);
+    private final PIDController xController = new PIDController(12.0, 0.0, 0.0);
+    private final PIDController yController = new PIDController(12.0, 0.0, 0.0);
+    private final PIDController headingController = new PIDController(5.0, 0.0, 0.0);
     
 
     public Swerve() {
@@ -99,6 +96,10 @@ public class Swerve extends SubsystemBase {
         Shuffleboard.getTab("Swerve").add("Back Left", this.backLeft);
         Shuffleboard.getTab("Swerve").add("Back Right", this.backRight);
         Shuffleboard.getTab("Swerve").add("Subsystem", this);
+
+        for (int i = 0; i < this.probablyScoredPoses.length; i++) {
+            this.probablyScoredPoses[i] = false;
+        }
         this.headingController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
@@ -108,7 +109,7 @@ public class Swerve extends SubsystemBase {
 
     // ---------- Function ---------- //
     public Pose2d getPose() {
-        return this.poseEstimator.getEstimatedPosition();
+        return Robot.isSimulation() ? this.simPose : this.poseEstimator.getEstimatedPosition();
     }
 
     public Optional<Map.Entry<Integer, Pose2d>> getClosestFudgedScoringPose() {
@@ -201,7 +202,7 @@ public class Swerve extends SubsystemBase {
         ChassisSpeeds discretizeSpeeds = ChassisSpeeds.discretize(relativeSpeeds, Robot.kDefaultPeriod);
         SwerveModuleState[] states = Constants.Swerve.KINEMATICS.toSwerveModuleStates(discretizeSpeeds);
         this.setDesiredState(states);
-        if (Robot.isSimulation()) this.setSimDesiredState(states);
+        if (Robot.isSimulation()) this.simDriveRobotRelative(discretizeSpeeds);
         // this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions()) // TODO: TEST
     }
 
@@ -209,10 +210,11 @@ public class Swerve extends SubsystemBase {
         Pose2d pose = this.getPose();
 
         ChassisSpeeds speeds = new ChassisSpeeds(
-            sample.vx + this.xController.calculate(pose.getX(), sample.x),
-            sample.vy + this.yController.calculate(pose.getY(), sample.y),
-            sample.omega + this.headingController.calculate(pose.getRotation().getRadians(), sample.heading)
+            sample.vx + -this.xController.calculate(pose.getX(), sample.x),
+            sample.vy + -this.yController.calculate(pose.getY(), sample.y),
+            sample.omega + -this.headingController.calculate(pose.getRotation().getRadians(), sample.heading)
         );
+        SmartDashboard.putNumber("Speeds", this.xController.calculate(pose.getX(), sample.x));
 
         this.driveRobotRelative(speeds);
     }
@@ -223,6 +225,7 @@ public class Swerve extends SubsystemBase {
             this.xController.calculate(currentPose.getX(), goalPose.getX()),
             this.yController.calculate(currentPose.getY(), goalPose.getY()),
             this.headingController.calculate(currentPose.getRotation().getRadians(), goalPose.getRotation().getRadians()));
+       
         this.driveRobotRelative(speeds);
     }
 
@@ -235,6 +238,17 @@ public class Swerve extends SubsystemBase {
 
     public void resetPose(Pose2d pose) {
         this.poseEstimator.resetPose(pose);
+        this.simPose = pose;
+    }
+
+    public void resetYaw(double angle) {
+        this.gyro.setAngleAdjustment(Units.radiansToDegrees(MathUtil.angleModulus(angle)));
+    }
+
+    public void markPoseScored() {
+        if (!this.getClosestFudgedScoringPose().isEmpty()) return;
+        int index = this.getClosestFudgedScoringPose().get().getKey();
+        this.probablyScoredPoses[index * 4 + SuperStructure.getInstance().input.get().wantedScoringLevel.index] = true;
     }
 
     public void stopModules() {
@@ -278,7 +292,7 @@ public class Swerve extends SubsystemBase {
     @Override
     public void periodic() {
         // Add vision measurement...
-        this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), (Robot.isSimulation() ? this.getSimModulePositions() : this.getModulePositions()));
+        this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions());
         this.pose.accept(this.getPose());
     }
 
@@ -291,24 +305,15 @@ public class Swerve extends SubsystemBase {
     }
 
     // ---------- Simulation ---------- //
-    private final SwerveModuleSim simFrontLeft = new SwerveModuleSim();
-    private final SwerveModuleSim simFrontRight = new SwerveModuleSim();
-    private final SwerveModuleSim simBackLeft = new SwerveModuleSim();
-    private final SwerveModuleSim simBackRight = new SwerveModuleSim();
+    private Pose2d simPose = new Pose2d();
+    private double simAngle = 0.0;
 
-    public void setSimDesiredState(SwerveModuleState[] states) {
-        this.simFrontLeft.setDesiredState(states[0]);
-        this.simFrontRight.setDesiredState(states[1]);
-        this.simBackLeft.setDesiredState(states[2]);
-        this.simBackRight.setDesiredState(states[3]);
-    }
-
-    public SwerveModulePosition[] getSimModulePositions() {
-        return new SwerveModulePosition[] {
-            this.simFrontLeft.getPosition(),
-            this.simFrontRight.getPosition(),
-            this.simBackLeft.getPosition(),
-            this.simBackRight.getPosition()
-        };
+    public void simDriveRobotRelative(ChassisSpeeds speeds) {        
+        if (speeds.vxMetersPerSecond != 0.0 || speeds.vyMetersPerSecond != 0.0 || speeds.omegaRadiansPerSecond != 0.0) {
+            double simPoseX = this.simPose.getX() + -speeds.vxMetersPerSecond * 0.02;
+            double simPoseY = this.simPose.getY() + -speeds.vyMetersPerSecond * 0.02;
+            this.simAngle -= speeds.omegaRadiansPerSecond * 0.02;
+            this.simPose = new Pose2d(simPoseX, simPoseY, new Rotation2d(this.simAngle));
+        }
     }
 }

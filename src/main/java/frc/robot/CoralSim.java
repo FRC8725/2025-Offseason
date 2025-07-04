@@ -14,6 +14,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.simulation.AprilTagsSim;
 import frc.robot.subsystems.Arm;
@@ -93,6 +95,9 @@ public class CoralSim extends SubsystemBase {
 
         }
         this.lastState = this.superStructure.state;
+        if (DriverStation.isAutonomous() && Arm.hasObject) {
+            this.setLocation(CoralSimLocation.Claw);
+        }
         switch (this.location) {
             case Claw:
                 Pose3d armBasePose = new Pose3d(this.swervePose.get())
@@ -117,7 +122,8 @@ public class CoralSim extends SubsystemBase {
                 break;
             
             case Floor:
-                this.pose = new Pose3d(0.64, 0.1, Units.inchesToMeters(4.5 / 2.0), new Rotation3d(0.0, 0.0, Math.PI / 2.0));
+                // this.pose = new Pose3d(0.64, 0.1, Units.inchesToMeters(4.5 / 2.0), new Rotation3d(0.0, 0.0, Math.PI / 2.0));
+                this.pose = new Pose3d(2.08, 7.38, Units.inchesToMeters(4.5 / 2.0), new Rotation3d(0.0, 0.0, Math.PI / 2.0));
                 break;
 
             default:

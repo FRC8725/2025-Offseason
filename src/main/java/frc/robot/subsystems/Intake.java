@@ -197,8 +197,6 @@ public class Intake extends SubsystemBase {
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
         builder.addStringProperty("Effective RollerState", () -> this.getEffectiveRollerState().toString(), null);
         builder.addStringProperty("LifterState", () -> this.getEffectiveLifterState().toString(), null);
-        builder.addDoubleProperty("unsafe limit arm angle", () -> Math.abs(MathUtil.angleModulus(Arm.getInstance().getPosition())), null);
-        builder.addDoubleProperty("unsafe limit", () -> Math.PI - Arm.elevatorToArm.get(Elevator.getInstance().getHeight()), null);
     }
 
     // --------- Simulation ---------- //

@@ -35,7 +35,7 @@ public class Elevator extends SubsystemBase {
     private final TalonFX main = new TalonFX(13);
     private final TalonFX follower = new TalonFX(14);
     private final Follower follower2 = new Follower(this.main.getDeviceID(), true);
-    public final StatusSignal<Current> statorCurrent = this.main.getStatorCurrent();
+    public final StatusSignal<Current> statorCurrent = this.main.getSupplyCurrent();
     private final MotionMagicVoltage request = new MotionMagicVoltage(0);
     private double lastClampedSetpointForLogging = 0.0;
 
@@ -48,23 +48,23 @@ public class Elevator extends SubsystemBase {
         PreHandoff(Units.inchesToMeters(36.0)),
         Handoff(Units.inchesToMeters(35.25)),
         PopciclePickup(0.065),
-        PreScore(Units.inchesToMeters(20.0 - 1.0)),
+        PreScore(Units.inchesToMeters(20.0)),
         Through(Units.inchesToMeters(38.0)),
-        L2(Units.inchesToMeters(15.0)),
-        L3(L2.value + Units.inchesToMeters(15.8701)),
-        L4(Units.inchesToMeters(49.0 - 1.0)),
-        Barge(Units.inchesToMeters(49.0 - 1.0)),
-        ScoreL2(L2.value - Units.inchesToMeters(3.5)),
+        L2(Units.inchesToMeters(10.0)),
+        L3(L2.value + Units.inchesToMeters(15.25)),
+        L4(Units.inchesToMeters(49.0)),
+        Barge(Units.inchesToMeters(49.0)),
+        ScoreL2(L2.value + Units.inchesToMeters(5)),
         ScoreL3(L3.value - Units.inchesToMeters(3.5)),
         ScoreL4(L4.value - Units.inchesToMeters(1.0)),
         PostL2(L2.value - Units.inchesToMeters(3.5)), // TODO: Tune
         PostL3(L2.value - Units.inchesToMeters(6.0)), // TODO: Tune
-        LowAglae(Units.inchesToMeters(22.25 - 1.0)),
+        LowAglae(Units.inchesToMeters(22.25)),
         HighAglae(LowAglae.value + Units.inchesToMeters(15.8701)),
         AutoAlgae(Units.inchesToMeters(21.75)),
         AlgaeRest(Units.inchesToMeters(15.0)),
         SourceIntake(Units.inchesToMeters(53.0)),
-        Processor(Units.inchesToMeters(20.0 - 1.0)),
+        Processor(Units.inchesToMeters(20.0)),
         GroundAlgaeIntake(0.14);
 
         private final double value;
@@ -158,6 +158,7 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic() {
         if (!isZeroed) return;
+        this.statorCurrent.refresh();
         this.main.setControl(this.request.withPosition(this.clampSetpoint(state.value)));
         this.follower.setControl(this.follower2);
     }
@@ -197,7 +198,7 @@ public class Elevator extends SubsystemBase {
 
         double interpolationTableInput = Math.PI - Math.abs(MathUtil.angleModulus(angleForInterpolation));
 
-        double interpolatedValue = (Intake.lifterState == Intake.LifterState.Down && Intake.getInstance().atSetpoint()) ?
+        double interpolatedValue = (Intake.getInstance().getEffectiveLifterState() == Intake.LifterState.Down && Intake.getInstance().atSetpoint()) ?
             armToElevatorWhenIntakeDown.get(interpolationTableInput) :
             armToElevator.get(interpolationTableInput);
 
@@ -215,6 +216,7 @@ public class Elevator extends SubsystemBase {
         builder.addDoubleProperty("Raw Acceleration", () -> this.main.getAcceleration().getValueAsDouble(), null);
         builder.addDoubleProperty("Height", () -> this.getHeight(), null);
         builder.addDoubleProperty("MotionMagic Setpoint", () -> this.main.getClosedLoopReference().getValueAsDouble(), null);
+        builder.addDoubleProperty("Stator Current", () -> this.statorCurrent.getValueAsDouble(), null);
         builder.addBooleanProperty("atSetpoint", () -> this.atSetpoint(), null);
         builder.addBooleanProperty("isZeroed", () -> isZeroed, null);
         builder.addStringProperty("State", () -> state.toString(), null);
@@ -232,7 +234,7 @@ public class Elevator extends SubsystemBase {
         5.0,
         Units.inchesToMeters(0.75),
         0.0,
-        Units.inchesToMeters(55.0), 
+        Constants.Elevator.MAX_EXTENSION, 
         true,
         0.0);
 

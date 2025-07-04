@@ -2,6 +2,7 @@
 package frc.robot.commands;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -20,15 +21,16 @@ public class DriveCmd extends Command {
 	private final Swerve swerve;
 	private final Supplier<Joysticks.DriveInputs> driveInputs;
 	
-	private final PIDController xPid = new PIDController(0, 0, 0);
-	private final PIDController yPid = new PIDController(0, 0, 0);
-	private final PIDController turnPid = new PIDController(0, 0, 0);
+	private final PIDController xPid = new PIDController(5.0, 0.0, 0.01);
+	private final PIDController yPid = new PIDController(5.0, 0.0, 0.01);
+	private final PIDController turnPid = new PIDController(6.0, 0.0, 0.04);
 
 	private AlignMode lastAlignMode = AlignMode.None;
 
 	public DriveCmd(Swerve swerve, Supplier<Joysticks.DriveInputs> driveInputs) {
 		this.swerve = swerve;
 		this.driveInputs = driveInputs;
+		this.turnPid.enableContinuousInput(-Math.PI, Math.PI);
 		this.addRequirements(this.swerve);
 	}
 
@@ -50,6 +52,7 @@ public class DriveCmd extends Command {
 			this.turnPid.reset();
 		}
 		this.lastAlignMode = inputs.alignMode;
+		Swerve.getInstance().isAligned = false;
 
 		if (inputs.alignMode == AlignMode.None) {
 			this.swerve.driveRobotRelative(this.getSpeeds());
@@ -68,7 +71,7 @@ public class DriveCmd extends Command {
 			double fixBargeRotatin = this.fixRotationInput(
 				this.turnPid.calculate(currentAngle, rotSetpoint));
 
-			this.swerve.driveRobotRelative(new ChassisSpeeds(fixBargeX, 0.0, fixBargeRotatin));
+			this.swerve.driveRobotRelative(new ChassisSpeeds(-fixBargeX, 0.0, -fixBargeRotatin));
 		} else {
 			Pose2d pose = null;
 			switch (this.driveInputs.get().alignMode) {
@@ -77,8 +80,8 @@ public class DriveCmd extends Command {
 					break;
 				
 				case ReefAlign:
-					// Optional<Map.Entry<Integer, Pose2d>> closestFudgedScoringPose = this.swerve.getClosestFudgedScoringPose();
-					pose = this.swerve.getClosestFudgedScoringPose().map(Map.Entry::getValue).orElse(null);
+					Optional<Map.Entry<Integer, Pose2d>> fudged = this.swerve.getClosestFudgedScoringPose();
+					pose = fudged.map(Map.Entry::getValue).orElse(null);
 
 					break;
 
@@ -94,14 +97,14 @@ public class DriveCmd extends Command {
 				this.swerve.driveRobotRelative(this.getSpeeds());
 			} else {
 				this.swerve.isAligned = this.swerve.withinTolerance(pose.getTranslation());
+				Pose2d swervePose = this.swerve.getPose();
 				ChassisSpeeds speeds = new ChassisSpeeds(
-					this.fixTranslationInput(
-						this.xPid.calculate(this.swerve.getPose().getX(), pose.getX())),
-					this.fixTranslationInput(
-						this.yPid.calculate(this.swerve.getPose().getY(), pose.getY())),
-					this.fixRotationInput(
-						this.turnPid.calculate(this.swerve.getPose().getRotation().getRadians(), pose.getRotation().getRadians())));
-				
+					-this.fixTranslationInput(
+						this.xPid.calculate(swervePose.getX(), pose.getX())),
+					-this.fixTranslationInput(
+						this.yPid.calculate(swervePose.getY(), pose.getY())),
+					-this.fixRotationInput(
+						this.turnPid.calculate(swervePose.getRotation().getRadians(), pose.getRotation().getRadians())));
 				this.swerve.driveRobotRelative(speeds);
 			}
 		}

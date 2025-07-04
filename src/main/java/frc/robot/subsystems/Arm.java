@@ -13,6 +13,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.math.MathUtil;
@@ -36,6 +37,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
@@ -116,13 +118,13 @@ public class Arm extends SubsystemBase {
                 case FixedAngle:
                     return this.value;
                 case ClosestToPosition:
-                    return this.value * (position > 0.0 ? 1.0 : -1.0);
+                    return position > 0.0 ? this.value : -this.value;
                 case ClosestToReef:
                     switch (sideCloserToReef) {
                         case Left:
-                            return -this.value;
-                        case Right:
                             return this.value;
+                        case Right:
+                            return -this.value;
                         case Neither:
                             return (Math.abs(this.value) < Math.PI / 2.0) ? 0.0 : Math.PI;
                         default:
@@ -131,9 +133,9 @@ public class Arm extends SubsystemBase {
                 case AlgaeScore:
                     switch (sideCloserToBarge) {
                         case Left:
-                            return -this.value;
-                        case Right:
                             return this.value;
+                        case Right:
+                            return -this.value;
                         case Neither:
                             return Math.PI;
                         default:
@@ -142,9 +144,9 @@ public class Arm extends SubsystemBase {
                 case ProcessorScore:
                     switch (sideCloserToProcessor) {
                         case Left:
-                            return -this.value;
-                        case Right:
                             return this.value;
+                        case Right:
+                            return -this.value;
                         case Neither:
                             return Math.PI;
                         default:
@@ -234,7 +236,7 @@ public class Arm extends SubsystemBase {
 
     // ---------- Method ---------- //
     public void resetRelativeFromAbsolute() {
-        this.lifter.setPosition(RobotBase.isReal() ? this.getCloseClampedPosition() : 0.5);
+        this.lifter.setPosition(RobotBase.isReal() ? this.getCloseClampedPosition() : 0.0);
         isZeroed = true;
     }
 
@@ -298,7 +300,8 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean atSafePlacementDistance() {
-        return Swerve.getInstance().getPose().getTranslation().getDistance(MathUtils.mirrorIfRed(Constants.Field.BLUE_REEF_CENTER)) > Constants.Arm.SAFE_PLACEMENT_DISANCE;
+        return Swerve.getInstance().getPose().getTranslation()
+            .getDistance(MathUtils.mirrorIfRed(Constants.Field.BLUE_REEF_CENTER)) > Constants.Arm.SAFE_PLACEMENT_DISANCE;
     }
 
     public boolean atSetpoint() {
@@ -366,10 +369,11 @@ public class Arm extends SubsystemBase {
                 MathUtils.wrapTo0_2PI(angle) - 2.0 * Math.PI)
             .filter(pos -> pos >= Constants.Arm.ALLOWED_OPERATING_MIN_RADIANS && pos <= Constants.Arm.ALLOWED_OPERATING_MAX_RADIANS)
             .collect(Collectors.toList());
+
         double actualArmPosition = this.getPosition();
         Side closeSide = this.getCloserToReef();
 
-        double p;
+        double p = 0.0;
         if (positions.size() == 1) {
             p = positions.get(0);
         } else if (respectReef) {
@@ -388,10 +392,6 @@ public class Arm extends SubsystemBase {
                 case Left:
                     if (actualArmPosition > -Math.PI / 2.0) p = positions.get(0);
                     else p = positions.get(1);
-                    break;
-
-                default:
-                    p = positions.get(0);
                     break;
             } 
         } else {
@@ -418,17 +418,23 @@ public class Arm extends SubsystemBase {
 
         double actualElevatorHeight = Elevator.getInstance().getHeight();
 
-        double limit = Intake.lifterState == Intake.LifterState.Down && Intake.getInstance().atSetpoint() ?
+        double limit = Intake.getInstance().getEffectiveLifterState() == Intake.LifterState.Down && Intake.getInstance().atSetpoint() ?
             elevatorToArmWhenIntakeDown.get(actualElevatorHeight) :
             elevatorToArm.get(actualElevatorHeight);
         
-        if (MathUtil.isNear(Math.PI, limit, 0.0001)) return p;
-        else if (actualArmPosition < 0.0) return Math.max(-Math.PI - limit, Math.min(-Math.PI + limit, p));
-        else return Math.max(Math.PI - limit, Math.min(Math.PI + limit, p));
+        if (MathUtil.isNear(Math.PI, limit, 0.0001)) {
+            return p;
+        } else if (actualArmPosition < 0.0) {
+            return Math.max(-Math.PI - limit, Math.min(-Math.PI + limit, p));
+        } else {
+            return Math.max(Math.PI - limit, Math.min(Math.PI + limit, p));
+        }
     }
 
     public double getDesiredPosition() {
-        if (this.lastUpdatedTick == Robot.tick) return this.lastCachedValue;
+        if (this.lastUpdatedTick == Robot.tick) {
+            return this.lastCachedValue;
+        }
         double value;
         double startTime = System.currentTimeMillis();
 
@@ -469,6 +475,7 @@ public class Arm extends SubsystemBase {
         builder.addBooleanProperty("Atsetpoint", () -> this.atSetpoint(), null);
         builder.addStringProperty("RollerState", () -> rollerState.toString(), null);
         builder.addStringProperty("ArmState", () -> lifterState.toString(), null);
+        builder.addStringProperty("CloserToReef", () -> this.getCloserToReef().toString(), null);
         builder.addDoubleProperty("RollerCurrent", () -> this.statorCurrent.getValueAsDouble(), null);
         builder.addDoubleProperty("Angle", () -> Units.radiansToRotations(this.getPosition()), null);
         builder.addDoubleProperty("MotionMagic Setpoint", () -> this.lifter.getClosedLoopReference().getValueAsDouble(), null);
@@ -485,10 +492,10 @@ public class Arm extends SubsystemBase {
         Constants.Arm.GEAR_RATIO,
         SingleJointedArmSim.estimateMOI(0.6, 2.5),
         0.6,
-        -Math.PI * 2.0,
-        Math.PI * 2.0,
+        Constants.Arm.ALLOWED_OPERATING_MIN_RADIANS,
+        Constants.Arm.ALLOWED_OPERATING_MAX_RADIANS,
         false,
-        0.0);
+        Math.PI);
     
     public Pose3d getArmComponentPose() {
         return Elevator.getInstance().getCarriageComponentPose()

@@ -12,6 +12,7 @@ import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Robot;
@@ -29,18 +30,19 @@ public class AutoRunnerCmd extends Command {
 	private int eventI = 0;
 	private final Swerve swerve;
 	private final Timer timer = new Timer();
+	private final List<Event> events;
 
 	public AutoRunnerCmd(SuperStructure superStructure, Trajectory<SwerveSample> trajectory, Swerve swerve) {
 		this.superStructure = superStructure;
 		this.trajectory = trajectory;
 		this.swerve = swerve;
 		this.addRequirements(this.superStructure);
-	}
 
-	private final List<Event> events = this.trajectory.events().stream()
-		.sorted(Comparator.comparingDouble(e -> e.timestamp))
-		.map(this::eventFromEventMarker)
-		.collect(Collectors.toList());
+		this.events = this.trajectory.events().stream()
+			.sorted(Comparator.comparingDouble(e -> e.timestamp))
+			.map(this::eventFromEventMarker)
+			.collect(Collectors.toList());
+	}
 
 	public class Event {
 		public final String name;
@@ -135,7 +137,7 @@ public class AutoRunnerCmd extends Command {
 	private Event eventFromEventMarker(EventMarker eventMarker) {
 		for (Event type : this.eventTypes) {
 			if (type.requireAlignment) assert type.waitCondition != null;
-			if (type.name == eventMarker.event) {
+			if (type.name.equals(eventMarker.event)) {
 				return type.copyWithTimestamp(eventMarker.timestamp);
 			}
 		}
@@ -173,8 +175,13 @@ public class AutoRunnerCmd extends Command {
 			this.currentWaitEvent = null;
 		} else if (this.currentWaitEvent == null && this.eventI < events.size() && this.shouldRunEvent(this.events.get(this.eventI))) {
 			Event ev = this.events.get(eventI++);
-			if (ev.requireAlignment) this.postAlignInputs = ev.inputs;
-			else this.superStructure.input = () -> ev.inputs;
+			if (ev.requireAlignment) {
+				this.postAlignInputs = ev.inputs;
+			} else {
+				this.superStructure.input = () -> ev.inputs;
+			}
+
+			SmartDashboard.putBoolean("ev", ev.inputs.wantGroundIntake);
 
 			if (ev.waitCondition != null) {
 				this.currentWaitEvent = ev;
@@ -191,6 +198,7 @@ public class AutoRunnerCmd extends Command {
 			this.lastPose = sample.getPose();
 			this.swerve.followSample(sample);
 		}
+		SmartDashboard.putString("CurrentWaitEvent", this.currentWaitEvent == null ? "" : this.currentWaitEvent.name);
 	}
 
 	@Override

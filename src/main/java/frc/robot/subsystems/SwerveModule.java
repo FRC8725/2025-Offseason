@@ -11,6 +11,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.sim.ChassisReference;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -18,11 +20,14 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants;
+import frc.robot.Robot;
 
 public class SwerveModule implements Sendable {
     // ---------- Object ---------- //
@@ -55,6 +60,10 @@ public class SwerveModule implements Sendable {
 
         this.configMotors(driveReverse, turnReverse);
         this.resetMotor();
+
+        this.simDriveState = this.driveMotor.getSimState();
+        this.simTurnState = this.turnMotor.getSimState();
+        this.simDriveState.Orientation = driveReverse ? ChassisReference.Clockwise_Positive : ChassisReference.CounterClockwise_Positive;
     }
 
     // ---------- Config ---------- //
@@ -101,8 +110,12 @@ public class SwerveModule implements Sendable {
 
     // ---------- Function ---------- //
     public double getTurnPosition() {
-        double position = this.encoder.getAbsolutePosition().getValueAsDouble();
-        return MathUtil.angleModulus(Units.rotationsToRadians(position));
+        if (Robot.isSimulation()) {
+            return MathUtil.angleModulus(Units.rotationsToRadians(this.turnMotor.getPosition().getValueAsDouble()));
+        } else {
+            double position = this.encoder.getAbsolutePosition().getValueAsDouble();
+            return MathUtil.angleModulus(Units.rotationsToRadians(position));
+        }
     }
 
     public double getInputVolt() {
@@ -169,5 +182,30 @@ public class SwerveModule implements Sendable {
         builder.addDoubleProperty("Goal Drive Velocity", () -> this.goalDriveVelocity, null);
         builder.addDoubleProperty("Goal Drive Voltage", () -> this.driveVoltage, null);
         builder.addDoubleProperty("Goal Turn Position", () -> this.goalTurnPosition, null);
+    }
+
+    // ---------- Simulation ---------- //
+    private final TalonFXSimState simDriveState;
+    private final TalonFXSimState simTurnState;
+
+    private final DCMotorSim simDriveModule = new DCMotorSim(
+        LinearSystemId.createDCMotorSystem(
+            DCMotor.getFalcon500(1), 0.001, Constants.Swerve.DRIVE_GEAR_RATIO),
+        DCMotor.getFalcon500(1));
+    private final DCMotorSim simTurnModule = new DCMotorSim(
+        LinearSystemId.createDCMotorSystem(
+            DCMotor.getFalcon500(1), 0.001, Constants.Swerve.TURN_GEAR_RATIO),
+        DCMotor.getFalcon500(1));
+
+    public void simulationUpdate() {
+        this.simDriveModule.setInputVoltage(this.driveVoltage);
+        this.simDriveModule.update(0.02);
+        this.simTurnModule.setInputVoltage(this.simTurnState.getMotorVoltageMeasure().in(Volts));
+        this.simTurnModule.update(0.02);
+
+        this.simDriveState.setRawRotorPosition(this.simDriveModule.getAngularPosition());
+        this.simDriveState.setRotorVelocity(this.simDriveModule.getAngularVelocity());
+        this.simTurnState.setRawRotorPosition(this.simTurnModule.getAngularPosition());
+        this.simTurnState.setRotorVelocity(this.simTurnModule.getAngularVelocity());
     }
 }

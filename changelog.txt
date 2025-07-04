@@ -153,3 +153,9 @@ v2.0
 5. Test PreBarge-Barge
 6. Test PreProcessor-Processor
 7. Test Arm.slowout voltage
+
+v2.1
+1. Simulate L1 L3 L4 coral score
+2. Adjust align distance
+3. Add auto simulation
+4. Fix swerve simualtion
