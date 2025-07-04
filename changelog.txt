@@ -159,3 +159,7 @@ v2.1
 2. Adjust align distance
 3. Add auto simulation
 4. Fix swerve simualtion
+
+v2.1.1
+1. Adjust SuperStructure.input supplier
+2. Fix score coral on simualtion reef

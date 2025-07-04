@@ -162,7 +162,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public boolean wasPoseScored(int index) {
-        return this.probablyScoredPoses[index * 4 + SuperStructure.getInstance().input.get().wantedScoringLevel.index];
+        return this.probablyScoredPoses[index * 4 + SuperStructure.getInstance().input.wantedScoringLevel.index];
     }
 
     public double getGyroAngle() {
@@ -248,7 +248,7 @@ public class Swerve extends SubsystemBase {
     public void markPoseScored() {
         if (!this.getClosestFudgedScoringPose().isEmpty()) return;
         int index = this.getClosestFudgedScoringPose().get().getKey();
-        this.probablyScoredPoses[index * 4 + SuperStructure.getInstance().input.get().wantedScoringLevel.index] = true;
+        this.probablyScoredPoses[index * 4 + SuperStructure.getInstance().input.wantedScoringLevel.index] = true;
     }
 
     public void stopModules() {

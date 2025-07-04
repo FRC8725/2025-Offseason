@@ -295,29 +295,33 @@ public final class Constants {
             Units.inchesToMeters(30.5)
         };
 
-        for (int i = 0; i < 4; i++) { // Floor
-            for (int angle = 0; angle < 360; angle += 60) { // Plane
-                Rotation2d angleRot = new Rotation2d(Units.degreesToRadians(angle));
-                Rotation2d angleRotPlus90 = new Rotation2d(Units.degreesToRadians(angle + 90.0));
-                for (int direction : new int[]{1, -1}) {
-                    Pose2d pose = new Pose2d(Field.BLUE_REEF_CENTER, Rotation2d.kZero)
-                        .plus(new Transform2d(
-                            new Translation2d(-levelDistance[i], angleRot),
-                            Rotation2d.kZero))
-                        .plus(new Transform2d(
-                            new Translation2d(direction * Field.REEF_BRANCE_OFFSET_DISTANCE, angleRotPlus90),
-                            Rotation2d.kZero));
+        
+        for (int angle = 0; angle < 360; angle += 60) { // Plane
+            for (int direction : new int[]{1, -1}) {
+                for (@SuppressWarnings("unused") int side : new int[]{1, -1}) {
+                    for (int i = 0; i < 4; i++) { // Floor
+                        Pose2d pose = new Pose2d(Field.BLUE_REEF_CENTER, Rotation2d.kZero)
+                            .plus(new Transform2d(
+                                new Translation2d(
+                                    -levelDistance[i],
+                                    new Rotation2d(Units.degreesToRadians(angle))),
+                                Rotation2d.kZero))
+                            .plus(new Transform2d(
+                                new Translation2d(
+                                    direction * Field.REEF_BRANCE_OFFSET_DISTANCE,
+                                    new Rotation2d(Units.degreesToRadians(angle + 90.0))),
+                                Rotation2d.kZero));
 
-                    Rotation3d coralRot = new Rotation3d(
-                        0.0,
-                        (i == 1 || i == 2 ? Units.degreesToRadians(35.0) :
-                        (i == 3 ? Units.degreesToRadians(90.0) : 0.0)),
-                        Units.degreesToRadians(angle + (i == 0 ? 90.0 : 0.0)));
+                        Rotation3d coralRot = new Rotation3d(
+                            0.0,
+                            (i == 1 || i == 2 ? Units.degreesToRadians(35.0) :
+                            (i == 3 ? Units.degreesToRadians(90.0) : 0.0)),
+                            Units.degreesToRadians(angle + (i == 0 ? 90.0 : 0.0)));
                         
-                    poseArray.add(new Pose3d(pose)
-                        .plus(new Transform3d(
-                            0.0, 0.0, levelHeight[i],
-                            coralRot)));
+                        poseArray.add(new Pose3d(pose)
+                            .plus(new Transform3d(
+                                0.0, 0.0, levelHeight[i], coralRot)));
+                    }
                 }
             }
         }

@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.commands.DriveCmd;
+import frc.robot.commands.SuperStructureCmd;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
@@ -14,18 +15,18 @@ public class RobotContainer {
 	// private final Vision vision = new Vision();
 	private final Elevator elevator = new Elevator();
 	private final Joysticks joysticks = new Joysticks();
-	private final SuperStructure superStructure = new SuperStructure(this.joysticks::getInput);
+	private final SuperStructure superStructure = new SuperStructure();
 	private final Arm arm = new Arm(
 		this.joysticks.wantOffsetArmPositive,
 		this.joysticks.wantOffsetArmNegative);
-	private final Intake intake = new Intake(
-		this.superStructure.input);
+	private final Intake intake = new Intake();
 
 	private final CoralSim coralSim = new CoralSim(
 		this.superStructure, this.swerve::getPose);
 	
 	public RobotContainer() {
 		this.swerve.setDefaultCommand(new DriveCmd(this.swerve, this.joysticks::getDriveInput));
+		this.superStructure.setDefaultCommand(new SuperStructureCmd(this.joysticks));
 		
 		// Shuffleboard.getTab("Vision").add(this.vision);
 		Shuffleboard.getTab("Elevator").add(this.elevator);

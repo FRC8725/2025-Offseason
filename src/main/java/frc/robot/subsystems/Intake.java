@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.function.Supplier;
-
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -33,7 +31,6 @@ public class Intake extends SubsystemBase {
     private final TalonFX roller = new TalonFX(20);
     private final TalonFX center = new TalonFX(21);
     private final LaserCan laserCan = new LaserCan(50);
-    private final Supplier<SuperStructure.StructureInput> input;
 
     public static boolean hasCoral = false;
     public static boolean isZeroed = false;
@@ -72,11 +69,10 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public Intake(Supplier<SuperStructure.StructureInput> input) {
+    public Intake() {
         INTAKE = this;
         this.configMotor();
         this.setZeroPosition();
-        this.input = input;
         this.simState.Orientation = ChassisReference.Clockwise_Positive;
     }
 
@@ -175,13 +171,13 @@ public class Intake extends SubsystemBase {
         if (lifterState != LifterState.OperatorControl) return lifterState;
         else if (this.isUnsafeToGoUp()) return LifterState.Down;
         else if (this.hasCoral()) return LifterState.Up;
-        else if (this.input.get().wantGroundIntake) return LifterState.Down;
+        else if (SuperStructure.getInstance().input.wantGroundIntake) return LifterState.Down;
         else return LifterState.Up;
     }
 
     public RollerState getEffectiveRollerState() {
         if (rollerState != RollerState.OperatorControl) return rollerState;
-        else if (this.input.get().wantGroundIntake) return RollerState.In;
+        else if (SuperStructure.getInstance().input.wantGroundIntake) return RollerState.In;
         else if (this.hasCoral()) return RollerState.SlowIn;
         else return RollerState.Off;
     }

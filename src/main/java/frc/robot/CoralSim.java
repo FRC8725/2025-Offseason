@@ -2,6 +2,8 @@ package frc.robot;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -15,13 +17,13 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.simulation.AprilTagsSim;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.SuperStructure.ScoreLevel;
 import frc.robot.subsystems.SuperStructure.State;
 
@@ -35,6 +37,7 @@ public class CoralSim extends SubsystemBase {
     private final ArrayList<Pose3d> coralSimLocation = Constants.getCoralSimualtionScoreLocation();
     @SuppressWarnings("unused")
     private final AprilTagsSim aprilTagsSim = new AprilTagsSim();
+    private final int[] throughArray = new int[]{2, 1, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3};
 
     private final StructPublisher<Pose3d> coralPosePublisher = NetworkTableInstance.getDefault()
         .getStructTopic("Coral/coral", Pose3d.struct).publish();
@@ -59,7 +62,7 @@ public class CoralSim extends SubsystemBase {
         }
         // PreHandoff to Handoff
         if (this.lastState != this.superStructure.state && this.superStructure.state == State.Handoff && 
-            this.superStructure.input.get().wantedScoringLevel != ScoreLevel.Through)
+            this.superStructure.input.wantedScoringLevel != ScoreLevel.Through)
         {
             this.setLocation(CoralSimLocation.Claw);
             Arm.hasObject = true;
@@ -76,15 +79,21 @@ public class CoralSim extends SubsystemBase {
             this.superStructure.state == State.PlaceL3 || this.superStructure.state == State.PlaceL2))
         {
             this.setLocation(CoralSimLocation.Hiden);
-            int index = this.superStructure.input.get().wantedScoringLevel.index;
-            this.addScoringPose(this.coralSimLocation.get(index * 12));
+            Optional<Map.Entry<Integer, Pose2d>> closestFudged = Swerve.getInstance().getClosestFudgedScoringPose();
+            if (!closestFudged.isPresent()) return;
+            int index = closestFudged.get().getKey();
+            this.addScoringPose(this.coralSimLocation.get(index * 4 + SuperStructure.getInstance().input.wantedScoringLevel.index));
             Arm.hasObject = false;
             this.setLocation(CoralSimLocation.Floor);
         }
         // Through
         if (this.lastState != this.superStructure.state && this.superStructure.state == State.Through) {
             this.setLocation(CoralSimLocation.Hiden);
-            this.addScoringPose(this.coralSimLocation.get(0));
+            Optional<Map.Entry<Integer, Pose2d>> closestFudged = Swerve.getInstance().getClosestFudgedScoringPose();
+            if (!closestFudged.isPresent()) return;
+            int index = closestFudged.get().getKey();
+
+            // this.addScoringPose(this.coralSimLocation.get(((index / 4) * 8) + (index % 4) * 4));
             Intake.hasCoral = false;
             this.setLocation(CoralSimLocation.Floor);
         }
@@ -154,6 +163,8 @@ public class CoralSim extends SubsystemBase {
     public boolean canIntakeCoral() {
         double swerveAngle = this.swervePose.get().getRotation().getDegrees();
         double coralAngle = this.pose.toPose2d().getRotation().getDegrees() - 90.0;
+        swerveAngle = swerveAngle > 180.0 ? swerveAngle - 180.0 : swerveAngle;
+        coralAngle = coralAngle > 180.0 ? coralAngle - 180.0 : coralAngle;
         boolean degree = Math.abs(swerveAngle - coralAngle) < 20.0;
 
         Translation2d swervePose = this.swervePose.get().getTranslation();

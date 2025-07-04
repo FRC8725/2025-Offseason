@@ -163,7 +163,7 @@ public class AutoRunnerCmd extends Command {
 		if (this.waitingForAlign) {
 			assert this.lastPose != null;
 			if (this.swerve.withinTolerance(Objects.requireNonNull(this.lastPose).getTranslation())) {
-				this.superStructure.input = () -> this.postAlignInputs;
+				this.superStructure.input = this.postAlignInputs;
 				this.waitingForAlign = false;
 			}
 			this.swerve.followPose(Objects.requireNonNull(this.lastPose));
@@ -178,7 +178,7 @@ public class AutoRunnerCmd extends Command {
 			if (ev.requireAlignment) {
 				this.postAlignInputs = ev.inputs;
 			} else {
-				this.superStructure.input = () -> ev.inputs;
+				this.superStructure.input = ev.inputs;
 			}
 
 			SmartDashboard.putBoolean("ev", ev.inputs.wantGroundIntake);
