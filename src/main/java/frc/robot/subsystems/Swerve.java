@@ -29,7 +29,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -58,7 +57,7 @@ public class Swerve extends SubsystemBase {
         true, true,
         -0.3212890625);
     private final AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
-    private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
+    public final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
         Constants.Swerve.KINEMATICS,
         new Rotation2d(this.getGyroAngle()),
         this.getModulePositions(),
@@ -214,7 +213,6 @@ public class Swerve extends SubsystemBase {
             sample.vy + -this.yController.calculate(pose.getY(), sample.y),
             sample.omega + -this.headingController.calculate(pose.getRotation().getRadians(), sample.heading)
         );
-        SmartDashboard.putNumber("Speeds", this.xController.calculate(pose.getX(), sample.x));
 
         this.driveRobotRelative(speeds);
     }

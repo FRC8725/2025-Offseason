@@ -21,7 +21,8 @@ public class Vision extends SubsystemBase {
     // ---------- Object ---------- //
     private final Set<Integer> blockIds = Set.of(4, 5, 14, 15); // Barge Ids
     private final PhotonHelper[] cameras = new PhotonHelper[] {
-        new PhotonHelper("FrontLeft", Constants.Vision.FRONT_LEFT)
+        new PhotonHelper("FrontLeft", Constants.Vision.FRONT_LEFT),
+        new PhotonHelper("BackLeft", Constants.Vision.BACK_LEFT)
     };
 
     // ---------- Function ---------- //
@@ -59,6 +60,7 @@ public class Vision extends SubsystemBase {
                 .collect(Collectors.toList());
             
             for (EstimatedRobotPose pose : estimatedPoses) {
+                System.out.println(pose.estimatedPose.toString());
                 if (this.isInsideField(pose.estimatedPose.getTranslation().toTranslation2d()) &&
                     (pose.strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR ||
                         (pose.strategy == PoseStrategy.LOWEST_AMBIGUITY &&
@@ -68,6 +70,11 @@ public class Vision extends SubsystemBase {
                 }
             }
         }
+    }
+
+    @Override
+    public void periodic() {
+        this.addVisionMeasurements(Swerve.getInstance().poseEstimator);
     }
 
     @Override

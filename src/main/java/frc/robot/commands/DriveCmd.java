@@ -71,7 +71,7 @@ public class DriveCmd extends Command {
 			double fixBargeRotatin = this.fixRotationInput(
 				this.turnPid.calculate(currentAngle, rotSetpoint));
 
-			this.swerve.driveRobotRelative(new ChassisSpeeds(-fixBargeX, 0.0, -fixBargeRotatin));
+			this.swerve.driveRobotRelative(new ChassisSpeeds(fixBargeX, 0.0, fixBargeRotatin));
 		} else {
 			Pose2d pose = null;
 			switch (this.driveInputs.get().alignMode) {
@@ -99,9 +99,9 @@ public class DriveCmd extends Command {
 				this.swerve.isAligned = this.swerve.withinTolerance(pose.getTranslation());
 				Pose2d swervePose = this.swerve.getPose();
 				ChassisSpeeds speeds = new ChassisSpeeds(
-					-this.fixTranslationInput(
+					this.fixTranslationInput(
 						this.xPid.calculate(swervePose.getX(), pose.getX())),
-					-this.fixTranslationInput(
+					this.fixTranslationInput(
 						this.yPid.calculate(swervePose.getY(), pose.getY())),
 					-this.fixRotationInput(
 						this.turnPid.calculate(swervePose.getRotation().getRadians(), pose.getRotation().getRadians())));
@@ -144,9 +144,9 @@ public class DriveCmd extends Command {
 	}
 
 	public ChassisSpeeds getSpeeds() {
-		double x = this.driveInputs.get().leftY;
-		double y = this.driveInputs.get().leftX;
-		double rot = this.driveInputs.get().rightX;
+		double x = -this.driveInputs.get().leftY;
+		double y = -this.driveInputs.get().leftX;
+		double rot = -this.driveInputs.get().rightX;
 
 		double theta = Math.atan2(y, x);
 		double r = Math.hypot(x, y);

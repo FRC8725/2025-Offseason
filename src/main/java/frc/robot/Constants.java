@@ -24,7 +24,7 @@ public final class Constants {
         public static final double MECHANISM_RATIO = GEAR_RATIO / (2.0 * SPOOL_RADIUS * Math.PI);
 
         // Zero
-        public static final double ZERO_VOLTAGE = 0.29;
+        public static final double ZERO_VOLTAGE = 0.28;
         public static final double ZERO_MIN_CURRENT = 1.7; // Amps
 
         // Height
@@ -38,7 +38,7 @@ public final class Constants {
 
     public final class Arm {
         // Mechanism
-        public static final double GEAR_RATIO = 224.0 / 3.0;
+        public static final double GEAR_RATIO = 6272.0 / 81.0;
         public static final double POSITION_DEPENDENT_KG = 0.29;
         public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(9.5); // TODO
         public static final double ENCODER_OFFSET_ROTATION = 0.5197092879927322;
@@ -78,7 +78,7 @@ public final class Constants {
     public final class Vision {
         public static final Transform3d FRONT_LEFT = new Transform3d(
             -0.010313, 0.301234, 0.1922698,
-            new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(70.0)));
+            new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(70.0)));
         public static final Transform3d BACK_LEFT = new Transform3d(
             -0.087195, 0.301234, 0.1922698,
             new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(125.0)));

@@ -34,10 +34,10 @@ public class CoralSim extends SubsystemBase {
     private final Supplier<Pose2d> swervePose;
     private final SuperStructure superStructure;
     private SuperStructure.State lastState = SuperStructure.State.Start;
+    private SuperStructure.ScoreLevel lastLevel = ScoreLevel.L4;
     private final ArrayList<Pose3d> coralSimLocation = Constants.getCoralSimualtionScoreLocation();
     @SuppressWarnings("unused")
     private final AprilTagsSim aprilTagsSim = new AprilTagsSim();
-    private final int[] throughArray = new int[]{2, 1, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3};
 
     private final StructPublisher<Pose3d> coralPosePublisher = NetworkTableInstance.getDefault()
         .getStructTopic("Coral/coral", Pose3d.struct).publish();
@@ -74,6 +74,13 @@ public class CoralSim extends SubsystemBase {
             Arm.hasObject = false;
             Intake.hasCoral = true;
         }
+        if (this.lastLevel != this.superStructure.input.wantedScoringLevel && this.superStructure.input.wantedScoringLevel != ScoreLevel.Through &&
+            this.superStructure.state == State.Rest)
+        {
+            this.setLocation(CoralSimLocation.Claw);
+            Arm.hasObject = true;
+            Intake.hasCoral = false;    
+        }
         // L2~L4 Score
         if (this.lastState != this.superStructure.state && (this.superStructure.state == State.PlaceL4 ||
             this.superStructure.state == State.PlaceL3 || this.superStructure.state == State.PlaceL2))
@@ -101,9 +108,14 @@ public class CoralSim extends SubsystemBase {
         if (this.lastState != this.superStructure.state && this.superStructure.state == State.AlgaeGroundIntake) {
             this.setLocation(CoralSimLocation.Claw);
             Arm.hasObject = true;
-
+        }
+        // PopciclePickup
+        if (this.lastState != this.superStructure.state && this.superStructure.state == State.PopciclePickup) {
+            this.setLocation(CoralSimLocation.Claw);
+            Arm.hasObject = true;
         }
         this.lastState = this.superStructure.state;
+        this.lastLevel = this.superStructure.input.wantedScoringLevel;
         if (DriverStation.isAutonomous() && Arm.hasObject) {
             this.setLocation(CoralSimLocation.Claw);
         }

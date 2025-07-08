@@ -363,6 +363,7 @@ public class SuperStructure extends SubsystemBase {
         for (Transition translate : this.transitions) {
             if (translate.currentState == state && translate.booleanSupplier.get()) {
                 state = translate.nextState;
+                this.stateTime.restart();
                 translate.enterFunction.run();
                 this.setStates();
                 return;

@@ -163,3 +163,10 @@ v2.1
 v2.1.1
 1. Adjust SuperStructure.input supplier
 2. Fix score coral on simualtion reef
+
+v2.2
+1. Simulate LeftJKL path
+2. Change coast mode to digital input
+3. Test left side camera
+4. Fix Barge align speed reverse
+5. Fix Arm gear ratio mistake

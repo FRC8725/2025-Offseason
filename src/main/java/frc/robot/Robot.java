@@ -5,9 +5,11 @@ import choreo.Choreo;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -17,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.AutoRunnerCmd;
-import frc.robot.commands.DriveCmd;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.SuperStructure;
@@ -26,12 +27,11 @@ import frc.robot.subsystems.Swerve;
 public class Robot extends TimedRobot {
 	private Command autonomousCommand = new InstantCommand();
 	private final RobotContainer robotContainer;
-	private final GenericEntry coastModeToggle = Shuffleboard.getTab("Autonomous")
-		.add("Coast Mode", false)
-		.getEntry();
 	private boolean wasCoastModeEnabled = false;
 	private boolean wasEnabled = false;
 	private boolean wasEnabledThenDisabled = false;
+
+	private final DigitalInput input = new DigitalInput(1);
 	
 	public static final boolean isRedAlliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
 	public static final boolean isOnRedSide = (Swerve.getInstance() == null ? 0.0 : Swerve.getInstance().getPose().getX())  > (Constants.Field.FIELD_X_SIZE / 2.0);
@@ -84,7 +84,7 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void disabledPeriodic() {
-		boolean pressed = this.coastModeToggle.getBoolean(false);
+		boolean pressed = !this.input.get();
 		if (!this.wasCoastModeEnabled && pressed) {
 			Elevator.getInstance().setCoastMode(true);
 			Arm.getInstance().setCoastEnabled(true);
@@ -129,7 +129,7 @@ public class Robot extends TimedRobot {
 	// ---------- Teleoperate ---------- //
 	@Override
 	public void teleopInit() {
-		if (!this.didRunAuto) Swerve.getInstance().resetYaw(isRedAlliance ? Math.PI : 0.0);
+		if (!this.didRunAuto) Swerve.getInstance().resetYaw(isRedAlliance ? Math.PI : Units.degreesToRadians(90.0));
 		SuperStructure.getInstance().makeZeroAllSubsystemsCommand().schedule();
 	}
 

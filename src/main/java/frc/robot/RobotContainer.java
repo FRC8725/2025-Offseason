@@ -9,10 +9,11 @@ import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Vision;
 
 public class RobotContainer {
 	private final Swerve swerve = new Swerve();
-	// private final Vision vision = new Vision();
+	private final Vision vision = new Vision();
 	private final Elevator elevator = new Elevator();
 	private final Joysticks joysticks = new Joysticks();
 	private final SuperStructure superStructure = new SuperStructure();
@@ -28,7 +29,7 @@ public class RobotContainer {
 		this.swerve.setDefaultCommand(new DriveCmd(this.swerve, this.joysticks::getDriveInput));
 		this.superStructure.setDefaultCommand(new SuperStructureCmd(this.joysticks));
 		
-		// Shuffleboard.getTab("Vision").add(this.vision);
+		Shuffleboard.getTab("Vision").add(this.vision);
 		Shuffleboard.getTab("Elevator").add(this.elevator);
 		Shuffleboard.getTab("Arm").add(this.arm);
 		Shuffleboard.getTab("Intake").add(this.intake);
