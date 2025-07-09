@@ -129,14 +129,14 @@ public class Robot extends TimedRobot {
 	// ---------- Teleoperate ---------- //
 	@Override
 	public void teleopInit() {
-		if (!this.didRunAuto) Swerve.getInstance().resetYaw(isRedAlliance ? Math.PI : Units.degreesToRadians(90.0));
+		if (!this.didRunAuto) Swerve.getInstance().resetYaw(isRedAlliance ? Math.PI : 0.0);
 		SuperStructure.getInstance().makeZeroAllSubsystemsCommand().schedule();
 	}
 
 	@Override
 	public void teleopExit() {
-		Swerve.getInstance().removeDefaultCommand();
-		SuperStructure.getInstance().removeDefaultCommand();
+		// Swerve.getInstance().removeDefaultCommand();
+		// SuperStructure.getInstance().removeDefaultCommand();
 	}
 
 	// ---------- Test ---------- //

@@ -82,7 +82,6 @@ public class DriveCmd extends Command {
 				case ReefAlign:
 					Optional<Map.Entry<Integer, Pose2d>> fudged = this.swerve.getClosestFudgedScoringPose();
 					pose = fudged.map(Map.Entry::getValue).orElse(null);
-
 					break;
 
 				case AlgaeAlign:
@@ -103,7 +102,7 @@ public class DriveCmd extends Command {
 						this.xPid.calculate(swervePose.getX(), pose.getX())),
 					this.fixTranslationInput(
 						this.yPid.calculate(swervePose.getY(), pose.getY())),
-					-this.fixRotationInput(
+					this.fixRotationInput(
 						this.turnPid.calculate(swervePose.getRotation().getRadians(), pose.getRotation().getRadians())));
 				this.swerve.driveRobotRelative(speeds);
 			}

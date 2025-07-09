@@ -60,7 +60,6 @@ public class Vision extends SubsystemBase {
                 .collect(Collectors.toList());
             
             for (EstimatedRobotPose pose : estimatedPoses) {
-                System.out.println(pose.estimatedPose.toString());
                 if (this.isInsideField(pose.estimatedPose.getTranslation().toTranslation2d()) &&
                     (pose.strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR ||
                         (pose.strategy == PoseStrategy.LOWEST_AMBIGUITY &&
@@ -79,6 +78,7 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        // builder.addStringProperty("BackLeft", () -> this.cameras[1].getRobotToTagPose().getTranslation().toString(), null);
         for (PhotonHelper camera : this.cameras) {
             builder.addBooleanProperty(camera.getName() + " status", () -> camera.isConnected(), null);
         }

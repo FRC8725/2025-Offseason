@@ -40,7 +40,7 @@ public final class Constants {
         // Mechanism
         public static final double GEAR_RATIO = 6272.0 / 81.0;
         public static final double POSITION_DEPENDENT_KG = 0.29;
-        public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(9.5); // TODO
+        public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(8.5); // TODO
         public static final double ENCODER_OFFSET_ROTATION = 0.5197092879927322;
 
         // Detect has object
@@ -78,13 +78,13 @@ public final class Constants {
     public final class Vision {
         public static final Transform3d FRONT_LEFT = new Transform3d(
             -0.010313, 0.301234, 0.1922698,
-            new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(70.0)));
+            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(55.0)));
         public static final Transform3d BACK_LEFT = new Transform3d(
-            -0.087195, 0.301234, 0.1922698,
-            new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(125.0)));
+            -0.087017, 0.301261, 0.1924088,
+            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(125.0)));
         public static final Transform3d FRONT_RIGHT = new Transform3d(
             -0.010313, -0.301234, 0.1922698,
-            new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(-70.0)));
+            new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(-55.0)));
         public static final Transform3d BACK_RIGHT = new Transform3d(
             -0.087195, -0.301234, 0.1922698,
             new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(-125.0)));
@@ -94,7 +94,7 @@ public final class Constants {
         // Module
         public static final double TRACK_WIDTH = Units.inchesToMeters(12.75);
         public static final double TRACK_LENGTH = Units.inchesToMeters(12.75);
-        public static final double WHEEL_RADIUS = Units.inchesToMeters(3.95 / 2.0);
+        public static final double WHEEL_RADIUS = Units.inchesToMeters(3.96 / 2.0);
         public static final double DRIVE_GEAR_RATIO = 57.0 / 7.0;
         public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
@@ -188,7 +188,7 @@ public final class Constants {
         new Pair<>(Units.degreesToRadians(51.0), Units.inchesToMeters(8.0)),
         new Pair<>(Units.degreesToRadians(58.0), Units.inchesToMeters(9.0)),
         new Pair<>(Units.degreesToRadians(63.0), Units.inchesToMeters(10.0)),
-        new Pair<>(Units.degreesToRadians(68.0), Units.inchesToMeters(11.0)), // TODO 7/3
+        new Pair<>(Units.degreesToRadians(68.0), Units.inchesToMeters(11.0)),
         new Pair<>(Units.degreesToRadians(77.0), Units.inchesToMeters(13.0)),
         new Pair<>(Units.degreesToRadians(95.0), Units.inchesToMeters(16.0)),
         new Pair<>(Units.degreesToRadians(105.0), Units.inchesToMeters(18.0)),

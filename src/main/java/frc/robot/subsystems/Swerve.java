@@ -202,7 +202,7 @@ public class Swerve extends SubsystemBase {
         SwerveModuleState[] states = Constants.Swerve.KINEMATICS.toSwerveModuleStates(discretizeSpeeds);
         this.setDesiredState(states);
         if (Robot.isSimulation()) this.simDriveRobotRelative(discretizeSpeeds);
-        // this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions()) // TODO: TEST
+        this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions()); // TODO: TEST
     }
 
     public void followSample(SwerveSample sample) {

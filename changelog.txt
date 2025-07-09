@@ -170,3 +170,7 @@ v2.2
 3. Test left side camera
 4. Fix Barge align speed reverse
 5. Fix Arm gear ratio mistake
+
+v2.3
+1. Adjust auto align offset
+2. Adjust intake slowIn voltage
