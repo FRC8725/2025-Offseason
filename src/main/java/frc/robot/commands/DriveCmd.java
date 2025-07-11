@@ -99,11 +99,11 @@ public class DriveCmd extends Command {
 				Pose2d swervePose = this.swerve.getPose();
 				ChassisSpeeds speeds = new ChassisSpeeds(
 					this.fixTranslationInput(
-						this.xPid.calculate(swervePose.getX(), pose.getX())),
+						this.xPid.calculate(swervePose.getX(), pose.getX()) * (Robot.isSimulation() ? -1.0 : 1.0)),
 					this.fixTranslationInput(
-						this.yPid.calculate(swervePose.getY(), pose.getY())),
+						this.yPid.calculate(swervePose.getY(), pose.getY()) * (Robot.isSimulation() ? -1.0 : 1.0)),
 					this.fixRotationInput(
-						this.turnPid.calculate(swervePose.getRotation().getRadians(), pose.getRotation().getRadians())));
+						this.turnPid.calculate(swervePose.getRotation().getRadians(), pose.getRotation().getRadians()) * (Robot.isSimulation() ? -1.0 : 1.0)));
 				this.swerve.driveRobotRelative(speeds);
 			}
 		}
@@ -143,8 +143,8 @@ public class DriveCmd extends Command {
 	}
 
 	public ChassisSpeeds getSpeeds() {
-		double x = -this.driveInputs.get().leftY;
-		double y = -this.driveInputs.get().leftX;
+		double x = -this.driveInputs.get().leftY * (Robot.isSimulation() ? -1.0 : 1.0);
+		double y = -this.driveInputs.get().leftX * (Robot.isSimulation() ? -1.0 : 1.0);
 		double rot = -this.driveInputs.get().rightX;
 
 		double theta = Math.atan2(y, x);

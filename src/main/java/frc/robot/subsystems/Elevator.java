@@ -18,6 +18,7 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -28,6 +29,8 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Robot;
+import frc.robot.lib.math.MathUtils;
 
 public class Elevator extends SubsystemBase {
     private static Elevator ELEVATOR;
@@ -50,17 +53,17 @@ public class Elevator extends SubsystemBase {
         PopciclePickup(0.065),
         PreScore(Units.inchesToMeters(20.0)),
         Through(Units.inchesToMeters(38.0)),
-        L2(Units.inchesToMeters(10.0)),
-        L3(L2.value + Units.inchesToMeters(15.25)),
+        L2(Units.inchesToMeters(7.5)),
+        L3(L2.getValue() + Units.inchesToMeters(12.75)),
         L4(Units.inchesToMeters(49.0)),
         Barge(Units.inchesToMeters(49.0)),
-        ScoreL2(L2.value + Units.inchesToMeters(5)),
-        ScoreL3(L3.value - Units.inchesToMeters(3.5)),
+        ScoreL2(L2.value - Units.inchesToMeters(1.0)),
+        ScoreL3(L3.value - Units.inchesToMeters(3.0)),
         ScoreL4(L4.value - Units.inchesToMeters(1.0)),
         PostL2(L2.value - Units.inchesToMeters(3.5)), // TODO: Tune
         PostL3(L2.value - Units.inchesToMeters(6.0)), // TODO: Tune
         LowAglae(Units.inchesToMeters(22.25)),
-        HighAglae(LowAglae.value + Units.inchesToMeters(15.8701)),
+        HighAglae(LowAglae.value + Units.inchesToMeters(13.0)),
         AutoAlgae(Units.inchesToMeters(21.75)),
         AlgaeRest(Units.inchesToMeters(15.0)),
         SourceIntake(Units.inchesToMeters(53.0)),
@@ -70,7 +73,22 @@ public class Elevator extends SubsystemBase {
         private final double value;
 
         State(double value) {
-            this.value = value;    
+            this.value = value;
+        }
+
+        public double getValue() {
+            return this.value + (this == AutoAlgae ? Elevator.getInstance().getPreferredAlgaeHeight().value : 0.0);
+        }
+    }
+
+    public enum AlgaeHeight {
+        High(Units.inchesToMeters(10.0)),
+        Low(0.0);
+
+        private final double value;
+
+        AlgaeHeight(double value) {
+            this.value = value;
         }
     }
 
@@ -159,17 +177,17 @@ public class Elevator extends SubsystemBase {
     public void periodic() {
         if (!isZeroed) return;
         this.statorCurrent.refresh();
-        this.main.setControl(this.request.withPosition(this.clampSetpoint(state.value)));
+        this.main.setControl(this.request.withPosition(this.clampSetpoint(state.getValue())));
         this.follower.setControl(this.follower2);
     }
 
     // ---------- Function ---------- //
     public boolean atSetpoint() {
-        return Math.abs(this.main.getPosition().getValueAsDouble() - state.value) < Constants.Elevator.TOLERANCE;
+        return Math.abs(this.main.getPosition().getValueAsDouble() - state.getValue()) < Constants.Elevator.TOLERANCE;
     }
 
     public boolean lazierAtSetpoint() {
-        return Math.abs(this.getHeight() - state.value) < Constants.Elevator.LAZIER_TOLERANCE;
+        return Math.abs(this.getHeight() - state.getValue()) < Constants.Elevator.LAZIER_TOLERANCE;
     }
 
     public double getHeight() {
@@ -207,6 +225,31 @@ public class Elevator extends SubsystemBase {
         
         if (System.currentTimeMillis() - startTime > 5.0) System.out.println("Elevator.clampSetpoint() took " + startTime + " ms");
         return ret;
+    }
+
+    public Translation2d endOfManipulatorPose() {
+        return new Translation2d(Constants.Arm.CORAL_CENTER_OFFSET, 0.0)
+            .rotateBy(Swerve.getInstance().getPose().getRotation())
+            .plus(Swerve.getInstance().getPose().getTranslation());
+    }
+
+    public AlgaeHeight getPreferredAlgaeHeight() {
+        double degreesAroundReefCenter = this.endOfManipulatorPose()
+            .minus(MathUtils.mirrorIfRed(Constants.Field.BLUE_REEF_CENTER)).getAngle().getDegrees();
+
+        if (Robot.isRedAlliance)
+            degreesAroundReefCenter += 180.0;
+
+        double algaeDirection = Math.toDegrees(MathUtils.wrapTo0_2PI(Math.toRadians(degreesAroundReefCenter - 30.0)));
+
+        if (300.0 < algaeDirection && algaeDirection < 360.0 ||
+            180.0 < algaeDirection && algaeDirection < 240.0 ||
+            60.0 < algaeDirection && algaeDirection < 120.0)
+        {
+            return AlgaeHeight.Low;
+        } else {
+            return AlgaeHeight.High;
+        }
     }
 
     @Override

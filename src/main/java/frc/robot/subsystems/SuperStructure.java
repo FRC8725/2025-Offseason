@@ -80,16 +80,19 @@ public class SuperStructure extends SubsystemBase {
         // L2 Score state
         PrepareL2(
             Elevator.State.L2,
-            Arm.LifterState.AboveScoreCoral, Arm.RollerState.idle),
+            Arm.LifterState.AboveScoreCoral, Arm.RollerState.idle,
+            Intake.LifterState.Down, Intake.RollerState.Off),
         StartL2(
             Elevator.State.L2,
-            Arm.LifterState.ScoreCoral, Arm.RollerState.idle),
+            Arm.LifterState.ScoreCoral, Arm.RollerState.idle,
+            Intake.LifterState.Down, Intake.RollerState.Off),
         PlaceL2(
             Elevator.State.ScoreL2,
-            Arm.LifterState.FinishScoreCoral, Arm.RollerState.slowout),
+            Arm.LifterState.FinishScoreCoral, Arm.RollerState.idle,
+            Intake.LifterState.Down, Intake.RollerState.Off),
         AfterL2(
             Elevator.State.PostL2,
-            Arm.LifterState.Up, Arm.RollerState.out),
+            Arm.LifterState.Up, Arm.RollerState.slowout),
         
         // L3 Score state
         PrepareL3(
@@ -146,10 +149,12 @@ public class SuperStructure extends SubsystemBase {
             Arm.LifterState.Down, Arm.RollerState.out),
         PreProcessor(
             Elevator.State.Processor,
-            Arm.LifterState.Processor, Arm.RollerState.algeaIdle),
+            Arm.LifterState.Processor, Arm.RollerState.algeaIdle,
+            Intake.LifterState.Down, Intake.RollerState.Off),
         ScoreProcessor(
             Elevator.State.Processor,
-            Arm.LifterState.Processor, Arm.RollerState.slowout),
+            Arm.LifterState.Processor, Arm.RollerState.slowout,
+            Intake.LifterState.Down, Intake.RollerState.Off),
         PreAlgaeGroundIntake(
             State.Rest.elevator,
             Arm.LifterState.AlgaeGroundPickup, Arm.RollerState.off,
@@ -322,7 +327,7 @@ public class SuperStructure extends SubsystemBase {
             // Normal transitions
             new Transition(prepare, start, () -> Elevator.getInstance().lazierAtSetpoint() && Arm.hasObject && this.input.wantExtend && this.input.wantedScoringLevel == scoreLevel),
             new Transition(start, place, () -> {}, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && this.input.wantScore),
-            new Transition(place, after, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && (place == State.PlaceL2 || place == State.PlaceL3 ? Arm.getInstance().atSafePlacementDistance() : true)),
+            new Transition(place, after, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && Arm.getInstance().atSafePlacementDistance()),
             new Transition(after, State.Rest, () -> Arm.getInstance().isInsideFrame()));
     }
 

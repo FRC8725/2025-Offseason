@@ -52,7 +52,7 @@ public class SwerveModule implements Sendable {
         this.turnMotor = new TalonFX(turnId);
         this.encoder = new CANcoder(canCoderId);
 
-        this.turnPid = new PIDController(3.6, 0.1, 0.0);
+        this.turnPid = new PIDController(4.8, 0.0, 0.0);
         this.feedforward = new SimpleMotorFeedforward(0.2199442, 2.18943902193, 0.01);
 
         this.encoderOffset = encoderOffset;

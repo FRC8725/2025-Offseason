@@ -40,7 +40,7 @@ public final class Constants {
         // Mechanism
         public static final double GEAR_RATIO = 6272.0 / 81.0;
         public static final double POSITION_DEPENDENT_KG = 0.29;
-        public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(8.5); // TODO
+        public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(8.0) - 0.03; // TODO
         public static final double ENCODER_OFFSET_ROTATION = 0.5197092879927322;
 
         // Detect has object
@@ -137,7 +137,7 @@ public final class Constants {
         public static final double SAFE_WALL_DISTANCE = 1.0;
 
         // Distance
-        public static final double ROBOT_REEF_CENTER_DISTANCE = Units.inchesToMeters(53.0);
+        public static final double ROBOT_REEF_CENTER_DISTANCE = Units.inchesToMeters(53.0 - 1.0);
         public static final double REEF_BRANCE_OFFSET_DISTANCE = Units.inchesToMeters(12.9375 / 2.0);
         public static final double TROUGH_OFFSET_DISTANCE = Units.inchesToMeters(14.5 / 2.0);
 
@@ -182,7 +182,7 @@ public final class Constants {
         new Pair<>(Units.degreesToRadians(18.0), Units.inchesToMeters(2.0)),
         new Pair<>(Units.degreesToRadians(22.0), Units.inchesToMeters(3.0)),
         new Pair<>(Units.degreesToRadians(26.0), Units.inchesToMeters(4.0)),
-        new Pair<>(Units.degreesToRadians(30.0), Units.inchesToMeters(5.0)),
+        new Pair<>(Units.degreesToRadians(40.0), Units.inchesToMeters(5.0)),
         new Pair<>(Units.degreesToRadians(35.0), Units.inchesToMeters(6.0)),
         new Pair<>(Units.degreesToRadians(45.0), Units.inchesToMeters(7.0)),
         new Pair<>(Units.degreesToRadians(51.0), Units.inchesToMeters(8.0)),
@@ -192,7 +192,7 @@ public final class Constants {
         new Pair<>(Units.degreesToRadians(77.0), Units.inchesToMeters(13.0)),
         new Pair<>(Units.degreesToRadians(95.0), Units.inchesToMeters(16.0)),
         new Pair<>(Units.degreesToRadians(105.0), Units.inchesToMeters(18.0)),
-        new Pair<>(Units.degreesToRadians(115.0), Units.inchesToMeters(20.0)),
+        new Pair<>(Units.degreesToRadians(115.0), Units.inchesToMeters(19.0)),
         new Pair<>(Units.degreesToRadians(120.0), Units.inchesToMeters(23.0)),
         new Pair<>(Units.degreesToRadians(125.0), Units.inchesToMeters(25.0)),
         new Pair<>(Units.degreesToRadians(130.0), Units.inchesToMeters(27.0)),
@@ -269,8 +269,8 @@ public final class Constants {
 
                 Pose2d pose = new Pose2d(Field.BLUE_REEF_CENTER, Rotation2d.kZero)
                     .plus(new Transform2d(
-                        new Translation2d(-Field.ROBOT_REEF_CENTER_DISTANCE + 0.05, angleRot),
-                        Rotation2d.kZero))
+                        new Translation2d(-Field.ROBOT_REEF_CENTER_DISTANCE + 0.1, angleRot),
+                        angleRot))
                     .plus(new Transform2d(
                         0.0, side * Arm.CORAL_CENTER_OFFSET, new Rotation2d(-side * Math.PI / 2.0)));
 

@@ -85,7 +85,7 @@ public class Arm extends SubsystemBase {
         Up(Math.PI, MirrorType.FixedAngle),
         PopciclePickup(Units.degreesToRadians(-80.0), MirrorType.ActuallyFixedAngle),
         AboveScoreCoral(Units.degreesToRadians(160.0), MirrorType.ClosestToReef),
-        ScoreCoral(Units.degreesToRadians(130.0), MirrorType.ClosestToReef),
+        ScoreCoral(Units.degreesToRadians(140.0), MirrorType.ClosestToReef),
         ScoreL4Coral(Units.degreesToRadians(135.0), MirrorType.ClosestToReef),
         FinishScoreL4Coral(Units.degreesToRadians(105.0), MirrorType.ClosestToReef),
         FinishScoreCoral(Units.degreesToRadians(105.0), MirrorType.ClosestToReef),

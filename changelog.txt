@@ -174,3 +174,11 @@ v2.2
 v2.3
 1. Adjust auto align offset
 2. Adjust intake slowIn voltage
+
+v2.4
+1. Adjust auto align distance
+2. Test L1~L4 and optimize
+3. Removal reef algae test
+4. Adjust arm velocity
+5. Adjust elevator velocity
+6. Processor score test
