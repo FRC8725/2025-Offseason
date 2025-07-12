@@ -25,7 +25,7 @@ public final class Constants {
 
         // Zero
         public static final double ZERO_VOLTAGE = 0.28;
-        public static final double ZERO_MIN_CURRENT = 1.7; // Amps
+        public static final double ZERO_MIN_CURRENT = 0.3; // Amps
 
         // Height
         public static final double SAFE_HEIGHT = Units.inchesToMeters(32.5);
@@ -40,7 +40,7 @@ public final class Constants {
         // Mechanism
         public static final double GEAR_RATIO = 6272.0 / 81.0;
         public static final double POSITION_DEPENDENT_KG = 0.29;
-        public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(8.0) - 0.03; // TODO
+        public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(8.0) - 0.03;
         public static final double ENCODER_OFFSET_ROTATION = 0.5197092879927322;
 
         // Detect has object
@@ -59,7 +59,7 @@ public final class Constants {
 
         // Tolerance
         public static final double TOLERANCE = 0.1;
-        public static final double DEADZONE_ANGLE = Units.degreesToRadians(20.0); // TODO
+        public static final double DEADZONE_ANGLE = Units.degreesToRadians(20.0);
     }
 
     public final class Intake {
@@ -84,17 +84,17 @@ public final class Constants {
             new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(125.0)));
         public static final Transform3d FRONT_RIGHT = new Transform3d(
             -0.010313, -0.301234, 0.1922698,
-            new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(-55.0)));
+            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(-55.0)));
         public static final Transform3d BACK_RIGHT = new Transform3d(
             -0.087195, -0.301234, 0.1922698,
-            new Rotation3d(0.0, Units.degreesToRadians(20.0), Units.degreesToRadians(-125.0)));
+            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(-125.0)));
     }
 
     public final class Swerve {
         // Module
         public static final double TRACK_WIDTH = Units.inchesToMeters(12.75);
         public static final double TRACK_LENGTH = Units.inchesToMeters(12.75);
-        public static final double WHEEL_RADIUS = Units.inchesToMeters(3.96 / 2.0);
+        public static final double WHEEL_RADIUS = Units.inchesToMeters(3.935 / 2.0);
         public static final double DRIVE_GEAR_RATIO = 57.0 / 7.0;
         public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 

@@ -29,6 +29,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -86,7 +87,6 @@ public class Swerve extends SubsystemBase {
     private final PIDController xController = new PIDController(12.0, 0.0, 0.0);
     private final PIDController yController = new PIDController(12.0, 0.0, 0.0);
     private final PIDController headingController = new PIDController(5.0, 0.0, 0.0);
-    
 
     public Swerve() {
         SWERVE = this;
@@ -197,21 +197,21 @@ public class Swerve extends SubsystemBase {
 
     // ---------- Method ---------- //
     public void driveRobotRelative(ChassisSpeeds speeds) {
-        ChassisSpeeds relativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, new Rotation2d(this.getGyroAngle()));
+        ChassisSpeeds relativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, this.getPose().getRotation());
         ChassisSpeeds discretizeSpeeds = ChassisSpeeds.discretize(relativeSpeeds, Robot.kDefaultPeriod);
         SwerveModuleState[] states = Constants.Swerve.KINEMATICS.toSwerveModuleStates(discretizeSpeeds);
         this.setDesiredState(states);
         if (Robot.isSimulation()) this.simDriveRobotRelative(discretizeSpeeds);
-        this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions()); // TODO: TEST
+        this.poseEstimator.update(new Rotation2d(this.getGyroAngle()), this.getModulePositions());
     }
 
     public void followSample(SwerveSample sample) {
         Pose2d pose = this.getPose();
 
         ChassisSpeeds speeds = new ChassisSpeeds(
-            sample.vx + -this.xController.calculate(pose.getX(), sample.x),
-            sample.vy + -this.yController.calculate(pose.getY(), sample.y),
-            sample.omega + -this.headingController.calculate(pose.getRotation().getRadians(), sample.heading)
+            sample.vx + this.xController.calculate(pose.getX(), sample.x),
+            sample.vy + this.yController.calculate(pose.getY(), sample.y),
+            sample.omega + this.headingController.calculate(pose.getRotation().getRadians(), sample.heading)
         );
 
         this.driveRobotRelative(speeds);
@@ -250,7 +250,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public void stopModules() {
-        this.driveRobotRelative(new ChassisSpeeds()); // TODO: test
+        this.driveRobotRelative(new ChassisSpeeds());
     }
 
     public void setSwerveVoltage(double voltage) {

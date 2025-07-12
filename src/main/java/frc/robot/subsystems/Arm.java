@@ -64,12 +64,12 @@ public class Arm extends SubsystemBase {
     public static RollerState rollerState = RollerState.off;
     public enum RollerState {
         off(0.0),
-        idle(-0.035),
-        algeaIdle(-0.135),
+        idle(-0.025),
+        algeaIdle(-0.1),
         fastIdle(-0.1),
         in(-1.0),
         out(1.0),
-        slowout(0.5),
+        slowout(0.075),
         descore(0.8);
 
         public final double value;
@@ -119,9 +119,9 @@ public class Arm extends SubsystemBase {
                 case ClosestToReef:
                     switch (sideCloserToReef) {
                         case Left:
-                            return this.value;
-                        case Right:
                             return -this.value;
+                        case Right:
+                            return this.value;
                         case Neither:
                             return (Math.abs(this.value) < Math.PI / 2.0) ? 0.0 : Math.PI;
                         default:
@@ -141,9 +141,9 @@ public class Arm extends SubsystemBase {
                 case ProcessorScore:
                     switch (sideCloserToProcessor) {
                         case Left:
-                            return this.value;
-                        case Right:
                             return -this.value;
+                        case Right:
+                            return this.value;
                         case Neither:
                             return Math.PI;
                         default:
@@ -213,7 +213,7 @@ public class Arm extends SubsystemBase {
 
         lifterConfig.MotorOutput
             .withNeutralMode(NeutralModeValue.Brake)
-            .withInverted(InvertedValue.CounterClockwise_Positive);
+            .withInverted(InvertedValue.Clockwise_Positive);
         lifterConfig.Feedback
             .withSensorToMechanismRatio(Constants.Arm.GEAR_RATIO);
         lifterConfig.MotionMagic

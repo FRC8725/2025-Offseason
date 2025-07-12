@@ -49,22 +49,22 @@ public class Elevator extends SubsystemBase {
     public enum State {
         Down(0.0),
         PreHandoff(Units.inchesToMeters(36.0)),
-        Handoff(Units.inchesToMeters(35.25)),
+        Handoff(Units.inchesToMeters(35.0)),
         PopciclePickup(0.065),
         PreScore(Units.inchesToMeters(20.0)),
         Through(Units.inchesToMeters(38.0)),
-        L2(Units.inchesToMeters(7.5)),
-        L3(L2.getValue() + Units.inchesToMeters(12.75)),
+        L2(Units.inchesToMeters(6.5)),
+        L3(Units.inchesToMeters(22.25)),
         L4(Units.inchesToMeters(49.0)),
         Barge(Units.inchesToMeters(49.0)),
         ScoreL2(L2.value - Units.inchesToMeters(1.0)),
         ScoreL3(L3.value - Units.inchesToMeters(3.0)),
         ScoreL4(L4.value - Units.inchesToMeters(1.0)),
-        PostL2(L2.value - Units.inchesToMeters(3.5)), // TODO: Tune
-        PostL3(L2.value - Units.inchesToMeters(6.0)), // TODO: Tune
+        PostL2(L2.value - Units.inchesToMeters(3.5)),
+        PostL3(L2.value - Units.inchesToMeters(6.0)),
         LowAglae(Units.inchesToMeters(22.25)),
         HighAglae(LowAglae.value + Units.inchesToMeters(13.0)),
-        AutoAlgae(Units.inchesToMeters(21.75)),
+        AutoAlgae(Units.inchesToMeters(16.75)),
         AlgaeRest(Units.inchesToMeters(15.0)),
         SourceIntake(Units.inchesToMeters(53.0)),
         Processor(Units.inchesToMeters(20.0)),
@@ -82,7 +82,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public enum AlgaeHeight {
-        High(Units.inchesToMeters(10.0)),
+        High(Units.inchesToMeters(15.25)),
         Low(0.0);
 
         private final double value;

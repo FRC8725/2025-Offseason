@@ -17,8 +17,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.AutoRunnerCmd;
+import frc.robot.commands.DriveCmd;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.SuperStructure;
@@ -49,7 +51,6 @@ public class Robot extends TimedRobot {
 	public Robot() {
 		super(0.02);
 		this.robotContainer = new RobotContainer();
-		CanBridge.runTCP();
 		
 		this.chooser.setDefaultOption("Null", null);
 		for (String trajectoryName : Choreo.availableTrajectories()) {
@@ -65,7 +66,6 @@ public class Robot extends TimedRobot {
 			this.initializeAutonomousCommand();
 		});
 
-		SmartDashboard.putBoolean("Coast Mode", false);
 		SmartDashboard.putData("Chooser", this.chooser);
 	}
 
@@ -130,13 +130,13 @@ public class Robot extends TimedRobot {
 	@Override
 	public void teleopInit() {
 		if (!this.didRunAuto) Swerve.getInstance().resetYaw(isRedAlliance ? Math.PI : 0.0);
-		SuperStructure.getInstance().makeZeroAllSubsystemsCommand().schedule();
+		this.robotContainer.teleInit();
 	}
 
 	@Override
 	public void teleopExit() {
-		// Swerve.getInstance().removeDefaultCommand();
-		// SuperStructure.getInstance().removeDefaultCommand();
+		Swerve.getInstance().removeDefaultCommand();
+		SuperStructure.getInstance().removeDefaultCommand();
 	}
 
 	// ---------- Test ---------- //

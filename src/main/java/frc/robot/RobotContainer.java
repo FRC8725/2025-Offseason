@@ -26,14 +26,17 @@ public class RobotContainer {
 		this.superStructure, this.swerve::getPose);
 	
 	public RobotContainer() {
-		this.swerve.setDefaultCommand(new DriveCmd(this.swerve, this.joysticks::getDriveInput));
-		this.superStructure.setDefaultCommand(new SuperStructureCmd(this.joysticks));
-		
 		Shuffleboard.getTab("Vision").add(this.vision);
 		Shuffleboard.getTab("Elevator").add(this.elevator);
 		Shuffleboard.getTab("Arm").add(this.arm);
 		Shuffleboard.getTab("Intake").add(this.intake);
 		Shuffleboard.getTab("SuperStructure").add(this.superStructure);
+	}
+
+	public void teleInit() {
+		this.swerve.setDefaultCommand(new DriveCmd(this.swerve, this.joysticks::getDriveInput));
+		this.superStructure.setDefaultCommand(new SuperStructureCmd(this.joysticks));
+		this.superStructure.makeZeroAllSubsystemsCommand().schedule();
 	}
 
 	public Command getAutonomousCommand() {

@@ -77,7 +77,7 @@ public class SwerveModule implements Sendable {
         driveConfig.CurrentLimits
             .withSupplyCurrentLimitEnable(true)
             .withSupplyCurrentLimit(45.0)
-            .withStatorCurrentLimitEnable(true) // TODO: what did CTRE do with these?
+            .withStatorCurrentLimitEnable(true)
             .withStatorCurrentLimit(80.0);
 
         TalonFXConfiguration turnConfig = new TalonFXConfiguration();

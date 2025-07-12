@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.ZeroArmCmd;
@@ -88,7 +89,7 @@ public class SuperStructure extends SubsystemBase {
             Intake.LifterState.Down, Intake.RollerState.Off),
         PlaceL2(
             Elevator.State.ScoreL2,
-            Arm.LifterState.FinishScoreCoral, Arm.RollerState.idle,
+            Arm.LifterState.FinishScoreCoral, Arm.RollerState.slowout,
             Intake.LifterState.Down, Intake.RollerState.Off),
         AfterL2(
             Elevator.State.PostL2,
@@ -103,7 +104,7 @@ public class SuperStructure extends SubsystemBase {
             Arm.LifterState.ScoreCoral, Arm.RollerState.idle),
         PlaceL3(
             Elevator.State.ScoreL3,
-            Arm.LifterState.FinishScoreCoral, Arm.RollerState.off),
+            Arm.LifterState.FinishScoreCoral, Arm.RollerState.slowout),
         AfterL3(
             Elevator.State.PostL3,
             Arm.LifterState.Up, Arm.RollerState.slowout),
@@ -117,7 +118,7 @@ public class SuperStructure extends SubsystemBase {
             Arm.LifterState.ScoreL4Coral, Arm.RollerState.idle),
         PlaceL4(
             Elevator.State.ScoreL4,
-            Arm.LifterState.FinishScoreL4Coral, Arm.RollerState.off),
+            Arm.LifterState.FinishScoreL4Coral, Arm.RollerState.slowout),
         AfterL4(
             Elevator.State.PreHandoff,
             Arm.LifterState.Down, Arm.RollerState.slowout),
@@ -234,7 +235,7 @@ public class SuperStructure extends SubsystemBase {
             // this just makes it so the elevator doesn't move until the operator wants to intake
             new Transition(State.Start, State.Rest, () -> this.input.wantGroundIntake || this.input.wantArmSourceIntake),
             // this is just for auto, probably should be done differently
-            new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
+            // new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
 
             // Arm source intaking, must be here
             new Transition(State.Rest, State.ArmSourceIntake, () -> this.input.wantArmSourceIntake),
@@ -326,7 +327,7 @@ public class SuperStructure extends SubsystemBase {
             new Transition(start, prepare, () -> !this.input.wantExtend || this.input.wantedScoringLevel != scoreLevel || !Arm.hasObject),
             // Normal transitions
             new Transition(prepare, start, () -> Elevator.getInstance().lazierAtSetpoint() && Arm.hasObject && this.input.wantExtend && this.input.wantedScoringLevel == scoreLevel),
-            new Transition(start, place, () -> {}, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && this.input.wantScore),
+            new Transition(start, place, () -> Swerve.getInstance().markPoseScored(), () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && this.input.wantScore),
             new Transition(place, after, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && Arm.getInstance().atSafePlacementDistance()),
             new Transition(after, State.Rest, () -> Arm.getInstance().isInsideFrame()));
     }
@@ -379,9 +380,9 @@ public class SuperStructure extends SubsystemBase {
     // ---------- Function ---------- //
     public ParallelCommandGroup makeZeroAllSubsystemsCommand() {
         return new ParallelCommandGroup(
-            new ZeroIntakeCmd(),
-            new ZeroElevatorCmd(),
-            new ZeroArmCmd());
+            new ZeroIntakeCmd().andThen(Commands.runOnce(() -> System.out.println("Intake"))),
+            new ZeroElevatorCmd().andThen(Commands.runOnce(() -> System.out.println("elevator"))),
+            new ZeroArmCmd().andThen(Commands.runOnce(() -> System.out.println("arm"))));
     }
 
     @Override

@@ -182,3 +182,12 @@ v2.4
 4. Adjust arm velocity
 5. Adjust elevator velocity
 6. Processor score test
+
+v2.5
+1. Fix set default command and remove command bug
+2. Fix slowout state bug
+3. Adjust arm idle voltage
+4. Adjust elevator L2 height
+5. Adjust arm rotate direction
+6. Adjust wheel radius to make sure pose estimate
+7. Test some testPath

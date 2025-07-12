@@ -196,9 +196,9 @@ public class AutoRunnerCmd extends Command {
 			SwerveSample sample = this.trajectory.sampleAt(this.timer.get(), Robot.isRedAlliance)
 				.orElse(this.trajectory.getFinalSample(Robot.isRedAlliance).get());
 			this.lastPose = sample.getPose();
+
 			this.swerve.followSample(sample);
 		}
-		SmartDashboard.putString("CurrentWaitEvent", this.currentWaitEvent == null ? "" : this.currentWaitEvent.name);
 	}
 
 	@Override
