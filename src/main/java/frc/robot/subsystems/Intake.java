@@ -53,7 +53,7 @@ public class Intake extends SubsystemBase {
 
     public enum RollerState {
         In(-6.0, -8.0),
-        SlowIn(0.0, -7.0),
+        SlowIn(-3.0, -6.0),
         TroughOut(4.0, -3.0),
         Out(8.0, 0.0),
         Off(0.0, 0.0),

@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -55,6 +56,7 @@ public class Arm extends SubsystemBase {
     private boolean isStuck = false;
     private double lastUpdatedTick = -1.0;
     private double lastCachedValue = 0.0;
+    public final Timer autoTimer = new Timer();
 
     // ----------- Debouncer ----------- //
     private final Debouncer coralCurrentDebouncer = new Debouncer(0.15, DebounceType.kBoth);
@@ -130,9 +132,9 @@ public class Arm extends SubsystemBase {
                 case AlgaeScore:
                     switch (sideCloserToBarge) {
                         case Left:
-                            return this.value;
-                        case Right:
                             return -this.value;
+                        case Right:
+                            return this.value;
                         case Neither:
                             return Math.PI;
                         default:
@@ -255,7 +257,7 @@ public class Arm extends SubsystemBase {
         if (this.wantOffsetArmPositive.get()) this.offsetArm(Units.degreesToRadians(0.1));
         if (this.wantOffsetArmNegative.get()) this.offsetArm(-Units.degreesToRadians(0.1));
 
-        boolean atStartOfAuto = (RobotState.isAutonomous() && 15.0 - DriverStation.getMatchTime() < 0.75);
+        boolean atStartOfAuto = (RobotState.isAutonomous() && this.autoTimer.get() < 0.75);
         this.statorCurrent.refresh();
 
         boolean debouncedHasCoral = this.coralCurrentDebouncer.calculate(this.undebouncedHasObject());

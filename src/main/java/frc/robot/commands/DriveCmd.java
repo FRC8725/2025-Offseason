@@ -6,9 +6,11 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Joysticks;
@@ -24,6 +26,10 @@ public class DriveCmd extends Command {
 	private final PIDController xPid = new PIDController(5.0, 0.0, 0.01);
 	private final PIDController yPid = new PIDController(5.0, 0.0, 0.01);
 	private final PIDController turnPid = new PIDController(6.0, 0.0, 0.04);
+
+	private final SlewRateLimiter xLimiter = new SlewRateLimiter(5);
+	private final SlewRateLimiter yLimiter = new SlewRateLimiter(5);
+	private final SlewRateLimiter rLimiter = new SlewRateLimiter(5);
 
 	private AlignMode lastAlignMode = AlignMode.None;
 
@@ -82,6 +88,8 @@ public class DriveCmd extends Command {
 				case ReefAlign:
 					Optional<Map.Entry<Integer, Pose2d>> fudged = this.swerve.getClosestFudgedScoringPose();
 					pose = fudged.map(Map.Entry::getValue).orElse(null);
+					SmartDashboard.putNumber("Target Pose X", pose.getX());
+					SmartDashboard.putNumber("Target Pose Y", pose.getY());
 					break;
 
 				case AlgaeAlign:
@@ -143,9 +151,9 @@ public class DriveCmd extends Command {
 	}
 
 	public ChassisSpeeds getSpeeds() {
-		double x = -this.driveInputs.get().leftY * (Robot.isSimulation() ? -1.0 : 1.0);
-		double y = -this.driveInputs.get().leftX * (Robot.isSimulation() ? -1.0 : 1.0);
-		double rot = -this.driveInputs.get().rightX;
+		double x = this.xLimiter.calculate(-this.driveInputs.get().leftY) * (Robot.isSimulation() ? -1.0 : 1.0);
+		double y = this.yLimiter.calculate(-this.driveInputs.get().leftX) * (Robot.isSimulation() ? -1.0 : 1.0);
+		double rot = this.rLimiter.calculate(-this.driveInputs.get().rightX);
 
 		double theta = Math.atan2(y, x);
 		double r = Math.hypot(x, y);

@@ -121,7 +121,7 @@ public class SuperStructure extends SubsystemBase {
             Arm.LifterState.FinishScoreL4Coral, Arm.RollerState.slowout),
         AfterL4(
             Elevator.State.PreHandoff,
-            Arm.LifterState.Down, Arm.RollerState.slowout),
+            Arm.LifterState.Up, Arm.RollerState.slowout),
             
         // Aglae
         PreGetAlgae(
@@ -235,7 +235,7 @@ public class SuperStructure extends SubsystemBase {
             // this just makes it so the elevator doesn't move until the operator wants to intake
             new Transition(State.Start, State.Rest, () -> this.input.wantGroundIntake || this.input.wantArmSourceIntake),
             // this is just for auto, probably should be done differently
-            // new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
+            new Transition(State.Start, State.PreScore, () -> RobotState.isAutonomous()),
 
             // Arm source intaking, must be here
             new Transition(State.Rest, State.ArmSourceIntake, () -> this.input.wantArmSourceIntake),
@@ -328,7 +328,7 @@ public class SuperStructure extends SubsystemBase {
             // Normal transitions
             new Transition(prepare, start, () -> Elevator.getInstance().lazierAtSetpoint() && Arm.hasObject && this.input.wantExtend && this.input.wantedScoringLevel == scoreLevel),
             new Transition(start, place, () -> Swerve.getInstance().markPoseScored(), () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && this.input.wantScore),
-            new Transition(place, after, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && Arm.getInstance().atSafePlacementDistance()),
+            new Transition(place, after, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && (place == State.PlaceL2 || place == State.PlaceL3 ? Arm.getInstance().atSafePlacementDistance() : true)),
             new Transition(after, State.Rest, () -> Arm.getInstance().isInsideFrame()));
     }
 

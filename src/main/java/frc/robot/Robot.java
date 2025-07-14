@@ -1,5 +1,7 @@
 package frc.robot;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import au.grapplerobotics.CanBridge;
 import choreo.Choreo;
 import choreo.trajectory.SwerveSample;
@@ -114,6 +116,8 @@ public class Robot extends TimedRobot {
 	@Override
 	public void autonomousInit() {
 		Arm.hasObject = true;
+		Arm.getInstance().autoTimer.reset();
+		Arm.getInstance().autoTimer.start();
 		this.didRunAuto = true;
 		this.autonomousCommand.schedule();
 	}

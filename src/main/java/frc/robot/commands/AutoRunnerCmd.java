@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.Swerve;
 
@@ -86,7 +87,7 @@ public class AutoRunnerCmd extends Command {
 				wantExtend = true;
 				wantScore = true;
 			}},
-			() -> !Arm.hasObject || (this.superStructure.state == SuperStructure.State.PlaceL4),
+			() -> !Arm.hasObject || (this.superStructure.state == SuperStructure.State.PlaceL4 && Arm.getInstance().atSetpoint() && Elevator.getInstance().atSetpoint()),
 			true),
 		new Event(
 			"intakeDown",
@@ -180,8 +181,6 @@ public class AutoRunnerCmd extends Command {
 			} else {
 				this.superStructure.input = ev.inputs;
 			}
-
-			SmartDashboard.putBoolean("ev", ev.inputs.wantGroundIntake);
 
 			if (ev.waitCondition != null) {
 				this.currentWaitEvent = ev;

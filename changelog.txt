@@ -191,3 +191,11 @@ v2.5
 5. Adjust arm rotate direction
 6. Adjust wheel radius to make sure pose estimate
 7. Test some testPath
+
+v2.6
+1. Adjust joystick deadzone
+2. Update new camera transform
+3. Add SlewRateLimiter to limit acceleration
+4. Test run RightEDC path
+5. Adjust intake slowIn voltage
+6. Fix AfterL4 state which arm bump reef bug
