@@ -199,3 +199,9 @@ v2.6
 4. Test run RightEDC path
 5. Adjust intake slowIn voltage
 6. Fix AfterL4 state which arm bump reef bug
+
+v2.7
+1. Adjust arm idle Debouncer current
+2. Adjust intake down position to avoid bumping ground
+3. Fix L4 have bumped reef bug
+4. Test RightEDC path

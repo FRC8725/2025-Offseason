@@ -39,7 +39,7 @@ public class Intake extends SubsystemBase {
     public static LifterState lifterState = LifterState.Up;
     public static RollerState rollerState = RollerState.Off;
     public enum LifterState {
-        Down(Units.degreesToRadians(140.0)),
+        Down(Units.degreesToRadians(139.0)),
         Through(Units.degreesToRadians(37.0)),
         Up(0.0),
         OperatorControl(0.0);

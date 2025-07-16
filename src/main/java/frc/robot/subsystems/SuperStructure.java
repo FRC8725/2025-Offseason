@@ -328,7 +328,7 @@ public class SuperStructure extends SubsystemBase {
             // Normal transitions
             new Transition(prepare, start, () -> Elevator.getInstance().lazierAtSetpoint() && Arm.hasObject && this.input.wantExtend && this.input.wantedScoringLevel == scoreLevel),
             new Transition(start, place, () -> Swerve.getInstance().markPoseScored(), () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && this.input.wantScore),
-            new Transition(place, after, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && (place == State.PlaceL2 || place == State.PlaceL3 ? Arm.getInstance().atSafePlacementDistance() : true)),
+            new Transition(place, after, () -> Elevator.getInstance().atSetpoint() && Arm.getInstance().atSetpoint() && Arm.getInstance().atSafePlacementDistance()),
             new Transition(after, State.Rest, () -> Arm.getInstance().isInsideFrame()));
     }
 

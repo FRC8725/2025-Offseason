@@ -44,7 +44,7 @@ public final class Constants {
         public static final double ENCODER_OFFSET_ROTATION = 0.5197092879927322;
 
         // Detect has object
-        public static final double IDEL_CURRENT_DRAW = 10.0;
+        public static final double IDEL_CURRENT_DRAW = 8.0;
         public static final double CURRENT_DRAW = 15.0;
 
         // Safe
@@ -77,16 +77,16 @@ public final class Constants {
 
     public final class Vision {
         public static final Transform3d FRONT_LEFT = new Transform3d(
-            -0.011562, 0.299695, 0.182355,
+            -0.010456, 0.301256, 0.192379,
             new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(55.0)));
         public static final Transform3d BACK_LEFT = new Transform3d(
-            -0.08595, 0.299686, 0.18237,
+            -0.087052, 0.301256, 0.192378,
             new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(125.0)));
         public static final Transform3d FRONT_RIGHT = new Transform3d(
-            -0.010447, -0.301239, 0.192393,
+            -0.010546, -0.301256, 0.192379,
             new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(-55.0)));
         public static final Transform3d BACK_RIGHT = new Transform3d(
-            -0.087017, -0.301261, 0.192406,
+            -0.087052, -0.301256, 0.192378,
             new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(-125.0)));
     }
 
@@ -111,7 +111,7 @@ public final class Constants {
         // Tolerance
         public static final double DEAD_BAND = 0.05;
         public static final double STRATING_TOLERANCE = 0.15;
-        public static final double ALIGNMENT_TOLERANCE = 0.04;
+        public static final double ALIGNMENT_TOLERANCE = 0.02;
 
         // Align
         public static final double MAX_NODE_DISTANCE = 3.0;
@@ -137,7 +137,7 @@ public final class Constants {
         public static final double SAFE_WALL_DISTANCE = 1.0;
 
         // Distance
-        public static final double ROBOT_REEF_CENTER_DISTANCE = Units.inchesToMeters(53.0 - 1.0);
+        public static final double ROBOT_REEF_CENTER_DISTANCE = Units.inchesToMeters(53.0 - 2.0);
         public static final double REEF_BRANCE_OFFSET_DISTANCE = Units.inchesToMeters(12.9375 / 2.0);
         public static final double TROUGH_OFFSET_DISTANCE = Units.inchesToMeters(14.5 / 2.0);
 
