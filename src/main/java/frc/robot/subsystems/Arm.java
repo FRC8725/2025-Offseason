@@ -220,7 +220,7 @@ public class Arm extends SubsystemBase {
         lifterConfig.MotionMagic
             .withMotionMagicJerk(9999.0)
             .withMotionMagicAcceleration(4.5)
-            .withMotionMagicCruiseVelocity(2.0 / 3.0); // RPS
+            .withMotionMagicCruiseVelocity(2.0 / 2.0); // RPS
         lifterConfig.CurrentLimits
             .withStatorCurrentLimitEnable(true)
             .withStatorCurrentLimit(70.0)
@@ -458,12 +458,7 @@ public class Arm extends SubsystemBase {
         while (value < -0.5) value += 1.0;
         while (value > 0.5) value -= 1.0;
 
-        double allowedOffsetArmRotations = 1.0 / 360.0;
-
         return value + 0.5;
-        // if (Math.abs(value - 0.5) < allowedOffsetArmRotations) return 0.5;
-        // else if (Math.abs(value + 0.5) < allowedOffsetArmRotations) return -0.5;
-        // else return value;
     }
 
     @Override

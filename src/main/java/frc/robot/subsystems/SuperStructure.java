@@ -357,6 +357,7 @@ public class SuperStructure extends SubsystemBase {
         Intake.setState(state.intakeLifter, state.intakeRoller);
     }
 
+    
     public void emptyInputs() {
         this.input = new StructureInput();
     }

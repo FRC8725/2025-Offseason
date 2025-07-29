@@ -48,21 +48,21 @@ public class Elevator extends SubsystemBase {
     public static State state = State.Down;
     public enum State {
         Down(0.0),
-        PreHandoff(Units.inchesToMeters(36.0)),
-        Handoff(Units.inchesToMeters(35.0)),
+        PreHandoff(Units.inchesToMeters(37.0)),
+        Handoff(Units.inchesToMeters(36.0)),
         PopciclePickup(0.065),
         PreScore(Units.inchesToMeters(20.0)),
         Through(Units.inchesToMeters(38.0)),
-        L2(Units.inchesToMeters(6.5)),
-        L3(Units.inchesToMeters(22.25)),
-        L4(Units.inchesToMeters(49.0)),
-        Barge(Units.inchesToMeters(49.0)),
+        L2(Units.inchesToMeters(7.5)),
+        L3(Units.inchesToMeters(23.25)),
+        L4(Units.inchesToMeters(50.0)),
+        Barge(Units.inchesToMeters(50.0)),
         ScoreL2(L2.value - Units.inchesToMeters(1.0)),
         ScoreL3(L3.value - Units.inchesToMeters(3.0)),
         ScoreL4(L4.value - Units.inchesToMeters(1.0)),
         PostL2(L2.value - Units.inchesToMeters(3.5)),
         PostL3(L2.value - Units.inchesToMeters(6.0)),
-        LowAglae(Units.inchesToMeters(22.25)),
+        LowAglae(Units.inchesToMeters(23.25)),
         HighAglae(LowAglae.value + Units.inchesToMeters(13.0)),
         AutoAlgae(Units.inchesToMeters(16.75)),
         AlgaeRest(Units.inchesToMeters(15.0)),
@@ -82,7 +82,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public enum AlgaeHeight {
-        High(Units.inchesToMeters(15.25)),
+        High(Units.inchesToMeters(16.25)),
         Low(0.0);
 
         private final double value;
@@ -130,7 +130,7 @@ public class Elevator extends SubsystemBase {
         MotionMagicConfigs motionMagicConfig = new MotionMagicConfigs();
         motionMagicConfig
             .withMotionMagicAcceleration(14.0)
-            .withMotionMagicCruiseVelocity(3.0 / 3.0);
+            .withMotionMagicCruiseVelocity(3.0 / 2.0);
 
         FeedbackConfigs feedbackConfig = new FeedbackConfigs();
         feedbackConfig.SensorToMechanismRatio = Constants.Elevator.MECHANISM_RATIO;

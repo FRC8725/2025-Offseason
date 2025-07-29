@@ -99,7 +99,7 @@ public final class Constants {
         public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
         // Phycical Limit
-        public static final double MAX_MOTOR_RPM = 3000.0;
+        public static final double MAX_MOTOR_RPM = 5500.0;
         public static final double MAX_VELOCITY = (MAX_MOTOR_RPM / 60.0) / DRIVE_GEAR_RATIO * 2.0 * WHEEL_RADIUS * Math.PI;
         public static final double MAX_ANGULAR_VELOCITY = MAX_VELOCITY / (TRACK_WIDTH * Math.sqrt(2.0)); // TODO: Research HOW
 

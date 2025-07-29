@@ -60,7 +60,7 @@ public class AutoRunnerCmd extends Command {
         }
 
         public Event(String name, SuperStructure.StructureInput inputs, Supplier<Boolean> waitCondition, boolean requireAlignment) {
-            this(name, 0.0, inputs, waitCondition, requireAlignment);
+        	this(name, 0.0, inputs, waitCondition, requireAlignment);
     	}
 
         public Event(String name, double timestamp, SuperStructure.StructureInput inputs, Supplier<Boolean> waitCondition, boolean requireAlignment) {

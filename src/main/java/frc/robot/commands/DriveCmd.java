@@ -27,9 +27,9 @@ public class DriveCmd extends Command {
 	private final PIDController yPid = new PIDController(5.0, 0.0, 0.01);
 	private final PIDController turnPid = new PIDController(6.0, 0.0, 0.04);
 
-	private final SlewRateLimiter xLimiter = new SlewRateLimiter(5);
-	private final SlewRateLimiter yLimiter = new SlewRateLimiter(5);
-	private final SlewRateLimiter rLimiter = new SlewRateLimiter(5);
+	private final SlewRateLimiter xLimiter = new SlewRateLimiter(4.5);
+	private final SlewRateLimiter yLimiter = new SlewRateLimiter(4.5);
+	private final SlewRateLimiter rLimiter = new SlewRateLimiter(4.5);
 
 	private AlignMode lastAlignMode = AlignMode.None;
 

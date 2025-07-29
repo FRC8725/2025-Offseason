@@ -205,3 +205,6 @@ v2.7
 2. Adjust intake down position to avoid bumping ground
 3. Fix L4 have bumped reef bug
 4. Test RightEDC path
+
+v2.8
+1. Adjust something small settings
