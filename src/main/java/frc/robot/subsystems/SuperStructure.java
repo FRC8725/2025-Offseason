@@ -118,7 +118,7 @@ public class SuperStructure extends SubsystemBase {
             Arm.LifterState.ScoreL4Coral, Arm.RollerState.idle),
         PlaceL4(
             Elevator.State.ScoreL4,
-            Arm.LifterState.FinishScoreL4Coral, Arm.RollerState.slowout),
+            Arm.LifterState.FinishScoreL4Coral, Arm.RollerState.slowout), // TODO 7/30
         AfterL4(
             Elevator.State.PreHandoff,
             Arm.LifterState.Up, Arm.RollerState.slowout),

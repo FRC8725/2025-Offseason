@@ -21,8 +21,8 @@ public class Vision extends SubsystemBase {
     // ---------- Object ---------- //
     private final Set<Integer> blockIds = Set.of(4, 5, 14, 15); // Barge Ids
     private final PhotonHelper[] cameras = new PhotonHelper[] {
-        new PhotonHelper("FrontLeft", Constants.Vision.FRONT_RIGHT),
-        new PhotonHelper("BackLeft", Constants.Vision.BACK_RIGHT)
+        new PhotonHelper("FrontRight", Constants.Vision.FRONT_RIGHT),
+        new PhotonHelper("BackRight", Constants.Vision.BACK_RIGHT)
         // new PhotonHelper("FrontRight", Const)
     };
 

@@ -41,7 +41,7 @@ public final class Constants {
         public static final double GEAR_RATIO = 6272.0 / 81.0;
         public static final double POSITION_DEPENDENT_KG = 0.29;
         public static final double CORAL_CENTER_OFFSET = Units.inchesToMeters(8.0) - 0.03;
-        public static final double ENCODER_OFFSET_ROTATION = 0.5197092879927322;
+        public static final double ENCODER_OFFSET_ROTATION = 0.9217966730449169;
 
         // Detect has object
         public static final double IDEL_CURRENT_DRAW = 8.0;
@@ -99,7 +99,7 @@ public final class Constants {
         public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
         // Phycical Limit
-        public static final double MAX_MOTOR_RPM = 5500.0;
+        public static final double MAX_MOTOR_RPM = 3850.0;
         public static final double MAX_VELOCITY = (MAX_MOTOR_RPM / 60.0) / DRIVE_GEAR_RATIO * 2.0 * WHEEL_RADIUS * Math.PI;
         public static final double MAX_ANGULAR_VELOCITY = MAX_VELOCITY / (TRACK_WIDTH * Math.sqrt(2.0)); // TODO: Research HOW
 

@@ -243,7 +243,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public void markPoseScored() {
-        if (!this.getClosestFudgedScoringPose().isEmpty()) return;
+        if (!this.getClosestFudgedScoringPose().isPresent()) return; // TODO 7/30
         int index = this.getClosestFudgedScoringPose().get().getKey();
         this.probablyScoredPoses[index * 4 + SuperStructure.getInstance().input.wantedScoringLevel.index] = true;
     }

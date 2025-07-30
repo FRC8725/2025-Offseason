@@ -10,7 +10,6 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Joysticks;
@@ -88,8 +87,6 @@ public class DriveCmd extends Command {
 				case ReefAlign:
 					Optional<Map.Entry<Integer, Pose2d>> fudged = this.swerve.getClosestFudgedScoringPose();
 					pose = fudged.map(Map.Entry::getValue).orElse(null);
-					SmartDashboard.putNumber("Target Pose X", pose.getX());
-					SmartDashboard.putNumber("Target Pose Y", pose.getY());
 					break;
 
 				case AlgaeAlign:
