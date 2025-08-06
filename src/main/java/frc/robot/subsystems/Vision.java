@@ -68,7 +68,7 @@ public class Vision extends SubsystemBase {
                             pose.targetsUsed.get(0).area > 0.25))) {
                     poseEstimator.addVisionMeasurement(pose.estimatedPose.toPose2d(), pose.timestampSeconds);
                 }
-            }
+            } 
         }
     }
 

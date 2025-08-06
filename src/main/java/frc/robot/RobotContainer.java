@@ -7,6 +7,7 @@ import frc.robot.commands.SuperStructureCmd;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Led;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Vision;
@@ -21,6 +22,7 @@ public class RobotContainer {
 		this.joysticks.wantOffsetArmPositive,
 		this.joysticks.wantOffsetArmNegative);
 	private final Intake intake = new Intake();
+	private final Led led = new Led();
 
 	private final CoralSim coralSim = new CoralSim(
 		this.superStructure, this.swerve::getPose);

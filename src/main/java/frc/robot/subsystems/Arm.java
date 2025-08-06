@@ -95,8 +95,8 @@ public class Arm extends SubsystemBase {
         PostAlgae(Units.degreesToRadians(110.0), MirrorType.ClosestToReef),
         DescoreAlgae(Units.degreesToRadians(110.0), MirrorType.ClosestToReef),
         AlgaeUp(Math.PI, MirrorType.FixedAngle),
-        PreBarge(Units.degreesToRadians(160.0), MirrorType.AlgaeScore),
-        BargeScore(Units.degreesToRadians(160.0), MirrorType.AlgaeScore),
+        PreBarge(Units.degreesToRadians(150.0), MirrorType.AlgaeScore),
+        BargeScore(Units.degreesToRadians(150.0), MirrorType.AlgaeScore),
         Processor(Units.degreesToRadians(70.0), MirrorType.ProcessorScore),
         AlgaeGroundPickup(Units.degreesToRadians(-78.0), MirrorType.ActuallyFixedAngle),
         ExitAlgaeGroundPickup(Units.degreesToRadians(-95.0), MirrorType.ActuallyFixedAngle);

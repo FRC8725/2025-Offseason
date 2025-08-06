@@ -55,7 +55,7 @@ public class Elevator extends SubsystemBase {
         Through(Units.inchesToMeters(38.0)),
         L2(Units.inchesToMeters(7.5)),
         L3(Units.inchesToMeters(23.25)),
-        L4(Units.inchesToMeters(50.0)),
+        L4(Units.inchesToMeters(49.0)),
         Barge(Units.inchesToMeters(50.0)),
         ScoreL2(L2.value - Units.inchesToMeters(1.0)),
         ScoreL3(L3.value - Units.inchesToMeters(3.0)),

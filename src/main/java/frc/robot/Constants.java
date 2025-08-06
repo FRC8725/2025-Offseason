@@ -83,10 +83,10 @@ public final class Constants {
             -0.087052, 0.301256, 0.192378,
             new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(125.0)));
         public static final Transform3d FRONT_RIGHT = new Transform3d(
-            -0.010546, -0.301256, 0.192379,
+            -0.008065, -0.304445, 0.1945328,
             new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(-55.0)));
         public static final Transform3d BACK_RIGHT = new Transform3d(
-            -0.087052, -0.301256, 0.192378,
+            -0.089443, -0.304445, 0.1945328,
             new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(-125.0)));
     }
 
