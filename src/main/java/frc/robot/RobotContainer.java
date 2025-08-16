@@ -22,7 +22,7 @@ public class RobotContainer {
 		this.joysticks.wantOffsetArmPositive,
 		this.joysticks.wantOffsetArmNegative);
 	private final Intake intake = new Intake();
-	// private final Led led = new Led();
+	private final Led led = new Led();
 
 	private final CoralSim coralSim = new CoralSim(
 		this.superStructure, this.swerve::getPose);

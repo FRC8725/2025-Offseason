@@ -129,7 +129,7 @@ public class Elevator extends SubsystemBase {
 
         MotionMagicConfigs motionMagicConfig = new MotionMagicConfigs();
         motionMagicConfig
-            .withMotionMagicAcceleration(14.0)
+            .withMotionMagicAcceleration(10.0)
             .withMotionMagicCruiseVelocity(3.0 / 2.0);
 
         FeedbackConfigs feedbackConfig = new FeedbackConfigs();

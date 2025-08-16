@@ -17,7 +17,7 @@ import frc.robot.subsystems.SuperStructure.State;
 
 public class Led extends SubsystemBase {
     private final int LED_PORT = 0;
-    private final int LED_BUFFER_LENGTH = 200; // TODO
+    private final int LED_BUFFER_LENGTH = 19; // TODO
     private boolean idleMode = true;
 
     private final AddressableLED led = new AddressableLED(LED_PORT);
@@ -35,22 +35,25 @@ public class Led extends SubsystemBase {
 
     public void defaultMode() {
         // TODO
-        Map<Double, Color> maskSteps = Map.of(0.0, LedHelper.White.color, 0.5, LedHelper.Orange.color);
-        LEDPattern base = LEDPattern.solid(LedHelper.Blue.color);
-        LEDPattern mask = LEDPattern.steps(maskSteps).scrollAtRelativeSpeed(Percent.per(Second).of(0.25));
+        Map<Double, Color> maskSteps = Map.of(0.0, LedHelper.White.color, 0.2, LedHelper.Black.color);
+        LEDPattern base = LEDPattern.solid(LedHelper.Orange.color);
+        LEDPattern mask =
+        LEDPattern.steps(maskSteps).scrollAtRelativeSpeed(Percent.per(Second).of(75.0));
         LEDPattern pattern = base.mask(mask);
+        // LEDPattern base = LEDPattern.gradient(GradientType.kContinuous, LedHelper.Orange.color);
+        // LEDPattern pattern = base.blink(Seconds.of(0.1));
         pattern.applyTo(this.buffer);
     }
 
     public void flashRed() {
         LEDPattern base = LEDPattern.gradient(GradientType.kContinuous, LedHelper.Red.color);
-        LEDPattern pattern = base.blink(Seconds.of(0.05));
+        LEDPattern pattern = base.blink(Seconds.of(0.1));
         pattern.applyTo(this.buffer);
     }
 
     public void flashGreen() {
         LEDPattern base = LEDPattern.gradient(GradientType.kContinuous, LedHelper.Green.color);
-        LEDPattern pattern = base.blink(Seconds.of(0.05));
+        LEDPattern pattern = base.blink(Seconds.of(0.08));
         pattern.applyTo(this.buffer);
     }
 

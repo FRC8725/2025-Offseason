@@ -219,7 +219,7 @@ public class Arm extends SubsystemBase {
             .withSensorToMechanismRatio(Constants.Arm.GEAR_RATIO);
         lifterConfig.MotionMagic
             .withMotionMagicJerk(9999.0)
-            .withMotionMagicAcceleration(4.5)
+            .withMotionMagicAcceleration(3.0)
             .withMotionMagicCruiseVelocity(2.0 / 2.0); // RPS
         lifterConfig.CurrentLimits
             .withStatorCurrentLimitEnable(true)

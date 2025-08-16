@@ -77,17 +77,17 @@ public final class Constants {
 
     public final class Vision {
         public static final Transform3d FRONT_LEFT = new Transform3d(
-            -0.010456, 0.301256, 0.192379,
-            new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(-55.0)));
+            -0.007411, 0.306038, 0.190390,
+            new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(55.0)));
         public static final Transform3d BACK_LEFT = new Transform3d(
-            -0.087052, 0.301256, 0.192378,
-            new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(-125.0)));
+            -0.090607, 0.306038, 0.190390,
+            new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(125.0)));
         public static final Transform3d FRONT_RIGHT = new Transform3d(
-            -0.008065, -0.304445, 0.1945328,
+            -0.007411, -0.306038, 0.190390,
             new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(-55.0)));
         public static final Transform3d BACK_RIGHT = new Transform3d(
-            -0.089443, -0.304445, 0.1945328,
-            new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(-145.0)));
+            -0.090607, -0.306038, 0.190390,
+            new Rotation3d(0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(-125.0)));
     }
 
     public final class Swerve {
@@ -99,7 +99,7 @@ public final class Constants {
         public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
         // Phycical Limit
-        public static final double MAX_MOTOR_RPM = 3850.0;
+        public static final double MAX_MOTOR_RPM = 4675.0;
         public static final double MAX_VELOCITY = (MAX_MOTOR_RPM / 60.0) / DRIVE_GEAR_RATIO * 2.0 * WHEEL_RADIUS * Math.PI;
         public static final double MAX_ANGULAR_VELOCITY = MAX_VELOCITY / (TRACK_WIDTH * Math.sqrt(2.0)); // TODO: Research HOW
 
