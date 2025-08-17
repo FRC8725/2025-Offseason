@@ -1,8 +1,11 @@
 package frc.robot.lib.camera;
 
+import java.nio.Buffer;
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -27,7 +30,11 @@ public class PhotonHelper extends PhotonCamera {
     public Transform3d getRobotToTagPose() {
         var result = this.getLatestResult();
         if (result == null) return new Transform3d();
-        Transform3d cameraToTag = result.getBestTarget().getBestCameraToTarget();
+        if (!result.hasTargets()) return new Transform3d();
+        PhotonTrackedTarget bestTarget = result.getBestTarget();
+        if (bestTarget == null) return new Transform3d();
+        Transform3d cameraToTag = bestTarget.getBestCameraToTarget();
+        if (cameraToTag == null) return new Transform3d();
         Transform3d robotToTag = this.cameraPose.plus(cameraToTag);
         return robotToTag;
     }
@@ -37,7 +44,10 @@ public class PhotonHelper extends PhotonCamera {
         if (robotToTag == new Transform3d()) return new Pose3d();
         var result = this.getLatestResult();
         if (result == null) return new Pose3d();
-        Pose3d fieldToTag = this.layout.getTagPose(result.getBestTarget().getFiducialId()).get();
+        if (!result.hasTargets()) return new Pose3d();
+        PhotonTrackedTarget bestTarget = result.getBestTarget();
+        if (bestTarget == null) return new Pose3d();
+        Pose3d fieldToTag = this.layout.getTagPose(bestTarget.getFiducialId()).get();
         return fieldToTag.transformBy(robotToTag.inverse());
     }
 }

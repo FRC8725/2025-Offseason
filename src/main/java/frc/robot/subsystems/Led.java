@@ -18,7 +18,7 @@ import frc.robot.subsystems.SuperStructure.State;
 public class Led extends SubsystemBase {
     private final int LED_PORT = 0;
     private final int LED_BUFFER_LENGTH = 19; // TODO
-    private boolean idleMode = true;
+    private boolean idleMode = false;
 
     private final AddressableLED led = new AddressableLED(LED_PORT);
     private final AddressableLEDBuffer buffer = new AddressableLEDBuffer(LED_BUFFER_LENGTH);

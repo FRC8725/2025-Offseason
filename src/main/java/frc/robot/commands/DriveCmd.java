@@ -88,8 +88,6 @@ public class DriveCmd extends Command {
 				case ReefAlign:
 					Optional<Map.Entry<Integer, Pose2d>> fudged = this.swerve.getClosestFudgedScoringPose();
 					pose = fudged.map(Map.Entry::getValue).orElse(null);
-					SmartDashboard.putNumber("XXXX", pose.getX());
-					SmartDashboard.putNumber("YYYY", pose.getY());
 					break;
 
 				case AlgaeAlign:

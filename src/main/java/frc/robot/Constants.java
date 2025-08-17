@@ -137,7 +137,7 @@ public final class Constants {
         public static final double SAFE_WALL_DISTANCE = 1.0;
 
         // Distance
-        public static final double ROBOT_REEF_CENTER_DISTANCE = Units.inchesToMeters(53.0 - 2.0);
+        public static final double ROBOT_REEF_CENTER_DISTANCE = Units.inchesToMeters(53.0 - 1.0);
         public static final double REEF_BRANCE_OFFSET_DISTANCE = Units.inchesToMeters(12.9375 / 2.0);
         public static final double TROUGH_OFFSET_DISTANCE = Units.inchesToMeters(14.5 / 2.0);
 
