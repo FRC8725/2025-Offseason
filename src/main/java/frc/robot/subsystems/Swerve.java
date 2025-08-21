@@ -213,6 +213,10 @@ public class Swerve extends SubsystemBase {
             sample.omega + this.headingController.calculate(pose.getRotation().getRadians(), sample.heading)
         );
 
+        // speeds.vxMetersPerSecond *= (Robot.isSimulation() ? -1.0 : 1.0);
+        // speeds.vyMetersPerSecond *= (Robot.isSimulation() ? -1.0 : 1.0);
+        speeds.omegaRadiansPerSecond *= (Robot.isSimulation() ? -1.0 : 1.0);
+
         this.driveRobotRelative(speeds);
     }
 
@@ -223,6 +227,10 @@ public class Swerve extends SubsystemBase {
             this.yController.calculate(currentPose.getY(), goalPose.getY()),
             this.headingController.calculate(currentPose.getRotation().getRadians(), goalPose.getRotation().getRadians()));
        
+        // speeds.vxMetersPerSecond *= (Robot.isSimulation() ? -1.0 : 1.0);
+        // speeds.vyMetersPerSecond *= (Robot.isSimulation() ? -1.0 : 1.0);
+        speeds.omegaRadiansPerSecond *= (Robot.isSimulation() ? -1.0 : 1.0);
+
         this.driveRobotRelative(speeds);
     }
 

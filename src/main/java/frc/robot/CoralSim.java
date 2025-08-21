@@ -124,7 +124,7 @@ public class CoralSim extends SubsystemBase {
                 Pose3d armBasePose = new Pose3d(this.swervePose.get())
                     .plus(new Transform3d(
                         0.027525, 0.0, 0.3003578 + Elevator.getInstance().getHeight(),
-                        new Rotation3d(Arm.getInstance().getPosition() - Math.PI, 0.0, 0.0)));
+                        new Rotation3d(-Arm.getInstance().getPosition() - Math.PI, 0.0, 0.0)));
                 Transform3d armCoralOffset = new Transform3d(
                     0.1337, 0.0, 0.598131,
                     new Rotation3d(0.0, 0.0, Math.PI / 2.0));
@@ -143,8 +143,8 @@ public class CoralSim extends SubsystemBase {
                 break;
             
             case Floor:
-                // this.pose = new Pose3d(0.64, 0.1, Units.inchesToMeters(4.5 / 2.0), new Rotation3d(0.0, 0.0, Math.PI / 2.0));
-                this.pose = new Pose3d(2.08, 7.38, Units.inchesToMeters(4.5 / 2.0), new Rotation3d(0.0, 0.0, Math.PI / 2.0));
+                this.pose = new Pose3d(1.81, 0.8, Units.inchesToMeters(4.5 / 2.0), new Rotation3d(0.0, 0.0, Math.PI / 2.0 - Math.PI / 4.0 - Math.PI));
+                // this.pose = new Pose3d(2.08, 7.38, Units.inchesToMeters(4.5 / 2.0), new Rotation3d(0.0, 0.0, Math.PI / 2.0));
                 break;
 
             default:

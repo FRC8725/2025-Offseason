@@ -80,34 +80,6 @@
             }
           },
           {
-            "title": "XXXX",
-            "x": 512.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/XXXX",
-              "period": 0.02,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "YYYY",
-            "x": 640.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/YYYY",
-              "period": 0.02,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
             "title": "photonvision-left_Port_1184_Output_MJPEG_Server",
             "x": 256.0,
             "y": 384.0,
@@ -1050,34 +1022,6 @@
               "true_icon": "None",
               "false_icon": "None"
             }
-          },
-          {
-            "title": "Target Pose X",
-            "x": 512.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Target Pose X",
-              "period": 0.02,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Target Pose Y",
-            "x": 640.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Target Pose Y",
-              "period": 0.02,
-              "data_type": "double",
-              "show_submit_button": false
-            }
           }
         ]
       }
@@ -1119,20 +1063,6 @@
               "false_color": 4294198070,
               "true_icon": "None",
               "false_icon": "None"
-            }
-          },
-          {
-            "title": "BackLeft",
-            "x": 512.0,
-            "y": 0.0,
-            "width": 512.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/Shuffleboard/Vision/Vision/BackLeft",
-              "period": 0.02,
-              "data_type": "string",
-              "show_submit_button": false
             }
           }
         ]

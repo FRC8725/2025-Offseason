@@ -493,7 +493,7 @@ public class Arm extends SubsystemBase {
     public Pose3d getArmComponentPose() {
         return Elevator.getInstance().getCarriageComponentPose()
             .plus(new Transform3d(0.0, 0.0, 0.300355,
-                new Rotation3d(this.getPosition() + Math.PI, 0.0, 0.0)));
+                new Rotation3d(-this.getPosition() + Math.PI, 0.0, 0.0)));
     }
 
     public void simulationUpdate() {
