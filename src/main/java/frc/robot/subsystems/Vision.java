@@ -23,8 +23,8 @@ public class Vision extends SubsystemBase {
     private final PhotonHelper[] cameras = new PhotonHelper[] {
         new PhotonHelper("FrontLeft", Constants.Vision.FRONT_LEFT),
         new PhotonHelper("BackLeft", Constants.Vision.BACK_LEFT),
-        // new PhotonHelper("FrontRight", Constants.Vision.FRONT_RIGHT),
-        // new PhotonHelper("BackRight", Constants.Vision.BACK_RIGHT)
+        new PhotonHelper("FrontRight", Constants.Vision.FRONT_RIGHT),
+        new PhotonHelper("BackRight", Constants.Vision.BACK_RIGHT)
     };
 
     // ---------- Function ---------- //

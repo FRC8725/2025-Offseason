@@ -54,16 +54,83 @@
             }
           },
           {
-            "title": "Coast Mode",
-            "x": 0.0,
-            "y": 0.0,
+            "title": "photonvision_Port_1184_Output_MJPEG_Server",
+            "x": 256.0,
+            "y": 128.0,
             "width": 256.0,
-            "height": 128.0,
-            "type": "Toggle Switch",
+            "height": 256.0,
+            "type": "Camera Stream",
             "properties": {
-              "topic": "/Shuffleboard/Autonomous/Coast Mode",
+              "topic": "/CameraPublisher/photonvision_Port_1184_Output_MJPEG_Server",
               "period": 0.02,
-              "data_type": "boolean"
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "photonvision_Port_1182_Output_MJPEG_Server",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision_Port_1182_Output_MJPEG_Server",
+              "period": 0.02,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "XXXX",
+            "x": 512.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/XXXX",
+              "period": 0.02,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "YYYY",
+            "x": 640.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/YYYY",
+              "period": 0.02,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "photonvision-left_Port_1184_Output_MJPEG_Server",
+            "x": 256.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision-left_Port_1184_Output_MJPEG_Server",
+              "period": 0.02,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "photonvision-left_Port_1182_Output_MJPEG_Server",
+            "x": 0.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision-left_Port_1182_Output_MJPEG_Server",
+              "period": 0.02,
+              "rotation_turns": 0
             }
           }
         ]
@@ -546,6 +613,23 @@
               "data_type": "double",
               "show_submit_button": false
             }
+          },
+          {
+            "title": "atGoodDistance",
+            "x": 1024.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/Shuffleboard/Swerve/Subsystem/atGoodDistance",
+              "period": 0.02,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
           }
         ]
       }
@@ -658,6 +742,20 @@
               "true_icon": "None",
               "false_icon": "None"
             }
+          },
+          {
+            "title": "Stator Current",
+            "x": 256.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/Shuffleboard/Elevator/Elevator/Stator Current",
+              "period": 0.02,
+              "data_type": "double",
+              "show_submit_button": false
+            }
           }
         ]
       }
@@ -767,6 +865,37 @@
               "data_type": "double",
               "show_submit_button": false
             }
+          },
+          {
+            "title": "AtSafeReefDistance",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/Shuffleboard/Arm/Arm/AtSafeReefDistance",
+              "period": 0.02,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Encoder position",
+            "x": 256.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/Shuffleboard/Arm/Arm/Encoder position",
+              "period": 0.02,
+              "data_type": "double",
+              "show_submit_button": false
+            }
           }
         ]
       }
@@ -833,6 +962,23 @@
               "period": 0.02,
               "data_type": "string",
               "show_submit_button": false
+            }
+          },
+          {
+            "title": "HasCoral",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/Shuffleboard/Intake/Intake/HasCoral",
+              "period": 0.02,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           }
         ]
@@ -903,6 +1049,90 @@
               "false_color": 4294198070,
               "true_icon": "None",
               "false_icon": "None"
+            }
+          },
+          {
+            "title": "Target Pose X",
+            "x": 512.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Target Pose X",
+              "period": 0.02,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Target Pose Y",
+            "x": 640.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Target Pose Y",
+              "period": 0.02,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vision",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "BackLeft status",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/Shuffleboard/Vision/Vision/BackLeft status",
+              "period": 0.02,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "FrontLeft status",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/Shuffleboard/Vision/Vision/FrontLeft status",
+              "period": 0.02,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "BackLeft",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/Shuffleboard/Vision/Vision/BackLeft",
+              "period": 0.02,
+              "data_type": "string",
+              "show_submit_button": false
             }
           }
         ]

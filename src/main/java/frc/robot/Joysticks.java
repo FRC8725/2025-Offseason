@@ -63,7 +63,7 @@ public class Joysticks {
         input.leftX = this.driver.getLeftX();
         input.leftY = this.driver.getLeftY();
         input.rightX = this.driver.getRightX();
-        input.deadZone = 0.03;
+        input.deadZone = 0.05;
         
         if (this.wantBargeAlign.get()) {
             input.alignMode = AlignMode.BargeAlign;

@@ -24,8 +24,8 @@ public class RobotContainer {
 	private final Intake intake = new Intake();
 	private final Led led = new Led();
 
-	private final CoralSim coralSim = new CoralSim(
-		this.superStructure, this.swerve::getPose);
+	// private final CoralSim coralSim = new CoralSim(
+		// this.superStructure, this.swerve::getPose);
 	
 	public RobotContainer() {
 		Shuffleboard.getTab("Vision").add(this.vision);
@@ -50,6 +50,6 @@ public class RobotContainer {
 		this.elevator.simulationUpdate();
 		this.intake.simulationUpdate();
 		this.arm.simulationUpdate();	
-		this.coralSim.simulationUpdate();
+		// this.coralSim.simulationUpdate();
 	}
 }

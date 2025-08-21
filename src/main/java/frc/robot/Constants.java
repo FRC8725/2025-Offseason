@@ -44,7 +44,7 @@ public final class Constants {
         public static final double ENCODER_OFFSET_ROTATION = 0.9217966730449169;
 
         // Detect has object
-        public static final double IDEL_CURRENT_DRAW = 8.0;
+        public static final double IDEL_CURRENT_DRAW = 7.0;
         public static final double CURRENT_DRAW = 15.0;
 
         // Safe
