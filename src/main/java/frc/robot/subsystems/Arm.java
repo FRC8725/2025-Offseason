@@ -49,6 +49,7 @@ public class Arm extends SubsystemBase {
     private final StatusSignal<Current> statorCurrent = this.roller.getStatorCurrent();
     private final Supplier<Boolean> wantOffsetArmPositive;
     private final Supplier<Boolean> wantOffsetArmNegative;
+    private final Supplier<Boolean> wantResetArm;
     public static boolean hasObject = false;
     public static boolean isZeroed = false;
     private double offsetRad = 0.0;
@@ -173,7 +174,7 @@ public class Arm extends SubsystemBase {
     public static final InterpolatingDoubleTreeMap elevatorToArm = new InterpolatingDoubleTreeMap();
     public static final InterpolatingDoubleTreeMap elevatorToArmWhenIntakeDown = new InterpolatingDoubleTreeMap();
 
-    public Arm(Supplier<Boolean> wantOffsetArmPositive, Supplier<Boolean> wantOffsetArmNegative) {
+    public Arm(Supplier<Boolean> wantOffsetArmPositive, Supplier<Boolean> wantOffsetArmNegative, Supplier<Boolean> wantResetArm) {
         ARM = this;
         this.configRollerMotor();
         this.resetRelativeFromAbsolute();
@@ -188,6 +189,7 @@ public class Arm extends SubsystemBase {
 
         this.wantOffsetArmPositive = wantOffsetArmPositive;
         this.wantOffsetArmNegative = wantOffsetArmNegative;
+        this.wantResetArm = wantResetArm;
     }
 
     public static Arm getInstance() {
@@ -253,8 +255,9 @@ public class Arm extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (this.wantOffsetArmPositive.get()) this.offsetArm(Units.degreesToRadians(0.1));
-        if (this.wantOffsetArmNegative.get()) this.offsetArm(-Units.degreesToRadians(0.1));
+        if (this.wantOffsetArmPositive.get()) this.offsetArm(Units.degreesToRadians(0.5));
+        if (this.wantOffsetArmNegative.get()) this.offsetArm(-Units.degreesToRadians(0.5));
+        if (this.wantResetArm.get()) this.resetRelativeFromAbsolute();
 
         boolean atStartOfAuto = (RobotState.isAutonomous() && this.autoTimer.get() < 0.75);
         this.statorCurrent.refresh();

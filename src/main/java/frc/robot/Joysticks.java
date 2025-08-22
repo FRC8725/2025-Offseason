@@ -22,7 +22,8 @@ public class Joysticks {
         (SuperStructure.getInstance().state == SuperStructure.State.AlgaeRest ||
             SuperStructure.getInstance().state == SuperStructure.State.PreBarge ||
             SuperStructure.getInstance().state == SuperStructure.State.ScoreBarge);
-
+            
+    public final Supplier<Boolean> wantResetArm = () -> this.driver.getRightBumperButton();
     public final Supplier<Boolean> wantOffsetArmPositive = () -> this.controller.getLeftX() > 0.9 && this.controller.getL3Button();
     public final Supplier<Boolean> wantOffsetArmNegative = () -> this.controller.getLeftX() < -0.9 && this.controller.getL3Button();
 

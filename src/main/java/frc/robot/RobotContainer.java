@@ -20,7 +20,8 @@ public class RobotContainer {
 	private final SuperStructure superStructure = new SuperStructure();
 	private final Arm arm = new Arm(
 		this.joysticks.wantOffsetArmPositive,
-		this.joysticks.wantOffsetArmNegative);
+		this.joysticks.wantOffsetArmNegative,
+		this.joysticks.wantResetArm);
 	private final Intake intake = new Intake();
 	private final Led led = new Led();
 
