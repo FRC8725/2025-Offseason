@@ -58,7 +58,7 @@ public class Elevator extends SubsystemBase {
         L4(Units.inchesToMeters(49.0)),
         Barge(Units.inchesToMeters(50.0)),
         ScoreL2(L2.value - Units.inchesToMeters(1.0)),
-        ScoreL3(L3.value - Units.inchesToMeters(3.0)),
+        ScoreL3(L3.value - Units.inchesToMeters(2.0)),
         ScoreL4(L4.value - Units.inchesToMeters(1.0)),
         PostL2(L2.value - Units.inchesToMeters(3.5)),
         PostL3(L2.value - Units.inchesToMeters(6.0)),
@@ -83,7 +83,7 @@ public class Elevator extends SubsystemBase {
 
     public enum AlgaeHeight {
         High(Units.inchesToMeters(16.25)),
-        Low(0.0);
+        Low(Units.inchesToMeters(3.5));
 
         private final double value;
 

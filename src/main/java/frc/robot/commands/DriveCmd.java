@@ -61,7 +61,7 @@ public class DriveCmd extends Command {
 		Swerve.getInstance().isAligned = false;
 
 		if (inputs.alignMode == AlignMode.None) {
-			this.swerve.driveRobotRelative(this.getSpeeds());
+			this.swerve.driveRobotRelative(this.getSpeeds(), !inputs.oriented);
 		} else if (inputs.alignMode == AlignMode.BargeAlign) {
 			double currentAngle = this.swerve.getPose().getRotation().getRadians();
 
@@ -77,7 +77,7 @@ public class DriveCmd extends Command {
 			double fixBargeRotatin = this.fixRotationInput(
 				this.turnPid.calculate(currentAngle, rotSetpoint));
 
-			this.swerve.driveRobotRelative(new ChassisSpeeds(fixBargeX, 0.0, fixBargeRotatin));
+			this.swerve.driveRobotRelative(new ChassisSpeeds(fixBargeX, 0.0, fixBargeRotatin), true);
 		} else {
 			Pose2d pose = null;
 			switch (this.driveInputs.get().alignMode) {
@@ -99,7 +99,7 @@ public class DriveCmd extends Command {
 					break;
 			}
 			if (pose == null) {
-				this.swerve.driveRobotRelative(this.getSpeeds());
+				this.swerve.driveRobotRelative(this.getSpeeds(), !inputs.oriented);
 			} else {
 				this.swerve.isAligned = this.swerve.withinTolerance(pose.getTranslation());
 				Pose2d swervePose = this.swerve.getPose();
@@ -110,7 +110,7 @@ public class DriveCmd extends Command {
 						this.yPid.calculate(swervePose.getY(), pose.getY()) * (Robot.isSimulation() ? -1.0 : 1.0)),
 					this.fixRotationInput(
 						this.turnPid.calculate(swervePose.getRotation().getRadians(), pose.getRotation().getRadians()) * (Robot.isSimulation() ? -1.0 : 1.0)));
-				this.swerve.driveRobotRelative(speeds);
+				this.swerve.driveRobotRelative(speeds, true);
 			}
 		}
 	}

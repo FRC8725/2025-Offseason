@@ -40,6 +40,7 @@ public class Joysticks {
         public double rightX;
         public double deadZone;
         public AlignMode alignMode;
+        public boolean oriented;
 
         public boolean isNonZero() {
             return Math.abs(leftX) > deadZone ||
@@ -54,6 +55,7 @@ public class Joysticks {
             flipped.rightX = -this.rightX;
             flipped.deadZone = deadZone;
             flipped.alignMode = alignMode;
+            flipped.oriented = oriented;
             return flipped;
         }
     }
@@ -63,6 +65,7 @@ public class Joysticks {
         input.leftX = this.driver.getLeftX();
         input.leftY = this.driver.getLeftY();
         input.rightX = this.driver.getRightX();
+        input.oriented = this.driver.getLeftBumperButton();
         input.deadZone = 0.05;
         
         if (this.wantBargeAlign.get()) {

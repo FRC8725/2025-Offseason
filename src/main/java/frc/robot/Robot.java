@@ -66,6 +66,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotPeriodic() {
 		tick++;
+		SmartDashboard.putBoolean("IsRed", isRedAlliance);
 		CommandScheduler.getInstance().run();
 	}
 

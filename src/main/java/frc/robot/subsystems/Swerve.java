@@ -195,8 +195,10 @@ public class Swerve extends SubsystemBase {
     }
 
     // ---------- Method ---------- //
-    public void driveRobotRelative(ChassisSpeeds speeds) {
-        ChassisSpeeds relativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, this.getPose().getRotation());
+    public void driveRobotRelative(ChassisSpeeds speeds, boolean robotOriented) {
+        ChassisSpeeds relativeSpeeds;
+        if (robotOriented) relativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, this.getPose().getRotation());
+        else relativeSpeeds = speeds;
         ChassisSpeeds discretizeSpeeds = ChassisSpeeds.discretize(relativeSpeeds, Robot.kDefaultPeriod);
         SwerveModuleState[] states = Constants.Swerve.KINEMATICS.toSwerveModuleStates(discretizeSpeeds);
         this.setDesiredState(states);
@@ -217,7 +219,7 @@ public class Swerve extends SubsystemBase {
         // speeds.vyMetersPerSecond *= (Robot.isSimulation() ? -1.0 : 1.0);
         speeds.omegaRadiansPerSecond *= (Robot.isSimulation() ? -1.0 : 1.0);
 
-        this.driveRobotRelative(speeds);
+        this.driveRobotRelative(speeds, true);
     }
 
     public void followPose(Pose2d goalPose) {
@@ -231,7 +233,7 @@ public class Swerve extends SubsystemBase {
         // speeds.vyMetersPerSecond *= (Robot.isSimulation() ? -1.0 : 1.0);
         speeds.omegaRadiansPerSecond *= (Robot.isSimulation() ? -1.0 : 1.0);
 
-        this.driveRobotRelative(speeds);
+        this.driveRobotRelative(speeds, true);
     }
 
     public void setDesiredState(SwerveModuleState[] states) {
@@ -257,7 +259,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public void stopModules() {
-        this.driveRobotRelative(new ChassisSpeeds());
+        this.driveRobotRelative(new ChassisSpeeds(), true);
     }
 
     public void setSwerveVoltage(double voltage) {
