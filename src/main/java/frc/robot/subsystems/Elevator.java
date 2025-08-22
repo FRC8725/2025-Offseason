@@ -83,7 +83,7 @@ public class Elevator extends SubsystemBase {
 
     public enum AlgaeHeight {
         High(Units.inchesToMeters(16.25)),
-        Low(Units.inchesToMeters(3.5));
+        Low(0.0);
 
         private final double value;
 
